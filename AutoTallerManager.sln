@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoTallerManager.API", "AutoTallerManager.API\AutoTallerManager.API.csproj", "{E4F7CC61-3D8F-43E9-81AA-0551FEAACE50}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoTallerManager.Domain", "AutoTallerManager.Domain\AutoTallerManager.Domain.csproj", "{6D2D56C2-D4BC-467F-B5FB-69BD32D742C5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoTallerManager.Application", "AutoTallerManager.Application\AutoTallerManager.Application.csproj", "{5D9C4912-C507-42E1-94CE-031A281A81F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoTallerManager.Infrastructure", "AutoTallerManager.Infrastructure\AutoTallerManager.Infrastructure.csproj", "{2D32D466-BBAC-4302-8D82-D526E8BEEAEC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E4F7CC61-3D8F-43E9-81AA-0551FEAACE50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4F7CC61-3D8F-43E9-81AA-0551FEAACE50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4F7CC61-3D8F-43E9-81AA-0551FEAACE50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4F7CC61-3D8F-43E9-81AA-0551FEAACE50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D2D56C2-D4BC-467F-B5FB-69BD32D742C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D2D56C2-D4BC-467F-B5FB-69BD32D742C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D2D56C2-D4BC-467F-B5FB-69BD32D742C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D2D56C2-D4BC-467F-B5FB-69BD32D742C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D9C4912-C507-42E1-94CE-031A281A81F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D9C4912-C507-42E1-94CE-031A281A81F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D9C4912-C507-42E1-94CE-031A281A81F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D9C4912-C507-42E1-94CE-031A281A81F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D32D466-BBAC-4302-8D82-D526E8BEEAEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D32D466-BBAC-4302-8D82-D526E8BEEAEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D32D466-BBAC-4302-8D82-D526E8BEEAEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D32D466-BBAC-4302-8D82-D526E8BEEAEC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

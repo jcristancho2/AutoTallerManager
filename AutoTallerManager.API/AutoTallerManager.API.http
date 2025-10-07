@@ -1,0 +1,6 @@
+@AutoTallerManager.API_HostAddress = http://localhost:5013
+
+GET {{AutoTallerManager.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
