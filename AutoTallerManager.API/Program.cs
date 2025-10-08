@@ -1,7 +1,13 @@
 using AutoTallerManager.API.Extensions;
 using AutoTallerManager.Infrastructure;
-using AutoTallerManager.Infrastructure.Repositories;
+using AutoTallerManager.Infrastructure.Persistence.Context;
+using AutoTallerManager.API.Extensions;
+using AutoTallerManager.Application.Abstractions;
+using AutoTallerManager.Application.Common.Behaviors;
 using Microsoft.EntityFrameworkCore;
+using FluentValidation;
+using MediatR;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
