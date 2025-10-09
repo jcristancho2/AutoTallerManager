@@ -8,6 +8,7 @@ using AutoTallerManager.Domain.Entities;
 namespace AutoTallerManager.Infrastructure.Persistence.Context;
 
 public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     // DbSets
     public DbSet<Repuesto> Repuestos { get; set; } = null!;
