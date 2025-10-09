@@ -1,49 +1,52 @@
-using AutoTallerManager.API.Extensions;
-using AutoTallerManager.Infrastructure;
-using AutoTallerManager.Infrastructure.Persistence.Context;
-using AutoTallerManager.API.Extensions;
-using AutoTallerManager.Application.Abstractions;
-using AutoTallerManager.Application.Common.Behaviors;
-using Microsoft.EntityFrameworkCore;
-using FluentValidation;
-using MediatR;
 
+
+using AutoTallerManager.API.Extensions;
+using AutoTallerManager.Infrastructure.Persistence.Context;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
+// Agregar controladores y Swagger
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+// REGISTRA SERVICIOS Y CONFIGURACIONES PERSONALIZADAS DEL APPLICATIONSERVICEEXTENSION 
 builder.Services.ConfigureCors();
-builder.Services.AddCustomRateLimiter();
 builder.Services.AddApplicationServices();
+builder.Services.AddJwt(builder.Configuration);
+builder.Services.AddValidationErrors();
+
+// Configurar DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    string connectionString = builder.Configuration.GetConnectionString("PostgresLocal")!;
+    var isDocker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+    string connectionString = builder.Configuration.GetConnectionString(isDocker ? "PostgresDocker" : "PostgresLocal")!;
     options.UseNpgsql(connectionString);
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 });
 
-// builder.Services.AddDbContext<AppDbContext>(opt =>
-//     opt.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
-
 var app = builder.Build();
+Console.WriteLine(builder.Configuration.GetConnectionString("Postgres"));
 
-// Configure the HTTP request pipeline.
+// Swagger y middlewares
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Proyecto full-stack");
+        // esto hace que swagger se ejecute en la raiz
+        c.RoutePrefix = string.Empty; 
+    });
 }
+
 app.UseCors("CorsPolicy");
-app.UseCors("CorsPolicyUrl");
-app.UseCors("Dinamica");
 
 app.UseHttpsRedirection();
-app.UseRateLimiter();
+// app.UseRateLimiter();
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
 app.Run();
