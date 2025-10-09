@@ -4,17 +4,24 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoTallerManager.Application.Abstractions.Auth;
 
-namespace AutoTallerManager.Application.Abstractions
+namespace AutoTallerManager.Application.Abstractions;
+
+public interface IUnitOfWork
 {
-    public interface IUnitOfWork
-    {
+    // Repositorios de Auth
+    IUserMemberService UserMembers { get; }
+    IUserMemberRolService UserMemberRoles { get; }
+    IRolService Roles { get; }
+    
+    // Repositorios de negocio
+    //IClienteService Clientes { get; }
+    //IVehiculoService Vehiculos { get; }
+    //IOrdenServicioService OrdenesServicio { get; }
+    //IRepuestoService Repuestos { get; }
+    //IFacturaService Facturas { get; }
+    //IAuditoriaService Auditorias { get; }
 
-        IUserMemberService UserMembers { get; }
-        IUserMemberRolService UserMemberRoles { get; }
-        IRolService Roles { get; }
-        // Task<int> SaveAsync();
-        Task<int> SaveChanges(CancellationToken ct = default);
-        Task ExecuteInTransactionAsync(Func<CancellationToken, Task> operation, CancellationToken ct = default);
-
-    }
+    Task<int> SaveChanges(CancellationToken ct = default);
+    Task<int> SaveChangesAsync(CancellationToken ct = default);
+    Task ExecuteInTransactionAsync(Func<CancellationToken, Task> operation, CancellationToken ct = default);
 }
