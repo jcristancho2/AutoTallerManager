@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.Json;
+using System.Net;
 
-namespace AutoTallerManager.Shared.Helpers.Errors;
+namespace AutoTallerManager.API.Helpers.Errors;
 
     public class ExceptionMiddleware
     {
-         private readonly RequestDelegate _next;
+        private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionMiddleware> _logger;
     private readonly IHostEnvironment _env;
 

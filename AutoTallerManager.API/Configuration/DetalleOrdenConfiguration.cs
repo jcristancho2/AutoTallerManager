@@ -53,10 +53,12 @@ namespace AutoTallerManager.API.Configuration
                    .HasDefaultValue(0m)
                    .IsRequired();
 
-            // Checks (si tu motor los soporta)
-            builder.HasCheckConstraint("ck_order_detail_cantidad", "cantidad > 0");
-            builder.HasCheckConstraint("ck_order_detail_pu", "precio_unitario >= 0");
-            builder.HasCheckConstraint("ck_order_detail_mano", "precio_mano_de_obra >= 0");
+            // Configurar tabla con check constraints
+            builder.ToTable(t => {
+                t.HasCheckConstraint("ck_order_detail_cantidad", "cantidad > 0");
+                t.HasCheckConstraint("ck_order_detail_pu", "precio_unitario >= 0");
+                t.HasCheckConstraint("ck_order_detail_mano", "precio_mano_de_obra >= 0");
+            });
 
             // Relaciones
             builder.HasOne(d => d.OrdenServicio)

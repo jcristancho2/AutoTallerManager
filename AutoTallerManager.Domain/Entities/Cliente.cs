@@ -33,6 +33,7 @@ namespace AutoTallerManager.Domain.Entities
         }
 
         public ICollection<Vehiculo> Vehiculos { get; set; } = new HashSet<Vehiculo>();
+        public ICollection<Factura> Facturas { get; set; } = new HashSet<Factura>();
     }
     
 

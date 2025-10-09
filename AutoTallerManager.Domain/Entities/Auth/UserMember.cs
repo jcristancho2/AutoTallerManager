@@ -14,5 +14,4 @@ namespace AutoTallerManager.Domain.Entities.Auth;
         public ICollection<Rol> Rols { get; set; } = new HashSet<Rol>();
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new HashSet<RefreshToken>();
         public ICollection<UserMemberRol> UserMemberRols { get; set; } = new HashSet<UserMemberRol>();
-
     }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AutoTallerManager.Shared.Helpers
+namespace AutoTallerManager.API.Helpers
 {
     public class Params
     {
