@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AutoTallerManager.Domain.Entities.Auth
-{
+namespace AutoTallerManager.Domain.Entities.Auth;
+
     public class RefreshToken : BaseEntity
     {
         public int Id { get; set; }
@@ -16,6 +16,4 @@ namespace AutoTallerManager.Domain.Entities.Auth
         public DateTime Created { get; set; }
         public DateTime? Revoked { get; set; }
         public bool IsActive => Revoked == null && !IsExpired;
-
     }
-}

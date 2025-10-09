@@ -15,5 +15,7 @@ namespace AutoTallerManager.Domain.Entities
         {
             Nombre = nombre;
         }
+
+        public ICollection<Cliente> Clientes { get; set; } = new List<Cliente>();
     }
 }

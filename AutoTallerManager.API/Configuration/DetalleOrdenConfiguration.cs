@@ -14,63 +14,67 @@ namespace AutoTallerManager.API.Configuration
         {
             builder.ToTable("orders_details");
 
-                     // PK compuesta (DetalleOrdenId, OrdenServicioId)
-                     builder.HasKey(d => new { d.DetalleOrdenId, d.OrdenServicioId })
-                           .HasName("pk_order_detail"); //tengo dudas aquui en esta linea
+            // PK compuesta
+            builder.HasKey(d => new { d.DetalleOrdenId, d.OrdenServicioId })
+                   .HasName("pk_order_detail");
 
+            // Columnas
             builder.Property(d => d.DetalleOrdenId)
-                         .HasColumnName("detalleordenid");
+                   .HasColumnName("detalle_orden_id")
+                   .ValueGeneratedNever(); // NO identity en PK compuesta
 
-              builder.Property(d => d.OrdenServicioId)
-                         .HasColumnName("ordenservicioid");
+            builder.Property(d => d.OrdenServicioId)
+                   .HasColumnName("orden_servicio_id")
+                   .IsRequired();
 
-                     // Si usas MySQL y el DDL tiene AUTO_INCREMENT,
-                     // muchos proveedores/ORM no soportan identity en PK compuesta.
-                     // Puedes intentar:
-              builder.Property(d => d.DetalleOrdenId)
-                     .HasColumnName("detalleordenid");
+            builder.Property(d => d.RepuestoId)
+                   .HasColumnName("repuesto_id")
+                   .IsRequired(false); // nullable
 
-              builder.Property(d => d.RepuestoId)
-                     .HasColumnName("repuestoid")
-                     .IsRequired();
-
-              builder.Property(d => d.Descripcion)
+            builder.Property(d => d.Descripcion)
                    .HasColumnName("descripcion")
-                   .IsRequired()
-                   .HasMaxLength(255);
+                   .HasMaxLength(255)
+                   .IsRequired(false);
 
-              builder.Property(d => d.Cantidad)
+            builder.Property(d => d.Cantidad)
                    .HasColumnName("cantidad")
-                   .IsRequired()
-                   .HasDefaultValue(1);
+                   .HasDefaultValue(1)
+                   .IsRequired();
 
-              builder.Property(d => d.PrecioUnitario)
-                   .HasColumnName("preciounitario")
-                   .IsRequired()
-                   .HasColumnType("decimal(10,2)")
-                   .HasDefaultValue(0m);
+            builder.Property(d => d.PrecioUnitario)
+                   .HasColumnName("precio_unitario")
+                   .HasPrecision(10, 2)
+                   .HasDefaultValue(0m)
+                   .IsRequired();
 
-              builder.Property(d => d.PrecioManoDeObra)
-                   .HasColumnName("preciomanodeobra")
-                   .IsRequired()
-                   .HasColumnType("decimal(10,2)")
-                   .HasDefaultValue(0m);
+            builder.Property(d => d.PrecioManoDeObra)
+                   .HasColumnName("precio_mano_de_obra")
+                   .HasPrecision(10, 2)
+                   .HasDefaultValue(0m)
+                   .IsRequired();
 
-            // CHECK constraints
+            // Checks (si tu motor los soporta)
             builder.HasCheckConstraint("ck_order_detail_cantidad", "cantidad > 0");
-            builder.HasCheckConstraint("ck_order_detail_pu", "preciounitario >= 0");
-            builder.HasCheckConstraint("ck_order_detail_mano", "preciomanodeobra >= 0");
-            // FK con OrdenServicio (ON DELETE CASCADE)
+            builder.HasCheckConstraint("ck_order_detail_pu", "precio_unitario >= 0");
+            builder.HasCheckConstraint("ck_order_detail_mano", "precio_mano_de_obra >= 0");
+
+            // Relaciones
             builder.HasOne(d => d.OrdenServicio)
-                   .WithMany(o => o.Detalles)          // Asegúrate de tener ICollection<DetalleOrden>? Detalles en OrdenServicio
+                   .WithMany(o => o.DetallesOrden)
                    .HasForeignKey(d => d.OrdenServicioId)
+                   .HasConstraintName("fk_order_detail_orden_servicio")
                    .OnDelete(DeleteBehavior.Cascade);
 
-            // FK con Repuesto (ON DELETE RESTRICT)
+            // Repuesto es opcional: si eliminas el repuesto, puedes dejar SetNull para mantener historial
             builder.HasOne(d => d.Repuesto)
-                   .WithMany()                         
+                   .WithMany()
                    .HasForeignKey(d => d.RepuestoId)
-                   .OnDelete(DeleteBehavior.Restrict);
+                   .HasConstraintName("fk_order_detail_repuesto")
+                   .OnDelete(DeleteBehavior.SetNull);
+
+            // Índices útiles
+            builder.HasIndex(d => d.OrdenServicioId).HasDatabaseName("ix_order_detail_orden_servicio_id");
+            builder.HasIndex(d => d.RepuestoId).HasDatabaseName("ix_order_detail_repuesto_id");
         }
     }
 }

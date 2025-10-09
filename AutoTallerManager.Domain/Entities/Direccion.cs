@@ -21,5 +21,7 @@ namespace AutoTallerManager.Domain.Entities
             Descripcion = descripcion;
             CiudadId = ciudadId;
         }
+
+        public ICollection<Cliente> Clientes { get; set; } = new List<Cliente>();
     }
 }
