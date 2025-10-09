@@ -49,8 +49,8 @@ namespace AutoTallerManager.API.Configuration
             builder.HasIndex(v => v.VIN)
                    .IsUnique();
 
-            // CHECK (Kilometraje >= 0)
-            builder.HasCheckConstraint("ck_vehicle_kilometraje", "kilometraje >= 0");
+            // Configurar tabla con check constraint
+            builder.ToTable(t => t.HasCheckConstraint("ck_vehicle_kilometraje", "kilometraje >= 0"));
 
             // FKs y delete restrict
             builder.HasOne(v => v.Cliente)

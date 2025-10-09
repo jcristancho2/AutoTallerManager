@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoTallerManager.Domain.Entities.Auth;
-using AutoTallerManager.Infrastructure.Abstractions.Auth;
+using AutoTallerManager.Application.Abstractions.Auth;
 using AutoTallerManager.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 

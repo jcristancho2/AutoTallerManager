@@ -40,8 +40,7 @@ namespace AutoTallerManager.API.Configuration
             builder.HasOne(f => f.Cliente)
                    .WithMany(c => c.Facturas)
                    .HasForeignKey(f => f.ClienteId)
-                   .OnDelete(DeleteBehavior.Restrict)
-                   .OnUpdate(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Restrict);
 
             // 💳 Relación con TipoPago
             builder.Property(f => f.PagoId)
@@ -65,8 +64,8 @@ namespace AutoTallerManager.API.Configuration
                    .HasColumnType("decimal(10,2)")
                    .IsRequired();
 
-            // ✅ Restricción CHECK
-            builder.HasCheckConstraint("CK_Factura_Total_Positive", "total >= 0");
+            // Configurar tabla con check constraint
+            builder.ToTable(t => t.HasCheckConstraint("CK_Factura_Total_Positive", "total >= 0"));
 
             // 🔒 Único en OrdenServicioId
             builder.HasIndex(f => f.OrdenServicioId)

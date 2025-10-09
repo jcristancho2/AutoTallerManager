@@ -8,12 +8,13 @@ namespace AutoTallerManager.Application.Abstractions
 {
     public interface IUnitOfWork
     {
-   
-    IUserMemberService UserMembers { get; }
-    IUserMemberRolService UserMemberRoles { get; }
-    IRolService Roles { get; }
-    // Task<int> SaveAsync();
-    Task<int> SaveChanges(CancellationToken ct = default);
-    Task ExecuteInTransactionAsync(Func<CancellationToken, Task> operation, CancellationToken ct = default);
 
+        IUserMemberService UserMembers { get; }
+        IUserMemberRolService UserMemberRoles { get; }
+        IRolService Roles { get; }
+        // Task<int> SaveAsync();
+        Task<int> SaveChanges(CancellationToken ct = default);
+        Task ExecuteInTransactionAsync(Func<CancellationToken, Task> operation, CancellationToken ct = default);
+
+    }
 }

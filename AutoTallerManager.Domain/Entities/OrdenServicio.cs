@@ -13,6 +13,7 @@ namespace AutoTallerManager.Domain.Entities
 
         public int VehiculoId { get; set; }
         public Vehiculo? Vehiculo { get; set; }
+        
         public int TipoServId { get; set; }
         public TipoServicio? TipoServicio { get; set; }
 
@@ -21,13 +22,8 @@ namespace AutoTallerManager.Domain.Entities
 
         public Factura? Factura { get; set; }
 
-
         public ICollection<Repuesto>? Repuestos { get; set; }
         public ICollection<Factura>? Facturas { get; set; }
         public ICollection<DetalleOrden>? DetallesOrden { get; set; }
-
-
-
-        
     }
 }

@@ -34,10 +34,6 @@ namespace AutoTallerManager.Infrastructure.Configurations
                             .HasColumnName("vehiculo_id")
                             .IsRequired();
 
-                     builder.Property(o => o.MecanicoId)
-                            .HasColumnName("mecanico_id")
-                            .IsRequired();
-
                      builder.Property(o => o.TipoServId)
                             .HasColumnName("tipo_serv_id")
                             .IsRequired();
@@ -52,12 +48,6 @@ namespace AutoTallerManager.Infrastructure.Configurations
                             .HasForeignKey(o => o.VehiculoId)
                             .OnDelete(DeleteBehavior.Restrict);
 
-                     // IMPORTANTE: MecanicoId -> Usuario (no Rol)
-                     builder.HasOne(o => o.Mecanico)
-                            .WithMany(u => u.OrdenesServicio)
-                            .HasForeignKey(o => o.MecanicoId)
-                            .OnDelete(DeleteBehavior.Restrict);
-
                      builder.HasOne(o => o.TipoServicio)
                             .WithMany(ts => ts.OrdenesServicio)
                             .HasForeignKey(o => o.TipoServId)
@@ -68,18 +58,15 @@ namespace AutoTallerManager.Infrastructure.Configurations
                             .HasForeignKey(o => o.EstadoId)
                             .OnDelete(DeleteBehavior.Restrict);
 
-                     // CHECK (FechaEstimadaEntrega >= FechaIngreso)
-                     builder.HasCheckConstraint(
+                     // Configurar la tabla con el check constraint
+                     builder.ToTable(t => t.HasCheckConstraint(
                         "ck_service_orders_fechas",
                         "fecha_estimada_entrega >= fecha_ingreso"
-                    ); 
+                     )); 
             
             // Índices recomendados (rendimiento de consultas/joins)
             builder.HasIndex(o => o.VehiculoId)
                    .HasDatabaseName("ix_service_orders_vehiculo_id");
-
-            builder.HasIndex(o => o.MecanicoId)
-                   .HasDatabaseName("ix_service_orders_mecanico_id");
 
             builder.HasIndex(o => o.TipoServId)
                    .HasDatabaseName("ix_service_orders_tipo_serv_id");
