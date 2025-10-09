@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;             
 using AutoTallerManager.Domain.Entities;
+using AutoTallerManager.Domain.Entities.Auth;
 
 namespace AutoTallerManager.Infrastructure.Persistence.Context;
 
@@ -24,7 +25,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<EstadoServ> EstadosServ { get; set; } = null!;
 
     // public DbSet<Usuario> Usuarios { get; set; } = null!;
-    // public DbSet<Rol> Roles { get; set; } = null!;
+     public DbSet<Rol> Rols { get; set; } = null!;
     // public DbSet<MarcaVehiculo> MarcasVehiculo { get; set;
 
 
