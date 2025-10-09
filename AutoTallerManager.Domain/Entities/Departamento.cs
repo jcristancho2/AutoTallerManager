@@ -18,5 +18,7 @@ namespace AutoTallerManager.Domain.Entities
             Nombre = nombre;
             PaisId = paisId;
         }
+
+        public ICollection<Ciudad> Ciudades { get; set; } = new List<Ciudad>();
     }
 }

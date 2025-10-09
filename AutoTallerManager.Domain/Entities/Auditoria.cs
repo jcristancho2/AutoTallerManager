@@ -20,7 +20,6 @@ namespace AutoTallerManager.Domain.Entities
         {
             UsuarioId = usuarioId;
             EntidadAfectada = entidadAfectada;
-            UsuarioId = usuarioId;
             AccionId = accionId;
             DescripcionAccion = descripcionAccion;
         }

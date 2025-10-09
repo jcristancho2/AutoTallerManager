@@ -18,5 +18,7 @@ namespace AutoTallerManager.Domain.Entities
         {
             Nombre = nombre;
         }
+
+        public ICollection<Departamento> Departamentos { get; set; } = new List<Departamento>();
     }
 }
