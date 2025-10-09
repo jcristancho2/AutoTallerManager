@@ -18,8 +18,10 @@ namespace AutoTallerManager.Domain.Entities
         public Ciudad(string nombre, int departamento_Id)
         {
             Nombre = nombre;
-            Departamento_Id = Departamento_Id;
+            Departamento_Id = departamento_Id;
         }
+
+        public ICollection<Direccion> Direcciones { get; set; } = new List<Direccion>();
 
     }
 }

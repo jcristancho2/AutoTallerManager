@@ -26,13 +26,13 @@ CREATE TABLE Departamento(
     NombreDepart VARCHAR(50)
 );
 
--- Tabla: CodPostal
+-- Tabla: CodPostal ( ESTA TABLA NO VA)
 CREATE TABLE CodPostal(
     CodPostalId INT AUTO_INCREMENT PRIMARY KEY,
     NombreCodPost VARCHAR(50)
 );
 
--- Tabla: Direccion
+-- Tabla: Direccion ( AQUI SE MODIFICÓ )
 CREATE TABLE Direccion(
     DireccionId INT AUTO_INCREMENT PRIMARY KEY,
     Descripcion VARCHAR(150) NOT NULL,

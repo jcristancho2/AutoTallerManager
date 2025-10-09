@@ -23,12 +23,17 @@ namespace AutoTallerManager.Domain.Entities
             string correo,
             int tipoCliente_Id,
             int direccion_Id
-            ) {
+            )
+        {
             NombreCompleto = nombreCompleto;
             Telefono = telefono;
             Correo = correo;
             TipoCliente_Id = tipoCliente_Id;
             Direccion_Id = direccion_Id;
-            }
+        }
+
+        public ICollection<Vehiculo> Vehiculos { get; set; } = new HashSet<Vehiculo>();
     }
+    
+
 }

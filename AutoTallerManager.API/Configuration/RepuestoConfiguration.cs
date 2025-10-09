@@ -12,15 +12,15 @@ namespace AutoTallerManager.API.Configuration
 
             builder.HasKey(r => r.RepuestoId);
                 builder.Property(r => r.RepuestoId)
-                         .HasColumnName("repuestoid");
+                         .HasColumnName("repuesto_id");
 
                      builder.Property(r => r.Codigo)
                      .HasColumnName("codigo")
                    .IsRequired()
                    .HasMaxLength(50);
 
-                     builder.Property(r => r.NombreRep)
-                     .HasColumnName("nombrerep")
+                     builder.Property(r => r.NombreRepu)
+                     .HasColumnName("nombre_rep")
                    .IsRequired()
                    .HasMaxLength(150);
 
@@ -35,7 +35,7 @@ namespace AutoTallerManager.API.Configuration
                    .HasDefaultValue(0);
 
                      builder.Property(r => r.PrecioUnitario)
-                     .HasColumnName("preciounitario")
+                     .HasColumnName("precio_unitario")
                    .HasColumnType("decimal(10,2)")
                    .IsRequired();
 
