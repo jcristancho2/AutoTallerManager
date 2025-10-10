@@ -61,9 +61,10 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IUserService, UserService>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
-        services.AddValidatorsFromAssembly(typeof(Program).Assembly);
-        services.AddAutoMapper(typeof(Program).Assembly);
+        // Registrar MediatR/Validators/AutoMapper desde la capa de Application para descubrir handlers
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(AutoTallerManager.Application.Common.Behaviors.ValidationBehavior<,>).Assembly));
+        services.AddValidatorsFromAssembly(typeof(AutoTallerManager.Application.Common.Behaviors.ValidationBehavior<,>).Assembly);
+        services.AddAutoMapper(typeof(AutoTallerManager.Application.Common.Behaviors.ValidationBehavior<,>).Assembly);
         // esto aparentemente es para agregar directamente todos los mapeos
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
     }
