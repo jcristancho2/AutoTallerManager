@@ -8,7 +8,6 @@ namespace AutoTallerManager.Domain.Entities
 {
     public class OrdenServicio : BaseEntity
     {
-        public int OrdenServicioId { get; set; }
         public DateTime FechaIngreso { get; set; }
         public DateTime FechaEstimadaEntrega { get; set; }
 
@@ -24,11 +23,8 @@ namespace AutoTallerManager.Domain.Entities
         public int EstadoId { get; set; }
         public EstadoServ? Estado { get; set; }
 
-        public Factura? Factura { get; set; }
-
-        public ICollection<Repuesto>? Repuestos { get; set; }
-        public ICollection<Factura>? Facturas { get; set; }
+        // Relaciones correctas
         public ICollection<DetalleOrden>? DetallesOrden { get; set; }
-        public ICollection<Usuario>? Mecanicos { get; set; }
+        public ICollection<Factura>? Facturas { get; set; }
     }
 }
