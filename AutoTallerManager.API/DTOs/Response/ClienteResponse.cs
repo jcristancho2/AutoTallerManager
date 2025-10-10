@@ -5,10 +5,10 @@ namespace AutoTallerManager.API.DTOs.Response
 {
     public record ClienteResponse
     {
-        public Guid Id { get; init; }
+        public int Id { get; init; }
         public string? NombreCompleto { get; init; }
         public string? Telefono { get; init; }
-        public string? Correo { get; init; }
+        public string? Email { get; init; }
         public int TipoCliente_Id { get; init; }
         public int Direccion_Id { get; init; }
 

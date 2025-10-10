@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 
 namespace AutoTallerManager.Domain.Entities;
 
-    public class ModeloVehiculo
+    public class ModeloVehiculo : BaseEntity
     {
-        public int Id { get; private set; }
-        public string Nombre { get; private set; } = string.Empty;
+        public string Nombre { get; set; } = string.Empty;
 
         private ModeloVehiculo() { }
 

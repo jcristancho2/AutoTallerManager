@@ -16,6 +16,8 @@ using AutoTallerManager.API.Services.Implementations;
 using AutoTallerManager.API.Services.Interfaces;
 using AutoTallerManager.API.Services.Interfaces.Auth;
 using AutoTallerManager.API.Services.Implementations.Auth;
+using AutoTallerManager.API.Services;
+
 
 namespace AutoTallerManager.API.Extensions;
 
@@ -60,14 +62,23 @@ public static class ApplicationServiceExtensions
 
         // authentication service
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IJwtService, JwtService>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+<<<<<<< HEAD
         // Registrar MediatR/Validators/AutoMapper desde la capa de Application para descubrir handlers
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(AutoTallerManager.Application.Common.Behaviors.ValidationBehavior<,>).Assembly));
         services.AddValidatorsFromAssembly(typeof(AutoTallerManager.Application.Common.Behaviors.ValidationBehavior<,>).Assembly);
         services.AddAutoMapper(typeof(AutoTallerManager.Application.Common.Behaviors.ValidationBehavior<,>).Assembly);
         // also add all mappings from currently loaded assemblies
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+=======
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+        //services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+        //services.AddAutoMapper(typeof(Program).Assembly);
+        // esto aparentemente es para agregar directamente todos los mapeos
+        //services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+>>>>>>> develop
     }
     // adds the RateLimiter
     public static IServiceCollection AddCustomRateLimiter(this IServiceCollection services)

@@ -1,4 +1,3 @@
-using AutoTallerManager.Application.Abstractions;
 using AutoTallerManager.Application.Abstractions.Interfaces;
 using AutoTallerManager.Domain.Entities;
 using AutoTallerManager.Infrastructure.Persistence.Context;
@@ -83,18 +82,23 @@ public class OrdenServicioRepository : IOrdenServicioService
         return await _context.OrdenesServicio.AnyAsync(filter, ct);
     }
 
-    public async Task AddAsync(OrdenServicio orden, CancellationToken ct = default)
+    public async Task AddAsync(OrdenServicio ordenServicio, CancellationToken ct = default)
     {
-        await _context.OrdenesServicio.AddAsync(orden, ct);
+        await _context.OrdenesServicio.AddAsync(ordenServicio, ct);
     }
 
-    public void Update(OrdenServicio orden)
+    public async Task UpdateAsync(OrdenServicio ordenServicio, CancellationToken ct = default)
     {
-        _context.OrdenesServicio.Update(orden);
+        _context.OrdenesServicio.Update(ordenServicio);
     }
 
-    public void Delete(OrdenServicio orden)
+    public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)
     {
-        _context.OrdenesServicio.Remove(orden);
+        var ordenServicio = await _context.OrdenesServicio.FirstOrDefaultAsync(o => o.Id == id, ct);
+        if (ordenServicio == null)
+            return false;
+
+        _context.OrdenesServicio.Remove(ordenServicio);
+        return true;
     }
 }

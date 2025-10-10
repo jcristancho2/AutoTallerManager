@@ -5,16 +5,16 @@ using System.Threading.Tasks;
 
 namespace AutoTallerManager.Domain.Entities
 {
-    public class Cliente
+    public class Cliente : BaseEntity
     {
-        public Guid Id { get; private set; } = Guid.NewGuid();
-        public string? NombreCompleto { get; private set; }
-        public string? Telefono { get; private set; }
-        public string? Correo { get; private set; }
-        public int TipoCliente_Id { get; private set; }
-        public int Direccion_Id { get; private set; }
+        public string? NombreCompleto { get; set; }
+        public string? Telefono { get; set; }
+        public string? Email { get; set; }
+        public int TipoCliente_Id { get; set; }
+        public int Direccion_Id { get; set; }
 
         //constructor
+<<<<<<< HEAD
         private Cliente() { }
 
         public Cliente(
@@ -43,5 +43,12 @@ namespace AutoTallerManager.Domain.Entities
         }
     }
     
+=======
+>>>>>>> develop
 
+        public virtual Direccion Direccion { get; set; } = null!;
+        public virtual TipoCliente TipoCliente { get; set; } = null!;
+        public virtual ICollection<Vehiculo> Vehiculos { get; set; } = new List<Vehiculo>();
+        public virtual ICollection<Factura> Facturas { get; set; } = new List<Factura>();
+    }    
 }

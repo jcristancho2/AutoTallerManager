@@ -18,6 +18,6 @@ namespace AutoTallerManager.API.DTOs.Request
         public int ClienteId { get; init; }
 
         [Required]
-        public int PagoId { get; init; }
+        public int TipoPagoId { get; init; }
     }
 }

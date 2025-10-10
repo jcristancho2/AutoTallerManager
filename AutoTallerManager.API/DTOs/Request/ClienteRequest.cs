@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
+
 namespace AutoTallerManager.API.DTOs.Request
 {
     public record ClienteRequest
@@ -17,7 +18,7 @@ namespace AutoTallerManager.API.DTOs.Request
         [Required]
         [EmailAddress]
         [StringLength(150)]
-        public string? Correo { get; init; }
+        public string? Email { get; init; }
 
         [Required]
         public int TipoCliente_Id { get; init; }

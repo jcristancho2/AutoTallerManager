@@ -1,4 +1,3 @@
-using AutoTallerManager.Application.Abstractions;
 using AutoTallerManager.Application.Abstractions.Interfaces;
 using AutoTallerManager.Domain.Entities;
 using AutoTallerManager.Infrastructure.Persistence.Context;
@@ -88,13 +87,35 @@ public class FacturaRepository : IFacturaService
         await _context.Facturas.AddAsync(factura, ct);
     }
 
-    public void Update(Factura factura)
+    public async Task UpdateAsync(Factura factura, CancellationToken ct = default)
     {
         _context.Facturas.Update(factura);
     }
 
-    public void Delete(Factura factura)
+    public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)
     {
+        var factura = await _context.Facturas.FirstOrDefaultAsync(f => f.Id == id, ct);
+        if (factura == null)
+            return false;
+
         _context.Facturas.Remove(factura);
+        return true;
+    }
+
+    public async Task<IEnumerable<Factura>> GetFacturasByClienteAsync(int clienteId, CancellationToken ct = default)
+    {
+        return await _context.Facturas
+            .Where(f => f.ClienteId == clienteId)
+            .Include(f => f.OrdenServicio)
+            .Include(f => f.TipoPago)
+            .OrderByDescending(f => f.Fecha)
+            .ToListAsync(ct);
+    }
+
+    public async Task<decimal> GetTotalIngresosAsync(DateTime fechaDesde, DateTime fechaHasta, CancellationToken ct = default)
+    {
+        return await _context.Facturas
+            .Where(f => f.Fecha >= fechaDesde && f.Fecha <= fechaHasta)
+            .SumAsync(f => f.Total, ct);
     }
 }

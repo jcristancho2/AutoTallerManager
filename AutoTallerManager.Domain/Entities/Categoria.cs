@@ -5,9 +5,8 @@ using System.Threading.Tasks;
 
 namespace AutoTallerManager.Domain.Entities
 {
-    public class Categoria
+    public class Categoria: BaseEntity
     {
-        public int CategoriaId { get; set; }
         public string? NombreCat { get; set; } 
 
                // Relación 1 - N con Repuesto

@@ -1,4 +1,3 @@
-using AutoTallerManager.Application.Abstractions;
 using AutoTallerManager.Application.Abstractions.Interfaces;
 using AutoTallerManager.Domain.Entities;
 using AutoTallerManager.Infrastructure.Persistence.Context;
@@ -31,6 +30,9 @@ public class RepuestoRepository : IRepuestoService
     public async Task<Repuesto?> GetByCodigoAsync(string codigo, CancellationToken ct = default)
     {
         return await _context.Repuestos
+            .Include(r => r.Categoria)
+            .Include(r => r.Fabricante)
+            .Include(r => r.TipoVehiculo)
             .FirstOrDefaultAsync(r => r.Codigo == codigo, ct);
     }
 
@@ -94,13 +96,28 @@ public class RepuestoRepository : IRepuestoService
         await _context.Repuestos.AddAsync(repuesto, ct);
     }
 
-    public void Update(Repuesto repuesto)
+    public async Task UpdateAsync(Repuesto repuesto, CancellationToken ct = default)
     {
         _context.Repuestos.Update(repuesto);
     }
 
-    public void Delete(Repuesto repuesto)
+    public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)
     {
+        var repuesto = await _context.Repuestos.FirstOrDefaultAsync(r => r.Id == id, ct);
+        if (repuesto == null)
+            return false;
+
         _context.Repuestos.Remove(repuesto);
+        return true;
+    }
+
+    public async Task<IEnumerable<Repuesto>> GetRepuestosStockBajoAsync(int stockMinimo, CancellationToken ct = default)
+    {
+        return await _context.Repuestos
+            .Where(r => r.Stock <= stockMinimo)
+            .Include(r => r.Categoria)
+            .Include(r => r.Fabricante)
+            .OrderBy(r => r.Stock)
+            .ToListAsync(ct);
     }
 }

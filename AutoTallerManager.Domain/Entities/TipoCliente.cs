@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace AutoTallerManager.Domain.Entities
 {
-    public class TipoCliente
+    public class TipoCliente : BaseEntity
     {
-        public int Id { get; private set;}
-        public string? Nombre {get; private set;} //persona natural o empresa
+        public string? Nombre {get; set;} //persona natural o empresa
         private TipoCliente() { }
         public TipoCliente(string nombre)
         {

@@ -5,13 +5,12 @@ using System.Threading.Tasks;
 
 namespace AutoTallerManager.Domain.Entities
 {
-    public class Ciudad
+    public class Ciudad : BaseEntity
     {
-        public int Id { get; private set; }
-        public string? Nombre { get; private set; }
+        public string? Nombre { get; set; }
 
-        public int Departamento_Id { get; private set; }
-        public Departamento Departamento { get; private set; } = null!;
+        public int Departamento_Id { get; set; }
+        public Departamento Departamento { get; set; } = null!;
 
         private Ciudad() { }
 

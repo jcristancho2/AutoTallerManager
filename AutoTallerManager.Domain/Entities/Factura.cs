@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AutoTallerManager.Domain.Entities
-{
-    public class Factura
-    {
-         public int FacturaId { get; set; }
+namespace AutoTallerManager.Domain.Entities;
 
+    public class Factura : BaseEntity
+    {
         public DateTime Fecha { get; set; }
         public decimal Total { get; set; }
 
@@ -18,7 +16,8 @@ namespace AutoTallerManager.Domain.Entities
         public int ClienteId { get; set; }
         public Cliente? Cliente { get; set; }
 
-        public int PagoId { get; set; }
+        public int TipoPagoId { get; set; }
         public TipoPago? TipoPago { get; set; }
+
+  
     }
-}

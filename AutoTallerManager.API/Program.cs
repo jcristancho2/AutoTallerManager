@@ -4,9 +4,14 @@ using System.Reflection;
 using AutoTallerManager.API.Extensions;
 using AutoTallerManager.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
+<<<<<<< HEAD
 using Microsoft.Extensions.DependencyInjection;
+=======
+using AutoTallerManager.API.Middleware;
+>>>>>>> develop
 
 var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
 
 // Agregar controladores y Swagger
 builder.Services.AddControllers();
@@ -17,6 +22,7 @@ builder.Services.ConfigureCors();
 builder.Services.AddApplicationServices();
 builder.Services.AddJwt(builder.Configuration);
 builder.Services.AddValidationErrors();
+builder.Services.AddCustomRateLimiter();
 
 builder.Services.AddMediatR(cfg =>
 {
@@ -53,7 +59,7 @@ if (app.Environment.IsDevelopment())
 app.UseCors("CorsPolicy");
 
 app.UseHttpsRedirection();
-// app.UseRateLimiter();
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();

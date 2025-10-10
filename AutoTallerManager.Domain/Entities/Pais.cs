@@ -7,10 +7,9 @@ using AutoTallerManager.Domain.Entities;
 
 namespace AutoTallerManager.Domain.Entities
 {
-    public class Pais
+    public class Pais : BaseEntity
     {
-        public int Id { get; private set; }
-        public string? Nombre { get; private set; }
+        public string? Nombre { get; set; }
         
         private Pais() { }
 

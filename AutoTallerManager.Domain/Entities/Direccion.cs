@@ -5,9 +5,8 @@ using System.Threading.Tasks;
 
 namespace AutoTallerManager.Domain.Entities
 {
-    public class Direccion
+    public class Direccion : BaseEntity
     {
-        public int Id { get; set; }
         public string? Descripcion { get; set; }
         public int CiudadId { get; set; }
         public Ciudad Ciudad { get; set; } = null!;

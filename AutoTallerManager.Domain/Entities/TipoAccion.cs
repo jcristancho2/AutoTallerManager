@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 
 namespace AutoTallerManager.Domain.Entities
 {
-    public class TipoAccion
+    public class TipoAccion : BaseEntity
     {
-        public int Id { get; private set; }
-        public string? NombreAccion { get; private set; }
+        public string? NombreAccion { get; set; }
         
         private TipoAccion() { }
 
