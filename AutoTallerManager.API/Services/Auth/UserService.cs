@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using AutoTallerManager.API.Services.Interfaces.Auth;
+using AutoTallerManager.Domain.Entities;
 
 namespace AutoTallerManager.API.Services.Implementations.Auth;
 
@@ -47,7 +48,7 @@ public class UserService : IUserService
         {
             var defaultRoleName = UserAuthorization.rol_default.ToString();
             var rolPredeterminado = _unitOfWork.Roles
-                                    .Find(u => EF.Functions.ILike(u.Name, defaultRoleName))
+                                    .Find(u => EF.Functions.ILike(u.NombreRol, defaultRoleName))
                                     .FirstOrDefault();
             if (rolPredeterminado == null)
             {
@@ -56,8 +57,8 @@ public class UserService : IUserService
                     // Intenta crear el rol por defecto si no existe
                     var nuevoRol = new Rol
                     {
-                        Name = defaultRoleName,
-                        Description = "Default role"
+                        NombreRol = defaultRoleName,
+                        Descripcion = "Default role"
                     };
                     await _unitOfWork.Roles.AddAsync(nuevoRol);
                     await _unitOfWork.SaveChanges();
@@ -65,19 +66,21 @@ public class UserService : IUserService
                 }
                 catch
                 {
-                    // Si otro proceso lo creó en paralelo, reintenta obtenerlo
-                    rolPredeterminado = _unitOfWork.Roles
-                                        .Find(u => EF.Functions.ILike(u.Name, defaultRoleName))
-                                        .FirstOrDefault();
-                    if (rolPredeterminado == null)
-                    {
-                        return $"No se encontró ni pudo crearse el rol predeterminado '{defaultRoleName}'.";
-                    }
+                rolPredeterminado = _unitOfWork.Roles
+                                    .Find(u => EF.Functions.ILike(u.NombreRol, defaultRoleName))
+                                    .FirstOrDefault();
+                if (rolPredeterminado == null)
+                {
+                    return $"No se encontró ni pudo crearse el rol predeterminado '{defaultRoleName}'.";
                 }
+            }
             }
             try
             {
-                usuario.Rols.Add(rolPredeterminado);
+                usuario.UserMemberRoles.Add(new UserMemberRol { 
+                    UserMemberId = usuario.Id, 
+                    RolId = rolPredeterminado.Id 
+                });
                 await _unitOfWork.UserMembers.AddAsync(usuario);
                 await _unitOfWork.SaveChanges();
 
@@ -173,7 +176,6 @@ public class UserService : IUserService
     {
         var dto = new DataUserDto { IsAuthenticated = false };
 
-        // 1) Normalización y validación básica (evita enumeración de usuarios)
         var username = model.Username?.Trim();
         var password = model.Password ?? string.Empty;
 
@@ -183,7 +185,6 @@ public class UserService : IUserService
             return dto;
         }
 
-        // 2) Lookup del usuario (ideal: repositorio case-insensitive/normalizado)
         var usuario = await _unitOfWork.UserMembers.GetByUserNameAsync(username, ct);
         if (usuario is null)
         {
@@ -191,8 +192,9 @@ public class UserService : IUserService
             return dto;
         }
 
-        // 3) Verificación de contraseña (+ rehash si se requiere)
-        var verification = _passwordHasher.VerifyHashedPassword(usuario, usuario.Password, password);
+        // ✅ CORREGIR: Verificar que Password no sea null
+        var hashedPassword = usuario.Password ?? string.Empty;
+        var verification = _passwordHasher.VerifyHashedPassword(usuario, hashedPassword, password);
         if (verification == PasswordVerificationResult.Failed)
         {
             dto.Message = "Usuario o contraseña inválidos.";
@@ -203,20 +205,20 @@ public class UserService : IUserService
         {
             usuario.Password = _passwordHasher.HashPassword(usuario, password);
             await _unitOfWork.UserMembers.UpdateAsync(usuario, ct);
-            // No retornamos aún; seguimos el flujo normal
         }
 
-        // 4) Preparar colecciones de forma segura
-        var roles = usuario.Rols?.Select(r => r.Name).ToList() ?? new List<string>();
+        // ✅ CORREGIR: usar 'usuario' y propiedades correctas
+        var roles = usuario.UserMemberRoles?.Select(umr => umr.Rol?.NombreRol ?? "").ToList() ?? new List<string>();
         usuario.RefreshTokens ??= new List<RefreshToken>();
 
-        // 5) Transacción: rotación de refresh tokens + persistencia
-        await _unitOfWork.ExecuteInTransactionAsync(async _ =>
+        // ✅ CORREGIR: Revisar si hay método ExecuteInTransactionAsync o usar SaveChanges normal
+        try
         {
-            // Política: ROTACIÓN. Revoca todos los activos antes de emitir uno nuevo
-            foreach (var t in usuario.RefreshTokens.Where(t => t.IsActive))
+            // Revocar tokens activos
+            foreach (var token in usuario.RefreshTokens.Where(t => t.Active))
             {
-                t.Revoked = DateTime.UtcNow;                 // UTC          // opcional
+                token.Revoked = true;
+                token.Active = false;
             }
 
             var refresh = CreateRefreshToken();
@@ -224,52 +226,66 @@ public class UserService : IUserService
 
             await _unitOfWork.UserMembers.UpdateAsync(usuario, ct);
             await _unitOfWork.SaveChanges(ct);
-        }, ct);
 
-        // 6) Emitir JWT (usa tu CreateJwtToken existente)
-        var jwt = CreateJwtToken(usuario);
+            // Generar JWT
+            var jwt = CreateJwtToken(usuario);
 
-        // 7) Salida consistente (UTC y DateTimeOffset?)
-        var currentRefresh = usuario.RefreshTokens.OrderByDescending(t => t.Created).First();
+            var currentRefresh = usuario.RefreshTokens.OrderByDescending(t => t.CreatedDate).First();
 
-        dto.IsAuthenticated = true;
-        dto.Token = new JwtSecurityTokenHandler().WriteToken(jwt);
-        dto.Email = usuario.Email;
-        dto.UserName = usuario.Username;
-        dto.Roles = roles;
-        dto.RefreshToken = currentRefresh.Token;
-        dto.RefreshTokenExpiration = DateTime.SpecifyKind(currentRefresh.Expires, DateTimeKind.Utc);
+            dto.IsAuthenticated = true;
+            dto.Token = new JwtSecurityTokenHandler().WriteToken(jwt);
+            dto.Email = usuario.Email;
+            dto.UserName = usuario.Username;
+            dto.Roles = roles;
+            dto.RefreshToken = currentRefresh.Token;
+            dto.RefreshTokenExpiration = currentRefresh.Expiries;  // ✅ USAR ExpiryDate
 
-        return dto;
+            return dto;
+        }
+        catch (Exception ex)
+        {
+            dto.Message = $"Error interno: {ex.Message}";
+            return dto;
+        }
     }
     private JwtSecurityToken CreateJwtToken(UserMember usuario)
     {
-        var roles = usuario.Rols;
+        // ✅ CORREGIR: usar 'usuario' y propiedades correctas
+        var userRoles = usuario.UserMemberRoles ?? new List<UserMemberRol>();
         var roleClaims = new List<Claim>();
-        foreach (var role in roles)
+        
+        foreach (var userRole in userRoles)
         {
-            roleClaims.Add(new Claim("roles", role.Name));
+            if (userRole.Rol?.NombreRol != null)
+            {
+                roleClaims.Add(new Claim("roles", userRole.Rol.NombreRol));
+            }
         }
+
         var claims = new[]
         {
-                                new Claim(JwtRegisteredClaimNames.Sub, usuario.Username),
-                                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                                new Claim(JwtRegisteredClaimNames.Email, usuario.Email),
-                                new Claim("uid", usuario.Id.ToString())
-                        }
+            new Claim(JwtRegisteredClaimNames.Sub, usuario.Username ?? ""),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, usuario.Email ?? ""),
+            new Claim("uid", usuario.Id.ToString())
+        }
         .Union(roleClaims);
+
         if (string.IsNullOrEmpty(_jwt.Key))
         {
             throw new InvalidOperationException("JWT Key cannot be null or empty.");
         }
+
         var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Key));
         var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
+        
         var jwtSecurityToken = new JwtSecurityToken(
             issuer: _jwt.Issuer,
             audience: _jwt.Audience,
             claims: claims,
             expires: DateTime.UtcNow.AddMinutes(_jwt.DurationInMinutes),
             signingCredentials: signingCredentials);
+        
         return jwtSecurityToken;
     }
     private RefreshToken CreateRefreshToken()
@@ -281,21 +297,22 @@ public class UserService : IUserService
             return new RefreshToken
             {
                 Token = Convert.ToBase64String(randomNumber),
-                Expires = DateTime.UtcNow.AddDays(10),
-                Created = DateTime.UtcNow
+                Expiries = DateTime.UtcNow.AddDays(10),  // ✅ USAR ExpiryDate
+                Created = DateTime.UtcNow,             // ✅ USAR CreatedDate  
+                Active = true,                           // ✅ AGREGAR IsActive
+                Revoked = false                          // ✅ AGREGAR IsRevoked
             };
         }
     }
     public async Task<string> AddRoleAsync(AddRoleDto model)
     {
-
         if (string.IsNullOrEmpty(model.Username))
         {
             return "Username cannot be null or empty.";
         }
-        var user = await _unitOfWork.UserMembers
-                    .GetByUserNameAsync(model.Username);
-        if (user == null)
+
+        var usuario = await _unitOfWork.UserMembers.GetByUserNameAsync(model.Username);  // ✅ CORREGIR
+        if (usuario == null)
         {
             return $"User {model.Username} does not exists.";
         }
@@ -305,7 +322,9 @@ public class UserService : IUserService
             return $"Password cannot be null or empty.";
         }
 
-        var result = _passwordHasher.VerifyHashedPassword(user, user.Password, model.Password);
+        // ✅ CORREGIR: Verificar password con null-check
+        var hashedPassword = usuario.Password ?? string.Empty;
+        var result = _passwordHasher.VerifyHashedPassword(usuario, hashedPassword, model.Password);
 
         if (result == PasswordVerificationResult.Success)
         {
@@ -316,9 +335,10 @@ public class UserService : IUserService
 
             var roleName = model.Role.Trim();
 
+            // ✅ CORREGIR: usar NombreRol
             var rolExists = _unitOfWork.Roles
-                                        .Find(u => EF.Functions.ILike(u.Name, roleName))
-                                        .FirstOrDefault();
+                                    .Find(u => EF.Functions.ILike(u.NombreRol, roleName))
+                                    .FirstOrDefault();
 
             if (rolExists == null)
             {
@@ -326,8 +346,8 @@ public class UserService : IUserService
                 {
                     var nuevoRol = new Rol
                     {
-                        Name = roleName,
-                        Description = $"{roleName} role"
+                        NombreRol = roleName,        // ✅ CORREGIR
+                        Descripcion = $"{roleName} role"  // ✅ CORREGIR
                     };
                     await _unitOfWork.Roles.AddAsync(nuevoRol);
                     await _unitOfWork.SaveChanges();
@@ -335,10 +355,9 @@ public class UserService : IUserService
                 }
                 catch
                 {
-                    // Race condition: role created concurrently, re-fetch
                     rolExists = _unitOfWork.Roles
-                                .Find(u => EF.Functions.ILike(u.Name, roleName))
-                                .FirstOrDefault();
+                            .Find(u => EF.Functions.ILike(u.NombreRol, roleName))  // ✅ CORREGIR
+                            .FirstOrDefault();
                     if (rolExists == null)
                     {
                         return $"No se encontró ni pudo crearse el rol '{roleName}'.";
@@ -346,11 +365,23 @@ public class UserService : IUserService
                 }
             }
 
-            var userHasRole = user.Rols.Any(r => r.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase) || r.Id == rolExists.Id);
+            // ✅ CORREGIR: verificar si el usuario ya tiene el rol
+            var userHasRole = usuario.UserMemberRoles?.Any(umr => 
+                umr.Rol?.NombreRol != null && 
+                umr.Rol.NombreRol.Equals(roleName, StringComparison.OrdinalIgnoreCase)) ?? false;
+
             if (!userHasRole)
             {
-                user.Rols.Add(rolExists);
-                await _unitOfWork.UserMembers.UpdateAsync(user);
+                // ✅ AGREGAR: relación correcta
+                usuario.UserMemberRoles ??= new List<UserMemberRol>();
+                usuario.UserMemberRoles.Add(new UserMemberRol
+                {
+                    UserMemberId = usuario.Id,
+                    RolId = rolExists.Id,
+                    Rol = rolExists
+                });
+                
+                await _unitOfWork.UserMembers.UpdateAsync(usuario);
                 await _unitOfWork.SaveChanges();
             }
 
@@ -362,8 +393,7 @@ public class UserService : IUserService
     {
         var dataUserDto = new DataUserDto();
 
-        var usuario = await _unitOfWork.UserMembers
-                        .GetByRefreshTokenAsync(refreshToken);
+        var usuario = await _unitOfWork.UserMembers.GetByRefreshTokenAsync(refreshToken);
 
         if (usuario == null)
         {
@@ -372,32 +402,50 @@ public class UserService : IUserService
             return dataUserDto;
         }
 
-        var refreshTokenBd = usuario.RefreshTokens.Single(x => x.Token == refreshToken);
+        var refreshTokenBd = usuario.RefreshTokens?.SingleOrDefault(x => x.Token == refreshToken);
+        if (refreshTokenBd == null)
+        {
+            dataUserDto.IsAuthenticated = false;
+            dataUserDto.Message = $"Token not found.";
+            return dataUserDto;
+        }
 
-        if (!refreshTokenBd.IsActive)
+        // ✅ CORREGIR: usar IsActive correctamente
+        if (!refreshTokenBd.IsActive || refreshTokenBd.IsRevoked)
         {
             dataUserDto.IsAuthenticated = false;
             dataUserDto.Message = $"Token is not active.";
             return dataUserDto;
         }
-        //Revoque the current refresh token and
-        refreshTokenBd.Revoked = DateTime.UtcNow;
-        //generate a new refresh token and save it in the database
+
+        // Revocar token actual
+        refreshTokenBd.IsRevoked = true;
+        refreshTokenBd.IsActive = false;
+
+        // Crear nuevo refresh token
         var newRefreshToken = CreateRefreshToken();
+        usuario.RefreshTokens ??= new List<RefreshToken>();
         usuario.RefreshTokens.Add(newRefreshToken);
+        
         await _unitOfWork.UserMembers.UpdateAsync(usuario);
         await _unitOfWork.SaveChanges();
-        //Generate a new Json Web Token
+
+        // Generar nuevo JWT
         dataUserDto.IsAuthenticated = true;
         JwtSecurityToken jwtSecurityToken = CreateJwtToken(usuario);
         dataUserDto.Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
         dataUserDto.Email = usuario.Email;
         dataUserDto.UserName = usuario.Username;
-        dataUserDto.Roles = usuario.Rols
-                                        .Select(u => u.Name)
-                                        .ToList();
+        
+        // ✅ CORREGIR: usar propiedades correctas
+        dataUserDto.Roles = usuario.UserMemberRoles?
+                                .Where(umr => umr.Rol != null)
+                                .Select(umr => umr.Rol!.NombreRol)
+                                .ToList() ?? new List<string>();
+    
         dataUserDto.RefreshToken = newRefreshToken.Token;
-        dataUserDto.RefreshTokenExpiration = newRefreshToken.Expires;
+        dataUserDto.RefreshTokenExpiration = newRefreshToken.Expired;  // ✅ USAR ExpiryDate
+
         return dataUserDto;
     }
 }

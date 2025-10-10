@@ -13,6 +13,8 @@ public interface IUnitOfWork
     IUserMemberService UserMembers { get; }
     IUserMemberRolService UserMemberRoles { get; }
     IRolService Roles { get; }
+    IUsuarioService Usuarios { get; }
+    IEstadoUsuarioService EstadosUsuario { get; }
     
     //Repositorios de negocio
     IClienteService Clientes { get; }

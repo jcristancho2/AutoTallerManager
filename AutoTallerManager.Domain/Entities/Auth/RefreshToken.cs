@@ -1,19 +1,16 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace AutoTallerManager.Domain.Entities.Auth;
 
-    public class RefreshToken : BaseEntity
-    {
-        public int Id { get; set; }
-        public int UserId { get; set; }
-        public UserMember? UserMember { get; set; }
-        public string? Token { get; set; }
-        public DateTime Expires { get; set; }
-        public bool IsExpired => DateTime.UtcNow >= Expires;
-        public DateTime Created { get; set; }
-        public DateTime? Revoked { get; set; }
-        public bool IsActive => Revoked == null && !IsExpired;
-    }
+public class RefreshToken : BaseEntity
+{
+    public int UserId { get; set; }
+    public virtual UserMember UserMember { get; set; } = null!;
+
+    public string? Token { get; set; }
+    public DateTime Expires { get; set; }
+    public bool Expired => DateTime.UtcNow >= Expires;
+    public DateTime Created { get; set; }
+    public DateTime? Revoked { get; set; }
+    public bool Active => Revoked == null && !Expired;
+}

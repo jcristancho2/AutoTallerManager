@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoTallerManager.Domain.Entities;
 
 namespace AutoTallerManager.Domain.Entities
 {
-    public class OrdenServicio
+    public class OrdenServicio : BaseEntity
     {
         public int OrdenServicioId { get; set; }
         public DateTime FechaIngreso { get; set; }
@@ -13,7 +14,10 @@ namespace AutoTallerManager.Domain.Entities
 
         public int VehiculoId { get; set; }
         public Vehiculo? Vehiculo { get; set; }
-        
+
+        public int MecanicoId { get; set; }  // Referencia a Usuario
+        public Usuario? Mecanico { get; set; }
+
         public int TipoServId { get; set; }
         public TipoServicio? TipoServicio { get; set; }
 
@@ -25,5 +29,6 @@ namespace AutoTallerManager.Domain.Entities
         public ICollection<Repuesto>? Repuestos { get; set; }
         public ICollection<Factura>? Facturas { get; set; }
         public ICollection<DetalleOrden>? DetallesOrden { get; set; }
+        public ICollection<Usuario>? Mecanicos { get; set; }
     }
 }

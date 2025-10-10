@@ -5,12 +5,11 @@ using System.Threading.Tasks;
 
 namespace AutoTallerManager.Domain.Entities
 {
-    public class Departamento
+    public class Departamento : BaseEntity
     {
-        public int Id { get; private set; }
-        public string? Nombre { get; private set; }
-        public int PaisId { get; private set; }
-        public Pais Pais { get; private set; } = null!;
+        public string? Nombre { get; set; }
+        public int PaisId { get; set; }
+        public Pais Pais { get; set; } = null!;
 
         private Departamento() { }
         public Departamento(string nombre, int paisId)

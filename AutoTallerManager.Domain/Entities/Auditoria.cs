@@ -5,23 +5,16 @@ using System.Threading.Tasks;
 
 namespace AutoTallerManager.Domain.Entities
 {
-    public class Auditoria
+    public class Auditoria : BaseEntity
     {
-        public int Id { get; private set; }
-        public int UsuarioId { get; private set; }
-        public string? EntidadAfectada { get; private set; }
-        public int AccionId { get; private set; }
-        public DateTime FechaHora { get; private set; } = DateTime.UtcNow;
-        public string? DescripcionAccion { get; private set; }
+        public int UsuarioId { get; set; }
+        public string? EntidadAfectada { get; set; }
+        public int AccionId { get; set; }
+        public DateTime FechaHora { get; set; } = DateTime.UtcNow;
+        public string? DescripcionAccion { get; set; }
 
-        private Auditoria() { }
-
-        public Auditoria(int usuarioId, string entidadAfectada, int accionId, string descripcionAccion)
-        {
-            UsuarioId = usuarioId;
-            EntidadAfectada = entidadAfectada;
-            AccionId = accionId;
-            DescripcionAccion = descripcionAccion;
-        }
+    // Navegación
+    public virtual Usuario Usuario { get; set; } = null!;
+    public virtual TipoAccion TipoAccion { get; set; } = null!;
     }
 }

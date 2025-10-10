@@ -114,11 +114,11 @@ public class ClientesController : ControllerBase
                 return BadRequest("Ya existe un cliente con este email");
             }
 
-            cliente.FechaRegistro = DateTime.UtcNow;
+            cliente.CreatedAt = DateTime.UtcNow;
             await _unitOfWork.Clientes.AddAsync(cliente, ct);
             await _unitOfWork.SaveChangesAsync(ct);
 
-            _logger.LogInformation("Cliente creado: {ClienteId} - {ClienteNombre}", cliente.Id, cliente.Nombre);
+            _logger.LogInformation("Cliente creado: {ClienteId} - {ClienteNombre}", cliente.Id, cliente.NombreCompleto);
 
             return CreatedAtAction(nameof(GetCliente), new { id = cliente.Id }, cliente);
         }
@@ -166,15 +166,15 @@ public class ClientesController : ControllerBase
             }
 
             // Actualizar campos
-            existingCliente.Nombre = cliente.Nombre;
+            existingCliente.NombreCompleto = cliente.NombreCompleto;
             existingCliente.Email = cliente.Email;
             existingCliente.Telefono = cliente.Telefono;
             existingCliente.Direccion = cliente.Direccion;
 
-            _unitOfWork.Clientes.Update(existingCliente);
+            _unitOfWork.Clientes.UpdateAsync(existingCliente);
             await _unitOfWork.SaveChangesAsync(ct);
 
-            _logger.LogInformation("Cliente actualizado: {ClienteId} - {ClienteNombre}", id, cliente.Nombre);
+            _logger.LogInformation("Cliente actualizado: {ClienteId} - {ClienteNombre}", id, cliente.NombreCompleto);
 
             return Ok(existingCliente);
         }
@@ -211,10 +211,10 @@ public class ClientesController : ControllerBase
                 return BadRequest("No se puede eliminar el cliente porque tiene órdenes de servicio activas");
             }
 
-            _unitOfWork.Clientes.Delete(cliente);
+            _unitOfWork.Clientes.DeleteAsync(cliente);
             await _unitOfWork.SaveChangesAsync(ct);
 
-            _logger.LogInformation("Cliente eliminado: {ClienteId} - {ClienteNombre}", id, cliente.Nombre);
+            _logger.LogInformation("Cliente eliminado: {ClienteId} - {ClienteNombre}", id, cliente.NombreCompleto);
 
             return NoContent();
         }

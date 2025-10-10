@@ -17,6 +17,7 @@ using AutoTallerManager.API.Services.Interfaces;
 using AutoTallerManager.API.Services.Interfaces.Auth;
 using AutoTallerManager.API.Services.Implementations.Auth;
 
+
 namespace AutoTallerManager.API.Extensions;
 
 // este archivo define ciertos metodos de extensión para la aplicación, como CORS, JWT, servicios de aplicacion, RateLimiter, errores de validación, etc...
@@ -62,10 +63,10 @@ public static class ApplicationServiceExtensions
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
-        services.AddValidatorsFromAssembly(typeof(Program).Assembly);
-        services.AddAutoMapper(typeof(Program).Assembly);
+        //services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+        //services.AddAutoMapper(typeof(Program).Assembly);
         // esto aparentemente es para agregar directamente todos los mapeos
-        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+        //services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
     }
     // este es el meetodo para agregar el RateLimiter 
     public static IServiceCollection AddCustomRateLimiter(this IServiceCollection services)

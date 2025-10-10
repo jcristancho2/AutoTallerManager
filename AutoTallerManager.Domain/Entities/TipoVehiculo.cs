@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 
 namespace AutoTallerManager.Domain.Entities
 {
-    public class TipoVehiculo
+    public class TipoVehiculo : BaseEntity  
     {
-        public int TipoVehiculoId { get; set; }
-        public string? NombreTipoVehi { get; set; }
+        public string? NombreTipoVehiculo { get; set; }
 
         // Relación 1 - N con Repuesto
         public ICollection<Repuesto>? Repuestos { get; set; }
