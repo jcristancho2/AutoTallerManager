@@ -3,6 +3,7 @@
 using AutoTallerManager.API.Extensions;
 using AutoTallerManager.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
+using AutoTallerManager.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,7 @@ builder.Services.ConfigureCors();
 builder.Services.AddApplicationServices();
 builder.Services.AddJwt(builder.Configuration);
 builder.Services.AddValidationErrors();
+builder.Services.AddCustomRateLimiter();
 
 // Configurar DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -43,7 +45,7 @@ if (app.Environment.IsDevelopment())
 app.UseCors("CorsPolicy");
 
 app.UseHttpsRedirection();
-// app.UseRateLimiter();
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();
