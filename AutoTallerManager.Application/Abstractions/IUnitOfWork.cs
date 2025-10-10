@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoTallerManager.Application.Abstractions.Auth;
+using AutoTallerManager.Application.Abstractions.Interfaces;
 
 namespace AutoTallerManager.Application.Abstractions;
 
@@ -13,13 +14,13 @@ public interface IUnitOfWork
     IUserMemberRolService UserMemberRoles { get; }
     IRolService Roles { get; }
     
-    // Repositorios de negocio
-    //IClienteService Clientes { get; }
-    //IVehiculoService Vehiculos { get; }
-    //IOrdenServicioService OrdenesServicio { get; }
-    //IRepuestoService Repuestos { get; }
-    //IFacturaService Facturas { get; }
-    //IAuditoriaService Auditorias { get; }
+    //Repositorios de negocio
+    IClienteService Clientes { get; }
+    IVehiculoService Vehiculos { get; }
+    IOrdenServicioService OrdenesServicio { get; }
+    IRepuestoService Repuestos { get; }
+    IFacturaService Facturas { get; }
+    IAuditoriaService Auditorias { get; }
 
     Task<int> SaveChanges(CancellationToken ct = default);
     Task<int> SaveChangesAsync(CancellationToken ct = default);
