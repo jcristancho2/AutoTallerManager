@@ -9,6 +9,6 @@ namespace AutoTallerManager.API.DTOs.Response
         public decimal Total { get; init; }
         public int OrdenServicioId { get; init; }
         public int ClienteId { get; init; }
-        public int PagoId { get; init; }
+        public int TipoPagoId { get; init; }
     }
 }
