@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Text;
 using AutoTallerManager.Domain.Entities;
 using AutoTallerManager.API.Helpers;
+using Microsoft.Extensions.Options; 
 
 namespace AutoTallerManager.API.Services;
 

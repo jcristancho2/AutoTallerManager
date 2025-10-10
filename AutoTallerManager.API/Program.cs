@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using AutoTallerManager.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
 
 // Agregar controladores y Swagger
 builder.Services.AddControllers();
