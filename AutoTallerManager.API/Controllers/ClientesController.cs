@@ -38,9 +38,9 @@ public class ClientesController : ControllerBase
         {
             var clientes = await _unitOfWork.Clientes.GetAllAsync(
                 filter: c => string.IsNullOrEmpty(searchTerm) || 
-                        c.Nombre.Contains(searchTerm) || 
+                        c.NombreCompleto.Contains(searchTerm) || 
                         c.Email.Contains(searchTerm),
-                orderBy: q => q.OrderBy(c => c.Nombre),
+                orderBy: q => q.OrderBy(c => c.NombreCompleto),
                 includeProperties: "Vehiculos",
                 skip: (pageNumber - 1) * pageSize,
                 take: pageSize,
@@ -48,7 +48,7 @@ public class ClientesController : ControllerBase
 
             var totalCount = await _unitOfWork.Clientes.CountAsync(
                 filter: c => string.IsNullOrEmpty(searchTerm) || 
-                        c.Nombre.Contains(searchTerm) || 
+                        c.NombreCompleto.Contains(searchTerm) || 
                         c.Email.Contains(searchTerm),
                 ct: ct);
 
