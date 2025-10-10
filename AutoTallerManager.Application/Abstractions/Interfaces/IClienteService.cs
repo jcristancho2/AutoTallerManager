@@ -10,12 +10,7 @@ namespace AutoTallerManager.Application.Abstractions.Interfaces
 {
     public interface IClienteService
     {
-<<<<<<< HEAD
-        Task<Cliente?> GetByIdAsync(Guid id, CancellationToken ct = default, params string[] includeProperties);
-=======
-
         Task<Cliente?> GetByIdAsync(int id, CancellationToken ct = default, params string[] includeProperties);
->>>>>>> develop
         Task<Cliente?> GetByEmailAsync(string email, CancellationToken ct = default);
 
 

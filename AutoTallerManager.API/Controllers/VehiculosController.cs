@@ -1,4 +1,3 @@
-/*
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using AutoTallerManager.Application.Abstractions;
@@ -226,7 +225,3 @@ public class VehiculosController : ControllerBase
         }
     }
 }
-<<<<<<< HEAD
-*/
-=======
->>>>>>> develop

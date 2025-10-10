@@ -13,18 +13,7 @@ namespace AutoTallerManager.Infrastructure.Repositories;
 
 public sealed class ClienteRepository(AppDbContext db) : IClienteService
 {
-<<<<<<< HEAD
-    private readonly AppDbContext _context;
-
-    public ClienteRepository(AppDbContext context)
-    {
-        _context = context;
-    }
-
-    public async Task<Cliente?> GetByIdAsync(Guid id, CancellationToken ct = default, params string[] includeProperties)
-=======
     public async Task<Cliente?> GetByIdAsync(int id, CancellationToken ct = default, params string[] includeProperties)
->>>>>>> develop
     {
         IQueryable<Cliente> query = db.Clientes.AsNoTracking();
 
@@ -36,16 +25,11 @@ public sealed class ClienteRepository(AppDbContext db) : IClienteService
 
     public async Task<Cliente?> GetByEmailAsync(string email, CancellationToken ct = default)
     {
-<<<<<<< HEAD
-        return await _context.Clientes
-            .FirstOrDefaultAsync(c => c.Correo == email, ct);
-=======
         return await db.Clientes
             .AsNoTracking()
             .Include(c => c.Direccion)
             .Include(c => c.TipoCliente)
             .FirstOrDefaultAsync(c => c.Email == email, ct);
->>>>>>> develop
     }
 
     public async Task<IReadOnlyList<Cliente>> GetAllAsync(

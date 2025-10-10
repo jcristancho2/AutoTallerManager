@@ -19,7 +19,7 @@ public sealed class GetAllClientesHandler : IRequestHandler<GetAllClientesQuery,
         var clientes = await _unitOfWork.Clientes.GetAllAsync(
             filter: c => string.IsNullOrEmpty(request.SearchTerm)
                 || (c.NombreCompleto != null && c.NombreCompleto.Contains(request.SearchTerm))
-                || (c.Correo != null && c.Correo.Contains(request.SearchTerm)),
+                || (c.Email != null && c.Email.Contains(request.SearchTerm)),
             orderBy: q => q.OrderBy(c => c.NombreCompleto),
             includeProperties: "Vehiculos,Facturas",
             skip: (request.PageNumber - 1) * request.PageSize,

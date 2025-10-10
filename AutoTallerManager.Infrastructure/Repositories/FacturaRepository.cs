@@ -24,7 +24,7 @@ public class FacturaRepository : IFacturaService
             query = query.Include(includeProperty);
         }
 
-        return await query.FirstOrDefaultAsync(f => f.FacturaId == id, ct);
+        return await query.FirstOrDefaultAsync(f => f.Id == id, ct);
     }
 
     public async Task<IEnumerable<Factura>> GetAllAsync(

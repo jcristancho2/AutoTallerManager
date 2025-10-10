@@ -4,11 +4,8 @@ using System.Reflection;
 using AutoTallerManager.API.Extensions;
 using AutoTallerManager.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
-<<<<<<< HEAD
 using Microsoft.Extensions.DependencyInjection;
-=======
 using AutoTallerManager.API.Middleware;
->>>>>>> develop
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;

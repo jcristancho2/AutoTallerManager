@@ -23,16 +23,6 @@ public class ClientesController : ControllerBase
         _mediator = mediator;
     }
 
-<<<<<<< HEAD
-    /// <summary>
-    /// Gets all clients with pagination
-    /// </summary>
-    /// <param name="pageNumber">Page number (default: 1)</param>
-    /// <param name="pageSize">Page size (default: 10)</param>
-    /// <param name="searchTerm">Search term for name or email</param>
-    /// <returns>Paginated list of clients</returns>
-=======
->>>>>>> develop
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Cliente>>> GetClientes(
         [FromQuery] int pageNumber = 1,
@@ -43,15 +33,9 @@ public class ClientesController : ControllerBase
         try
         {
             var clientes = await _unitOfWork.Clientes.GetAllAsync(
-<<<<<<< HEAD
-                filter: c => string.IsNullOrEmpty(searchTerm) || 
-                        c.NombreCompleto.Contains(searchTerm) || 
-                        c.Correo.Contains(searchTerm),
-=======
                 filter: c => string.IsNullOrEmpty(searchTerm) ||
                         (!string.IsNullOrEmpty(c.NombreCompleto) && c.NombreCompleto.Contains(searchTerm)) ||
                         (!string.IsNullOrEmpty(c.Email) && c.Email.Contains(searchTerm)),
->>>>>>> develop
                 orderBy: q => q.OrderBy(c => c.NombreCompleto),
                 includeProperties: "Vehiculos",
                 skip: (pageNumber - 1) * pageSize,
@@ -59,15 +43,9 @@ public class ClientesController : ControllerBase
                 ct: ct);
 
             var totalCount = await _unitOfWork.Clientes.CountAsync(
-<<<<<<< HEAD
-                filter: c => string.IsNullOrEmpty(searchTerm) || 
-                        c.NombreCompleto.Contains(searchTerm) || 
-                        c.Correo.Contains(searchTerm),
-=======
                 filter: c => string.IsNullOrEmpty(searchTerm) ||
                         (!string.IsNullOrEmpty(c.NombreCompleto) && c.NombreCompleto.Contains(searchTerm)) ||
                         (!string.IsNullOrEmpty(c.Email) && c.Email.Contains(searchTerm)),
->>>>>>> develop
                 ct: ct);
 
             Response.Headers["X-Total-Count"] = totalCount.ToString();
@@ -83,20 +61,12 @@ public class ClientesController : ControllerBase
         }
     }
 
-<<<<<<< HEAD
-    /// <summary>
-    /// Gets a client by ID
-    /// </summary>
-    /// <param name="id">Client ID</param>
-    /// <returns>Found client</returns>
-=======
->>>>>>> develop
     [HttpGet("{id}")]
-    public async Task<ActionResult<Cliente>> GetCliente(Guid id, CancellationToken ct = default)
+    public async Task<ActionResult<Cliente>> GetCliente(int id, CancellationToken ct = default)
     {
         try
         {
-            var cliente = await _unitOfWork.Clientes.GetByIdAsync(id, ct, "Vehiculos", "Facturas");
+            var cliente = await _unitOfWork.Clientes.GetByIdAsync(id, ct, new[] { "Vehiculos", "Facturas" });
             
             if (cliente == null)
                 return NotFound($"Cliente con ID {id} no encontrado");
@@ -110,21 +80,12 @@ public class ClientesController : ControllerBase
         }
     }
 
-<<<<<<< HEAD
-    /// <summary>
-    /// Creates a new client
-    /// </summary>
-    /// <param name="cliente">Client data to create</param>
-    /// <returns>Created client</returns>
-=======
->>>>>>> develop
     [HttpPost]
     [Authorize(Roles = "Admin,Recepcionista")]
     public async Task<ActionResult<Cliente>> CreateCliente([FromBody] CreateClienteCommand command, CancellationToken ct = default)
     {
         try
         {
-<<<<<<< HEAD
             var clienteId = await _mediator.Send(command, ct);
             _logger.LogInformation("Cliente creado con ID {ClienteId}", clienteId);
 
@@ -134,24 +95,6 @@ public class ClientesController : ControllerBase
         {
             _logger.LogWarning(ex, "Error de negocio al crear cliente");
             return BadRequest(ex.Message);
-=======
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            if (string.IsNullOrEmpty(cliente.Email) || 
-                await _unitOfWork.Clientes.GetByEmailAsync(cliente.Email!, ct) != null)
-            {
-                return BadRequest("Ya existe un cliente con este email");
-            }
-
-            cliente.CreatedAt = DateTime.UtcNow;
-            await _unitOfWork.Clientes.AddAsync(cliente, ct);
-            await _unitOfWork.SaveChangesAsync(ct);
-
-            _logger.LogInformation("Cliente creado: {ClienteId} - {ClienteNombre}", cliente.Id, cliente.NombreCompleto);
-
-            return CreatedAtAction(nameof(GetCliente), new { id = cliente.Id }, cliente);
->>>>>>> develop
         }
         catch (Exception ex)
         {
@@ -160,18 +103,9 @@ public class ClientesController : ControllerBase
         }
     }
 
-<<<<<<< HEAD
-    /// <summary>
-    /// Updates an existing client
-    /// </summary>
-    /// <param name="id">Client ID</param>
-    /// <param name="cliente">Updated client data</param>
-    /// <returns>Updated client</returns>
-=======
->>>>>>> develop
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,Recepcionista")]
-    public async Task<ActionResult<Cliente>> UpdateCliente(Guid id, Cliente cliente, CancellationToken ct = default)
+    public async Task<ActionResult<Cliente>> UpdateCliente(int id, Cliente cliente, CancellationToken ct = default)
     {
         try
         {
@@ -185,24 +119,14 @@ public class ClientesController : ControllerBase
             if (existingCliente == null)
                 return NotFound($"Cliente con ID {id} no encontrado");
 
-<<<<<<< HEAD
-            // Validate unique email (excluding current client)
-=======
->>>>>>> develop
             var emailExists = await _unitOfWork.Clientes.ExistsAsync(
-                c => c.Correo == cliente.Correo && c.Id != id, ct);
+                c => c.Email == cliente.Email && c.Id != id, ct);
             if (emailExists)
                 return BadRequest("Ya existe otro cliente con este email");
 
-<<<<<<< HEAD
-            // Update fields
-            existingCliente.UpdateInfo(cliente.NombreCompleto, cliente.Telefono, cliente.Correo);
-=======
             existingCliente.NombreCompleto = cliente.NombreCompleto;
             existingCliente.Email = cliente.Email;
             existingCliente.Telefono = cliente.Telefono;
-            existingCliente.Direccion = cliente.Direccion;
->>>>>>> develop
 
             await _unitOfWork.Clientes.UpdateAsync(existingCliente, ct);
             await _unitOfWork.SaveChangesAsync(ct);
@@ -218,35 +142,21 @@ public class ClientesController : ControllerBase
         }
     }
 
-<<<<<<< HEAD
-    /// <summary>
-    /// Deletes a client
-    /// </summary>
-    /// <param name="id">Client ID</param>
-    /// <returns>Operation result</returns>
-=======
->>>>>>> develop
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<ActionResult> DeleteCliente(Guid id, CancellationToken ct = default)
+    public async Task<ActionResult> DeleteCliente(int id, CancellationToken ct = default)
     {
         try
         {
-            var cliente = await _unitOfWork.Clientes.GetByIdAsync(id, ct, "Vehiculos.OrdenesServicio");
+            var cliente = await _unitOfWork.Clientes.GetByIdAsync(id, ct, new[] { "Vehiculos.OrdenesServicio" });
             if (cliente == null)
                 return NotFound($"Cliente con ID {id} no encontrado");
 
-<<<<<<< HEAD
-            // Check if there are active service orders
-            var hasActiveOrders = cliente.Vehiculos.Any(v => 
-                v.OrdenesServicio.Any(o => o.Estado?.NombreEstServ != "Completada" && o.Estado?.NombreEstServ != "Cancelada"));
-=======
             var hasActiveOrders = cliente.Vehiculos?.Any(v => 
                 v.OrdenesServicio?.Any(o => 
                     (o.Estado?.NombreEstServ != "Completada") && 
                     (o.Estado?.NombreEstServ != "Cancelada")) ?? false
                 ) ?? false;
->>>>>>> develop
 
             if (hasActiveOrders)
                 return BadRequest("No se puede eliminar el cliente porque tiene órdenes de servicio activas");

@@ -8,6 +8,6 @@ public sealed record CreateClienteCommand(
     string Correo,
     int TipoCliente_Id,
     int Direccion_Id
-) : IRequest<Guid>;
+) : IRequest<int>;
 
 
