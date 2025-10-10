@@ -26,5 +26,8 @@ namespace AutoTallerManager.Domain.Entities
         // Relaciones correctas
         public ICollection<DetalleOrden>? DetallesOrden { get; set; }
         public ICollection<Factura>? Facturas { get; set; }
+
+        // Relación inversa típica (si usas Factura)
+        public Factura? Factura { get; set; }
     }
 }

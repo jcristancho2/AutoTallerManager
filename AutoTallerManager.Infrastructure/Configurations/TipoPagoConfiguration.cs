@@ -25,7 +25,7 @@ namespace AutoTallerManager.Infrastructure.Configuration
 
             builder.HasMany(tp => tp.Facturas)
                    .WithOne(f => f.TipoPago)
-                   .HasForeignKey(f => f.PagoId)
+                   .HasForeignKey(f => f.TipoPagoId)
                    .OnDelete(DeleteBehavior.Restrict);
         }
     }
