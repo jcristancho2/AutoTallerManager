@@ -26,11 +26,6 @@ CREATE TABLE Departamento(
     NombreDepart VARCHAR(50)
 );
 
--- Tabla: CodPostal ( ESTA TABLA NO VA)
-CREATE TABLE CodPostal(
-    CodPostalId INT AUTO_INCREMENT PRIMARY KEY,
-    NombreCodPost VARCHAR(50)
-);
 
 -- Tabla: Direccion ( AQUI SE MODIFICÓ )
 CREATE TABLE Direccion(
@@ -39,15 +34,12 @@ CREATE TABLE Direccion(
     PaisId INT NOT NULL,
     DepartamentoId INT NOT NULL,
     CiudadID INT NOT NULL,
-    CodPostalId INT NOT NULL,
     FOREIGN KEY (PaisID) REFERENCES Pais(PaisId)
         ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (DepartamentoID) REFERENCES Departamento(DepartamentoId)
         ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (CiudadId) REFERENCES Ciudad(CiudadId)
         ON DELETE RESTRICT ON UPDATE CASCADE,  
-    FOREIGN KEY (CodPostalId) REFERENCES CodPostal(CodPostalId)
-        ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- Tabla: Cliente
@@ -55,7 +47,7 @@ CREATE TABLE Cliente (
     ClienteId INT AUTO_INCREMENT PRIMARY KEY,
     NombreCliente VARCHAR(100) NOT NULL,
     Telefono VARCHAR(20),
-    Correo VARCHAR(100) UNIQUE,
+    Email VARCHAR(100) UNIQUE,
     DireccionId INT NOT NULL,
     TipoClienteId INT NOT NULL,
     FOREIGN KEY (DireccionId) REFERENCES Direccion(DireccionId)
@@ -141,7 +133,7 @@ CREATE TABLE Fabricante(
     NombreFab VARCHAR(50),
     Descripcion VARCHAR(255),
     Telefono VARCHAR(20),
-    Correo VARCHAR(80)
+    Email VARCHAR(80)
 );
 
 -- Tabla: Repuesto

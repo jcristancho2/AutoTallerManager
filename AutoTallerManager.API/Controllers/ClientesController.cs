@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using AutoTallerManager.Application.Abstractions;
 using AutoTallerManager.Domain.Entities;
 
-
 namespace AutoTallerManager.API.Controllers;
 
 [ApiController]
@@ -20,13 +19,6 @@ public class ClientesController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>
-    /// Obtiene todos los clientes con paginación
-    /// </summary>
-    /// <param name="pageNumber">Número de página (default: 1)</param>
-    /// <param name="pageSize">Tamaño de página (default: 10)</param>
-    /// <param name="searchTerm">Término de búsqueda para nombre o email</param>
-    /// <returns>Lista paginada de clientes</returns>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Cliente>>> GetClientes(
         [FromQuery] int pageNumber = 1,
@@ -37,9 +29,9 @@ public class ClientesController : ControllerBase
         try
         {
             var clientes = await _unitOfWork.Clientes.GetAllAsync(
-                filter: c => string.IsNullOrEmpty(searchTerm) || 
-                        c.NombreCompleto.Contains(searchTerm) || 
-                        c.Email.Contains(searchTerm),
+                filter: c => string.IsNullOrEmpty(searchTerm) ||
+                        (!string.IsNullOrEmpty(c.NombreCompleto) && c.NombreCompleto.Contains(searchTerm)) ||
+                        (!string.IsNullOrEmpty(c.Email) && c.Email.Contains(searchTerm)),
                 orderBy: q => q.OrderBy(c => c.NombreCompleto),
                 includeProperties: "Vehiculos",
                 skip: (pageNumber - 1) * pageSize,
@@ -47,14 +39,14 @@ public class ClientesController : ControllerBase
                 ct: ct);
 
             var totalCount = await _unitOfWork.Clientes.CountAsync(
-                filter: c => string.IsNullOrEmpty(searchTerm) || 
-                        c.NombreCompleto.Contains(searchTerm) || 
-                        c.Email.Contains(searchTerm),
+                filter: c => string.IsNullOrEmpty(searchTerm) ||
+                        (!string.IsNullOrEmpty(c.NombreCompleto) && c.NombreCompleto.Contains(searchTerm)) ||
+                        (!string.IsNullOrEmpty(c.Email) && c.Email.Contains(searchTerm)),
                 ct: ct);
 
-            Response.Headers.Add("X-Total-Count", totalCount.ToString());
-            Response.Headers.Add("X-Page-Number", pageNumber.ToString());
-            Response.Headers.Add("X-Page-Size", pageSize.ToString());
+            Response.Headers["X-Total-Count"] = totalCount.ToString();
+            Response.Headers["X-Page-Number"] = pageNumber.ToString();
+            Response.Headers["X-Page-Size"] = pageSize.ToString();
 
             return Ok(clientes);
         }
@@ -65,11 +57,6 @@ public class ClientesController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Obtiene un cliente por ID
-    /// </summary>
-    /// <param name="id">ID del cliente</param>
-    /// <returns>Cliente encontrado</returns>
     [HttpGet("{id}")]
     public async Task<ActionResult<Cliente>> GetCliente(int id, CancellationToken ct = default)
     {
@@ -78,9 +65,7 @@ public class ClientesController : ControllerBase
             var cliente = await _unitOfWork.Clientes.GetByIdAsync(id, ct, "Vehiculos", "Facturas");
             
             if (cliente == null)
-            {
                 return NotFound($"Cliente con ID {id} no encontrado");
-            }
 
             return Ok(cliente);
         }
@@ -91,11 +76,6 @@ public class ClientesController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Crea un nuevo cliente
-    /// </summary>
-    /// <param name="cliente">Datos del cliente a crear</param>
-    /// <returns>Cliente creado</returns>
     [HttpPost]
     [Authorize(Roles = "Admin,Recepcionista")]
     public async Task<ActionResult<Cliente>> CreateCliente(Cliente cliente, CancellationToken ct = default)
@@ -103,22 +83,19 @@ public class ClientesController : ControllerBase
         try
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            // Validar email único
-            var existingCliente = await _unitOfWork.Clientes.GetByEmailAsync(cliente.Email, ct);
-            if (existingCliente != null)
+            if (string.IsNullOrEmpty(cliente.Email) || 
+                await _unitOfWork.Clientes.GetByEmailAsync(cliente.Email!, ct) != null)
             {
                 return BadRequest("Ya existe un cliente con este email");
             }
 
-            cliente.FechaRegistro = DateTime.UtcNow;
+            cliente.CreatedAt = DateTime.UtcNow;
             await _unitOfWork.Clientes.AddAsync(cliente, ct);
             await _unitOfWork.SaveChangesAsync(ct);
 
-            _logger.LogInformation("Cliente creado: {ClienteId} - {ClienteNombre}", cliente.Id, cliente.Nombre);
+            _logger.LogInformation("Cliente creado: {ClienteId} - {ClienteNombre}", cliente.Id, cliente.NombreCompleto);
 
             return CreatedAtAction(nameof(GetCliente), new { id = cliente.Id }, cliente);
         }
@@ -129,12 +106,6 @@ public class ClientesController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Actualiza un cliente existente
-    /// </summary>
-    /// <param name="id">ID del cliente</param>
-    /// <param name="cliente">Datos actualizados del cliente</param>
-    /// <returns>Cliente actualizado</returns>
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,Recepcionista")]
     public async Task<ActionResult<Cliente>> UpdateCliente(int id, Cliente cliente, CancellationToken ct = default)
@@ -142,39 +113,29 @@ public class ClientesController : ControllerBase
         try
         {
             if (id != cliente.Id)
-            {
                 return BadRequest("El ID del cliente no coincide");
-            }
 
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             var existingCliente = await _unitOfWork.Clientes.GetByIdAsync(id, ct);
             if (existingCliente == null)
-            {
                 return NotFound($"Cliente con ID {id} no encontrado");
-            }
 
-            // Validar email único (excluyendo el cliente actual)
             var emailExists = await _unitOfWork.Clientes.ExistsAsync(
                 c => c.Email == cliente.Email && c.Id != id, ct);
             if (emailExists)
-            {
                 return BadRequest("Ya existe otro cliente con este email");
-            }
 
-            // Actualizar campos
-            existingCliente.Nombre = cliente.Nombre;
+            existingCliente.NombreCompleto = cliente.NombreCompleto;
             existingCliente.Email = cliente.Email;
             existingCliente.Telefono = cliente.Telefono;
             existingCliente.Direccion = cliente.Direccion;
 
-            _unitOfWork.Clientes.Update(existingCliente);
+            await _unitOfWork.Clientes.UpdateAsync(existingCliente, ct);
             await _unitOfWork.SaveChangesAsync(ct);
 
-            _logger.LogInformation("Cliente actualizado: {ClienteId} - {ClienteNombre}", id, cliente.Nombre);
+            _logger.LogInformation("Cliente actualizado: {ClienteId} - {ClienteNombre}", id, cliente.NombreCompleto);
 
             return Ok(existingCliente);
         }
@@ -185,11 +146,6 @@ public class ClientesController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Elimina un cliente
-    /// </summary>
-    /// <param name="id">ID del cliente</param>
-    /// <returns>Resultado de la operación</returns>
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult> DeleteCliente(int id, CancellationToken ct = default)
@@ -198,23 +154,21 @@ public class ClientesController : ControllerBase
         {
             var cliente = await _unitOfWork.Clientes.GetByIdAsync(id, ct, "Vehiculos.OrdenesServicio");
             if (cliente == null)
-            {
                 return NotFound($"Cliente con ID {id} no encontrado");
-            }
 
-            // Verificar si tiene órdenes de servicio activas
-            var hasActiveOrders = cliente.Vehiculos.Any(v => 
-                v.OrdenesServicio.Any(o => o.Estado != "Completada" && o.Estado != "Cancelada"));
+            var hasActiveOrders = cliente.Vehiculos?.Any(v => 
+                v.OrdenesServicio?.Any(o => 
+                    (o.Estado?.NombreEstServ != "Completada") && 
+                    (o.Estado?.NombreEstServ != "Cancelada")) ?? false
+                ) ?? false;
 
             if (hasActiveOrders)
-            {
                 return BadRequest("No se puede eliminar el cliente porque tiene órdenes de servicio activas");
-            }
 
-            _unitOfWork.Clientes.Delete(cliente);
+            await _unitOfWork.Clientes.DeleteAsync(id, ct);
             await _unitOfWork.SaveChangesAsync(ct);
 
-            _logger.LogInformation("Cliente eliminado: {ClienteId} - {ClienteNombre}", id, cliente.Nombre);
+            _logger.LogInformation("Cliente eliminado: {ClienteId} - {ClienteNombre}", id, cliente.NombreCompleto);
 
             return NoContent();
         }

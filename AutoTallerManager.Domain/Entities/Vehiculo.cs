@@ -5,10 +5,8 @@ using System.Threading.Tasks;
 
 namespace AutoTallerManager.Domain.Entities
 {
-    public class Vehiculo
+    public class Vehiculo : BaseEntity
     {
-         public int VehiculoId { get; set; }
-
         public string? Placa { get; set; }
         public int Anio { get; set; }             
         public string? VIN { get; set; }

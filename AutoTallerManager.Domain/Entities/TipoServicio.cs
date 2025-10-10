@@ -5,9 +5,8 @@ using System.Threading.Tasks;
 
 namespace AutoTallerManager.Domain.Entities
 {
-    public class TipoServicio
+    public class TipoServicio : BaseEntity
     {
-        public int TipoServId { get; set; }
         public string? NombreTipoServ { get; set; }
         public ICollection<OrdenServicio>? OrdenesServicio { get; set; }
         

@@ -7,7 +7,7 @@ namespace AutoTallerManager.Domain.Entities
 {
     public class DetalleOrden
     {
-       public int DetalleOrdenId { get; set; }     // Parte 1 de la PK
+        public int DetalleOrdenId { get; set; }     // Parte 1 de la PK
         public int OrdenServicioId { get; set; }    // Parte 2 de la PK
 
         public int? RepuestoId { get; set; }        // NULL permitido en el DDL

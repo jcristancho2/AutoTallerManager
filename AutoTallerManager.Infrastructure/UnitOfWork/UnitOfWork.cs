@@ -28,6 +28,8 @@ public class UnitOfWork : IUnitOfWork
         Repuestos = new RepuestoRepository(_context);
         Facturas = new FacturaRepository(_context);
         Auditorias = new AuditoriaRepository(_context);
+        Usuarios = new UsuarioRepository(_context);
+        EstadosUsuario = new EstadoUsuarioRepository(_context);
     }
 
     // Repositorios de Auth
@@ -42,6 +44,8 @@ public class UnitOfWork : IUnitOfWork
     public IRepuestoService Repuestos { get; }
     public IFacturaService Facturas { get; }
     public IAuditoriaService Auditorias { get; }
+    public IUsuarioService Usuarios { get; }
+    public IEstadoUsuarioService EstadosUsuario { get; }
 
     public Task<int> SaveChanges(CancellationToken ct = default)
         => _context.SaveChangesAsync(ct);

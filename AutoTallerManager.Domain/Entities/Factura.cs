@@ -5,10 +5,8 @@ using System.Threading.Tasks;
 
 namespace AutoTallerManager.Domain.Entities
 {
-    public class Factura
+    public class Factura : BaseEntity
     {
-         public int FacturaId { get; set; }
-
         public DateTime Fecha { get; set; }
         public decimal Total { get; set; }
 
