@@ -18,4 +18,6 @@ namespace AutoTallerManager.Domain.Entities;
 
         public int TipoPagoId { get; set; }
         public TipoPago? TipoPago { get; set; }
+
+  
     }

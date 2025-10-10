@@ -43,13 +43,13 @@ namespace AutoTallerManager.Infrastructure.Configuration
                    .OnDelete(DeleteBehavior.Restrict);
 
             // 💳 Relación con TipoPago
-            builder.Property(f => f.PagoId)
+            builder.Property(f => f.TipoPagoId)
                    .HasColumnName("pago_id")
                    .IsRequired();
 
                 builder.HasOne(f => f.TipoPago)
                    .WithMany(p => p.Facturas)
-                   .HasForeignKey(f => f.PagoId)
+                   .HasForeignKey(f => f.TipoPagoId)
                    .OnDelete(DeleteBehavior.Restrict);
 
             // 📅 Fecha

@@ -16,6 +16,7 @@ using AutoTallerManager.API.Services.Implementations;
 using AutoTallerManager.API.Services.Interfaces;
 using AutoTallerManager.API.Services.Interfaces.Auth;
 using AutoTallerManager.API.Services.Implementations.Auth;
+using AutoTallerManager.API.Services;
 
 
 namespace AutoTallerManager.API.Extensions;
