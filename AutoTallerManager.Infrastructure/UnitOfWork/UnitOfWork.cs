@@ -1,9 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using AutoTallerManager.Application.Abstractions;
 using AutoTallerManager.Application.Abstractions.Auth;
+using AutoTallerManager.Application.Abstractions.Interfaces;
 using AutoTallerManager.Infrastructure.Persistence.Context;
 using AutoTallerManager.Infrastructure.Repositories;
 using AutoTallerManager.Infrastructure.Repositories.Auth;
@@ -17,14 +16,32 @@ public class UnitOfWork : IUnitOfWork
     public UnitOfWork(AppDbContext context)
     {
         _context = context;
+        // Repositorios de Auth
         UserMembers = new UserMemberRepository(_context);
         UserMemberRoles = new UserMemberRolRepository(_context);
         Roles = new RolRepository(_context);
+        
+        // Repositorios de negocio
+        Clientes = new ClienteRepository(_context);
+        Vehiculos = new VehiculoRepository(_context);
+        OrdenesServicio = new OrdenServicioRepository(_context);
+        Repuestos = new RepuestoRepository(_context);
+        Facturas = new FacturaRepository(_context);
+        Auditorias = new AuditoriaRepository(_context);
     }
 
+    // Repositorios de Auth
     public IUserMemberService UserMembers { get; }
     public IUserMemberRolService UserMemberRoles { get; }
     public IRolService Roles { get; }
+    
+    // Repositorios de negocio
+    public IClienteService Clientes { get; }
+    public IVehiculoService Vehiculos { get; }
+    public IOrdenServicioService OrdenesServicio { get; }
+    public IRepuestoService Repuestos { get; }
+    public IFacturaService Facturas { get; }
+    public IAuditoriaService Auditorias { get; }
 
     public Task<int> SaveChanges(CancellationToken ct = default)
         => _context.SaveChangesAsync(ct);
