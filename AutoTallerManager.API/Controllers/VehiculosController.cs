@@ -35,8 +35,8 @@ public class VehiculosController : ControllerBase
         {
             var vehiculos = await _unitOfWork.Vehiculos.GetAllAsync(
                 filter: v => (string.IsNullOrEmpty(marca) || v.Marca.Contains(marca)) &&
-                           (string.IsNullOrEmpty(modelo) || v.Modelo.Contains(modelo)) &&
-                           (!clienteId.HasValue || v.ClienteId == clienteId),
+                            (string.IsNullOrEmpty(modelo) || v.Modelo.Contains(modelo)) &&
+                            (!clienteId.HasValue || v.ClienteId == clienteId),
                 orderBy: q => q.OrderBy(v => v.Marca).ThenBy(v => v.Modelo),
                 includeProperties: "Cliente",
                 skip: (pageNumber - 1) * pageSize,
@@ -45,8 +45,8 @@ public class VehiculosController : ControllerBase
 
             var totalCount = await _unitOfWork.Vehiculos.CountAsync(
                 filter: v => (string.IsNullOrEmpty(marca) || v.Marca.Contains(marca)) &&
-                           (string.IsNullOrEmpty(modelo) || v.Modelo.Contains(modelo)) &&
-                           (!clienteId.HasValue || v.ClienteId == clienteId),
+                            (string.IsNullOrEmpty(modelo) || v.Modelo.Contains(modelo)) &&
+                            (!clienteId.HasValue || v.ClienteId == clienteId),
                 ct: ct);
 
             Response.Headers.Add("X-Total-Count", totalCount.ToString());
