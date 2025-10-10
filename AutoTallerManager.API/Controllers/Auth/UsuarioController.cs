@@ -42,9 +42,9 @@ public class UsuarioController : ControllerBase
         return Ok(new UsuarioLoginResponseDto
         {
             Id = usuario.Id,
-            Email = usuario.Email,
-            RolNombre = usuario.Rol.NombreRol,
-            EstadoNombre = usuario.EstadoUsuario.NombreEstUsu,
+            Email = usuario.Email ?? string.Empty,                           // ✅ CORREGIR
+            RolNombre = usuario.Rol?.NombreRol ?? string.Empty,              // ✅ CORREGIR
+            EstadoNombre = usuario.EstadoUsuario?.NombreEstUsu ?? string.Empty, // ✅ CORREGIR
             Token = token
         });
     }
@@ -86,9 +86,9 @@ public class UsuarioController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = usuario.Id }, new UsuarioDto
         {
             Id = usuario.Id,
-            Email = usuario.Email,
-            RolNombre = rol.NombreRol,
-            EstadoNombre = estado.NombreEstUsu
+            Email = usuario.Email ?? string.Empty,              // ✅ CORREGIR
+            RolNombre = rol.NombreRol ?? string.Empty,          // ✅ CORREGIR
+            EstadoNombre = estado.NombreEstUsu ?? string.Empty  // ✅ CORREGIR
         });
     }
 
@@ -103,9 +103,9 @@ public class UsuarioController : ControllerBase
         var usuariosDto = usuarios.Select(u => new UsuarioDto
         {
             Id = u.Id,
-            Email = u.Email,
-            RolNombre = u.Rol.NombreRol,
-            EstadoNombre = u.EstadoUsuario.NombreEstUsu
+            Email = u.Email ?? string.Empty,                        // ✅ CORREGIR
+            RolNombre = u.Rol?.NombreRol ?? string.Empty,           // ✅ CORREGIR
+            EstadoNombre = u.EstadoUsuario?.NombreEstUsu ?? string.Empty // ✅ CORREGIR
         });
 
         return Ok(usuariosDto);
@@ -123,9 +123,9 @@ public class UsuarioController : ControllerBase
         return Ok(new UsuarioDto
         {
             Id = usuario.Id,
-            Email = usuario.Email,
-            RolNombre = usuario.Rol.NombreRol,
-            EstadoNombre = usuario.EstadoUsuario.NombreEstUsu
+            Email = usuario.Email ?? string.Empty,                      // ✅ CORREGIR
+            RolNombre = usuario.Rol?.NombreRol ?? string.Empty,         // ✅ CORREGIR
+            EstadoNombre = usuario.EstadoUsuario?.NombreEstUsu ?? string.Empty // ✅ CORREGIR
         });
     }
 
@@ -169,9 +169,9 @@ public class UsuarioController : ControllerBase
         return Ok(new UsuarioDto
         {
             Id = usuario.Id,
-            Email = usuario.Email,
-            RolNombre = rol.NombreRol,
-            EstadoNombre = estado.NombreEstUsu
+            Email = usuario.Email ?? string.Empty,              // ✅ CORREGIR
+            RolNombre = rol.NombreRol ?? string.Empty,          // ✅ CORREGIR
+            EstadoNombre = estado.NombreEstUsu ?? string.Empty  // ✅ CORREGIR
         });
     }
 
@@ -227,8 +227,8 @@ public class UsuarioController : ControllerBase
         var rolesDto = roles.Select(r => new RolDto
         {
             Id = r.Id,
-            NombreRol = r.NombreRol,
-            Descripcion = r.Descripcion
+            NombreRol = r.NombreRol ?? string.Empty,    // ✅ CORREGIR
+            Descripcion = r.Descripcion ?? string.Empty // ✅ CORREGIR
         });
 
         return Ok(rolesDto);
@@ -241,7 +241,7 @@ public class UsuarioController : ControllerBase
         var estadosDto = estados.Select(e => new EstadoUsuarioDto
         {
             Id = e.Id,
-            NombreEstUsu = e.NombreEstUsu
+            NombreEstUsu = e.NombreEstUsu ?? string.Empty // ✅ CORREGIR
         });
 
         return Ok(estadosDto);

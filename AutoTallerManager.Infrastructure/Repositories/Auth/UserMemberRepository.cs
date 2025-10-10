@@ -28,7 +28,7 @@ public class UserMemberRepository : IUserMemberService
         if (!string.IsNullOrWhiteSpace(search))
         {
             var term = $"%{search.Trim()}%";
-            query = query.Where(u => EF.Functions.ILike(u.Username, term));
+            query = query.Where(u => u.Username != null && EF.Functions.ILike(u.Username, term));
         }
 
         return query.CountAsync(ct);
@@ -41,7 +41,7 @@ public class UserMemberRepository : IUserMemberService
             .Include(u => u.UserMemberRoles)
                 .ThenInclude(umr => umr.Rol)
             .Include(u => u.RefreshTokens)
-            .FirstOrDefaultAsync(u => EF.Functions.ILike(u.Username, userName), ct);
+            .FirstOrDefaultAsync(u => u.Username != null && EF.Functions.ILike(u.Username, userName), ct);
     }
 
     // 🔹 Obtener por Id
@@ -124,7 +124,7 @@ public class UserMemberRepository : IUserMemberService
         if (!string.IsNullOrWhiteSpace(search))
         {
             var term = $"%{search.Trim()}%";
-            query = query.Where(u => EF.Functions.ILike(u.Username, term));
+            query = query.Where(u => u.Username != null && EF.Functions.ILike(u.Username, term));
         }
 
         var totalRegistros = await query.CountAsync();

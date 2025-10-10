@@ -15,5 +15,5 @@ public class Rol : BaseEntity
     public virtual ICollection<UserMemberRol> UserMemberRoles { get; set; } = new HashSet<UserMemberRol>();
 
     // Relación opcional con Usuario (si tienes otro sistema)
-    public virtual ICollection<Usuario> Usuarios { get; set; } = new HashSet<Usuario>();
+    //public virtual ICollection<Usuario> Usuarios { get; set; } = new HashSet<Usuario>();
 }

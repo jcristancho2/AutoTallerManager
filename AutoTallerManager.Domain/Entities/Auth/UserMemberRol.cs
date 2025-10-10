@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace AutoTallerManager.Domain.Entities.Auth;
 
-public class UserMemberRol : BaseEntity
+public class UserMemberRol
 {
     public int UserMemberId { get; set; }
     public int RolId { get; set; }
@@ -13,6 +13,6 @@ public class UserMemberRol : BaseEntity
     // Navegación
     public virtual UserMember UserMember { get; set; } = null!;
     public virtual Rol Rol { get; set; } = null!;
-    public object NombreRol { get; set; }
+    //public object NombreRol { get; set; }
 }
 

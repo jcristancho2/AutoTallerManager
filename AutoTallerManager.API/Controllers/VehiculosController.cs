@@ -203,10 +203,11 @@ public class VehiculosController : ControllerBase
             if (vehiculo == null)
                 return NotFound($"Vehículo con ID {id} no encontrado");
 
-            var hasActiveOrders = vehiculo.OrdenesServicio.Any(o =>
-                o.Estado != null &&
-                o.Estado.NombreEstServ != EstadoOrden.Completada.ToString() &&
-                o.Estado.NombreEstServ != EstadoOrden.Cancelada.ToString());
+            var hasActiveOrders = vehiculo.OrdenesServicio != null &&
+                vehiculo.OrdenesServicio.Any(o =>
+                    o.Estado != null &&
+                    o.Estado.NombreEstServ != EstadoOrden.Completada.ToString() &&
+                    o.Estado.NombreEstServ != EstadoOrden.Cancelada.ToString());
 
             if (hasActiveOrders)
                 return BadRequest("No se puede eliminar el vehículo porque tiene órdenes de servicio activas");
