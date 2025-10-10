@@ -21,12 +21,12 @@ public class ClientesController : ControllerBase
     }
 
     /// <summary>
-    /// Obtiene todos los clientes con paginación
+    /// Gets all clients with pagination
     /// </summary>
-    /// <param name="pageNumber">Número de página (default: 1)</param>
-    /// <param name="pageSize">Tamaño de página (default: 10)</param>
-    /// <param name="searchTerm">Término de búsqueda para nombre o email</param>
-    /// <returns>Lista paginada de clientes</returns>
+    /// <param name="pageNumber">Page number (default: 1)</param>
+    /// <param name="pageSize">Page size (default: 10)</param>
+    /// <param name="searchTerm">Search term for name or email</param>
+    /// <returns>Paginated list of clients</returns>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Cliente>>> GetClientes(
         [FromQuery] int pageNumber = 1,
@@ -66,10 +66,10 @@ public class ClientesController : ControllerBase
     }
 
     /// <summary>
-    /// Obtiene un cliente por ID
+    /// Gets a client by ID
     /// </summary>
-    /// <param name="id">ID del cliente</param>
-    /// <returns>Cliente encontrado</returns>
+    /// <param name="id">Client ID</param>
+    /// <returns>Found client</returns>
     [HttpGet("{id}")]
     public async Task<ActionResult<Cliente>> GetCliente(int id, CancellationToken ct = default)
     {
@@ -92,10 +92,10 @@ public class ClientesController : ControllerBase
     }
 
     /// <summary>
-    /// Crea un nuevo cliente
+    /// Creates a new client
     /// </summary>
-    /// <param name="cliente">Datos del cliente a crear</param>
-    /// <returns>Cliente creado</returns>
+    /// <param name="cliente">Client data to create</param>
+    /// <returns>Created client</returns>
     [HttpPost]
     [Authorize(Roles = "Admin,Recepcionista")]
     public async Task<ActionResult<Cliente>> CreateCliente(Cliente cliente, CancellationToken ct = default)
@@ -107,7 +107,7 @@ public class ClientesController : ControllerBase
                 return BadRequest(ModelState);
             }
 
-            // Validar email único
+            // Validate unique email
             var existingCliente = await _unitOfWork.Clientes.GetByEmailAsync(cliente.Email, ct);
             if (existingCliente != null)
             {
@@ -130,11 +130,11 @@ public class ClientesController : ControllerBase
     }
 
     /// <summary>
-    /// Actualiza un cliente existente
+    /// Updates an existing client
     /// </summary>
-    /// <param name="id">ID del cliente</param>
-    /// <param name="cliente">Datos actualizados del cliente</param>
-    /// <returns>Cliente actualizado</returns>
+    /// <param name="id">Client ID</param>
+    /// <param name="cliente">Updated client data</param>
+    /// <returns>Updated client</returns>
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,Recepcionista")]
     public async Task<ActionResult<Cliente>> UpdateCliente(int id, Cliente cliente, CancellationToken ct = default)
@@ -157,7 +157,7 @@ public class ClientesController : ControllerBase
                 return NotFound($"Cliente con ID {id} no encontrado");
             }
 
-            // Validar email único (excluyendo el cliente actual)
+            // Validate unique email (excluding current client)
             var emailExists = await _unitOfWork.Clientes.ExistsAsync(
                 c => c.Email == cliente.Email && c.Id != id, ct);
             if (emailExists)
@@ -165,7 +165,7 @@ public class ClientesController : ControllerBase
                 return BadRequest("Ya existe otro cliente con este email");
             }
 
-            // Actualizar campos
+            // Update fields
             existingCliente.Nombre = cliente.Nombre;
             existingCliente.Email = cliente.Email;
             existingCliente.Telefono = cliente.Telefono;
@@ -186,10 +186,10 @@ public class ClientesController : ControllerBase
     }
 
     /// <summary>
-    /// Elimina un cliente
+    /// Deletes a client
     /// </summary>
-    /// <param name="id">ID del cliente</param>
-    /// <returns>Resultado de la operación</returns>
+    /// <param name="id">Client ID</param>
+    /// <returns>Operation result</returns>
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult> DeleteCliente(int id, CancellationToken ct = default)
@@ -202,7 +202,7 @@ public class ClientesController : ControllerBase
                 return NotFound($"Cliente con ID {id} no encontrado");
             }
 
-            // Verificar si tiene órdenes de servicio activas
+            // Check if there are active service orders
             var hasActiveOrders = cliente.Vehiculos.Any(v => 
                 v.OrdenesServicio.Any(o => o.Estado != "Completada" && o.Estado != "Cancelada"));
 
