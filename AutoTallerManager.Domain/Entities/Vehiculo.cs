@@ -9,7 +9,7 @@ namespace AutoTallerManager.Domain.Entities
     {
         public string? Placa { get; set; }
         public int Anio { get; set; }             
-        public string? VIN { get; set; }
+        public string? VIN { get; set; } // PILAS A ELIMINAR ESTO, ESTO NO SE VA A USAR
         public int Kilometraje { get; set; }
 
         public int ClienteId { get; set; }
