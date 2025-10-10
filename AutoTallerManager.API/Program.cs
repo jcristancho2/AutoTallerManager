@@ -1,8 +1,10 @@
 
-
+using MediatR;
+using System.Reflection;
 using AutoTallerManager.API.Extensions;
 using AutoTallerManager.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +17,14 @@ builder.Services.ConfigureCors();
 builder.Services.AddApplicationServices();
 builder.Services.AddJwt(builder.Configuration);
 builder.Services.AddValidationErrors();
+
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssemblies(
+        Assembly.GetExecutingAssembly(),                              // Tu API
+        typeof(AutoTallerManager.Application.Abstractions.IUnitOfWork).Assembly // Tu capa Application
+    );
+});
 
 // Configurar DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>

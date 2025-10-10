@@ -25,7 +25,7 @@ public class OrdenServicioRepository : IOrdenServicioService
             query = query.Include(includeProperty);
         }
 
-        return await query.FirstOrDefaultAsync(o => o.Id == id, ct);
+        return await query.FirstOrDefaultAsync(o => o.OrdenServicioId == id, ct);
     }
 
     public async Task<IEnumerable<OrdenServicio>> GetAllAsync(

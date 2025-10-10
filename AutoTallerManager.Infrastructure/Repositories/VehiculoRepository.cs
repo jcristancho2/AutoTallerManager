@@ -25,7 +25,7 @@ public class VehiculoRepository : IVehiculoService
             query = query.Include(includeProperty);
         }
 
-        return await query.FirstOrDefaultAsync(v => v.Id == id, ct);
+        return await query.FirstOrDefaultAsync(v => v.VehiculoId == id, ct);
     }
 
     public async Task<Vehiculo?> GetByVinAsync(string vin, CancellationToken ct = default)

@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using AutoTallerManager.Application.Abstractions;
 using AutoTallerManager.Domain.Entities;
+using MediatR;
+using AutoTallerManager.Application.Features.Clientes.Commands;
 
 
 namespace AutoTallerManager.API.Controllers;
@@ -13,11 +15,13 @@ public class ClientesController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<ClientesController> _logger;
+    private readonly IMediator _mediator;
 
-    public ClientesController(IUnitOfWork unitOfWork, ILogger<ClientesController> logger)
+    public ClientesController(IUnitOfWork unitOfWork, ILogger<ClientesController> logger, IMediator mediator)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _mediator = mediator;
     }
 
     /// <summary>
@@ -39,7 +43,7 @@ public class ClientesController : ControllerBase
             var clientes = await _unitOfWork.Clientes.GetAllAsync(
                 filter: c => string.IsNullOrEmpty(searchTerm) || 
                         c.NombreCompleto.Contains(searchTerm) || 
-                        c.Email.Contains(searchTerm),
+                        c.Correo.Contains(searchTerm),
                 orderBy: q => q.OrderBy(c => c.NombreCompleto),
                 includeProperties: "Vehiculos",
                 skip: (pageNumber - 1) * pageSize,
@@ -49,7 +53,7 @@ public class ClientesController : ControllerBase
             var totalCount = await _unitOfWork.Clientes.CountAsync(
                 filter: c => string.IsNullOrEmpty(searchTerm) || 
                         c.NombreCompleto.Contains(searchTerm) || 
-                        c.Email.Contains(searchTerm),
+                        c.Correo.Contains(searchTerm),
                 ct: ct);
 
             Response.Headers.Add("X-Total-Count", totalCount.ToString());
@@ -71,7 +75,7 @@ public class ClientesController : ControllerBase
     /// <param name="id">Client ID</param>
     /// <returns>Found client</returns>
     [HttpGet("{id}")]
-    public async Task<ActionResult<Cliente>> GetCliente(int id, CancellationToken ct = default)
+    public async Task<ActionResult<Cliente>> GetCliente(Guid id, CancellationToken ct = default)
     {
         try
         {
@@ -98,29 +102,19 @@ public class ClientesController : ControllerBase
     /// <returns>Created client</returns>
     [HttpPost]
     [Authorize(Roles = "Admin,Recepcionista")]
-    public async Task<ActionResult<Cliente>> CreateCliente(Cliente cliente, CancellationToken ct = default)
+    public async Task<ActionResult<Cliente>> CreateCliente([FromBody] CreateClienteCommand command, CancellationToken ct = default)
     {
         try
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            var clienteId = await _mediator.Send(command, ct);
+            _logger.LogInformation("Cliente creado con ID {ClienteId}", clienteId);
 
-            // Validate unique email
-            var existingCliente = await _unitOfWork.Clientes.GetByEmailAsync(cliente.Email, ct);
-            if (existingCliente != null)
-            {
-                return BadRequest("Ya existe un cliente con este email");
-            }
-
-            cliente.FechaRegistro = DateTime.UtcNow;
-            await _unitOfWork.Clientes.AddAsync(cliente, ct);
-            await _unitOfWork.SaveChangesAsync(ct);
-
-            _logger.LogInformation("Cliente creado: {ClienteId} - {ClienteNombre}", cliente.Id, cliente.Nombre);
-
-            return CreatedAtAction(nameof(GetCliente), new { id = cliente.Id }, cliente);
+            return CreatedAtAction(nameof(GetCliente), new { id = clienteId }, new { Id = clienteId });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Error de negocio al crear cliente");
+            return BadRequest(ex.Message);
         }
         catch (Exception ex)
         {
@@ -137,7 +131,7 @@ public class ClientesController : ControllerBase
     /// <returns>Updated client</returns>
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,Recepcionista")]
-    public async Task<ActionResult<Cliente>> UpdateCliente(int id, Cliente cliente, CancellationToken ct = default)
+    public async Task<ActionResult<Cliente>> UpdateCliente(Guid id, Cliente cliente, CancellationToken ct = default)
     {
         try
         {
@@ -159,22 +153,19 @@ public class ClientesController : ControllerBase
 
             // Validate unique email (excluding current client)
             var emailExists = await _unitOfWork.Clientes.ExistsAsync(
-                c => c.Email == cliente.Email && c.Id != id, ct);
+                c => c.Correo == cliente.Correo && c.Id != id, ct);
             if (emailExists)
             {
                 return BadRequest("Ya existe otro cliente con este email");
             }
 
             // Update fields
-            existingCliente.Nombre = cliente.Nombre;
-            existingCliente.Email = cliente.Email;
-            existingCliente.Telefono = cliente.Telefono;
-            existingCliente.Direccion = cliente.Direccion;
+            existingCliente.UpdateInfo(cliente.NombreCompleto, cliente.Telefono, cliente.Correo);
 
             _unitOfWork.Clientes.Update(existingCliente);
             await _unitOfWork.SaveChangesAsync(ct);
 
-            _logger.LogInformation("Cliente actualizado: {ClienteId} - {ClienteNombre}", id, cliente.Nombre);
+            _logger.LogInformation("Cliente actualizado: {ClienteId} - {ClienteNombre}", id, cliente.NombreCompleto);
 
             return Ok(existingCliente);
         }
@@ -192,7 +183,7 @@ public class ClientesController : ControllerBase
     /// <returns>Operation result</returns>
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<ActionResult> DeleteCliente(int id, CancellationToken ct = default)
+    public async Task<ActionResult> DeleteCliente(Guid id, CancellationToken ct = default)
     {
         try
         {
@@ -204,7 +195,7 @@ public class ClientesController : ControllerBase
 
             // Check if there are active service orders
             var hasActiveOrders = cliente.Vehiculos.Any(v => 
-                v.OrdenesServicio.Any(o => o.Estado != "Completada" && o.Estado != "Cancelada"));
+                v.OrdenesServicio.Any(o => o.Estado?.NombreEstServ != "Completada" && o.Estado?.NombreEstServ != "Cancelada"));
 
             if (hasActiveOrders)
             {
@@ -214,7 +205,7 @@ public class ClientesController : ControllerBase
             _unitOfWork.Clientes.Delete(cliente);
             await _unitOfWork.SaveChangesAsync(ct);
 
-            _logger.LogInformation("Cliente eliminado: {ClienteId} - {ClienteNombre}", id, cliente.Nombre);
+            _logger.LogInformation("Cliente eliminado: {ClienteId} - {ClienteNombre}", id, cliente.NombreCompleto);
 
             return NoContent();
         }

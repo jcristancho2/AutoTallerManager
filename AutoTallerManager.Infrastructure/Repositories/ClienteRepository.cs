@@ -16,7 +16,7 @@ public class ClienteRepository : IClienteService
         _context = context;
     }
 
-    public async Task<Cliente?> GetByIdAsync(int id, CancellationToken ct = default, params string[] includeProperties)
+    public async Task<Cliente?> GetByIdAsync(Guid id, CancellationToken ct = default, params string[] includeProperties)
     {
         IQueryable<Cliente> query = _context.Clientes;
 
@@ -31,7 +31,7 @@ public class ClienteRepository : IClienteService
     public async Task<Cliente?> GetByEmailAsync(string email, CancellationToken ct = default)
     {
         return await _context.Clientes
-            .FirstOrDefaultAsync(c => c.Email == email, ct);
+            .FirstOrDefaultAsync(c => c.Correo == email, ct);
     }
 
     public async Task<IEnumerable<Cliente>> GetAllAsync(

@@ -25,7 +25,7 @@ public class RepuestoRepository : IRepuestoService
             query = query.Include(includeProperty);
         }
 
-        return await query.FirstOrDefaultAsync(r => r.Id == id, ct);
+        return await query.FirstOrDefaultAsync(r => r.RepuestoId == id, ct);
     }
 
     public async Task<Repuesto?> GetByCodigoAsync(string codigo, CancellationToken ct = default)
