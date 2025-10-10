@@ -4,6 +4,7 @@ using AutoTallerManager.Domain.Entities;
 using AutoTallerManager.Domain.Entities.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using AutoTallerManager.API.Services;
 
 namespace AutoTallerManager.API.Controllers.Auth;
 
@@ -13,11 +14,13 @@ public class UsuarioController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UsuarioController> _logger;
+    private readonly IJwtService _jwtService;
 
-    public UsuarioController(IUnitOfWork unitOfWork, ILogger<UsuarioController> logger)
+    public UsuarioController(IUnitOfWork unitOfWork, ILogger<UsuarioController> logger, IJwtService jwtService)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _jwtService = jwtService;
     }
 
     [HttpPost("login")]
@@ -36,8 +39,8 @@ public class UsuarioController : ControllerBase
         if (usuario == null)
             return Unauthorized("Usuario no encontrado");
 
-        // Aquí implementarías la generación del JWT token
-        var token = GenerateJwtToken(usuario);
+        // Generar JWT token real
+        var token = _jwtService.GenerateToken(usuario);
 
         return Ok(new UsuarioLoginResponseDto
         {
@@ -247,10 +250,4 @@ public class UsuarioController : ControllerBase
         return Ok(estadosDto);
     }
 
-    private string GenerateJwtToken(Usuario usuario)
-    {
-        // Implementar generación de JWT token
-        // Por ahora retornar un token temporal
-        return "jwt-token-temporal";
-    }
 }

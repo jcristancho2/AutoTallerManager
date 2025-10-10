@@ -60,6 +60,7 @@ public static class ApplicationServiceExtensions
 
         // este es el servicio de autenticación
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IJwtService, JwtService>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
