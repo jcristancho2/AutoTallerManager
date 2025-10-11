@@ -4,6 +4,8 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+<!-- Suprimir warnings  -->
+    <NoWarn>NU1603;MSB3277</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
