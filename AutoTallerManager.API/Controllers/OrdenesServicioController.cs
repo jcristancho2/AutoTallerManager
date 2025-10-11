@@ -13,10 +13,9 @@ namespace AutoTallerManager.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-
 public class OrdenesServicioController : ControllerBase
 {
-    // Aquí puedes agregar los métodos para manejar las órdenes de servicio
+    // Aquí las órdenes de servicio: crear, obtener, actualizar, eliminar
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<OrdenesServicioController> _logger;
 
@@ -101,9 +100,10 @@ public class OrdenesServicioController : ControllerBase
             if (mecanicoExists == null)
                 return BadRequest("El mecánico especificado no existe");
 
-            var tipoExists = await _unitOfWork.OrdenesServicio.CountAsync(o => o.TipoServId == ordenServicio.TipoServId, ct);
-            // Nota: buscamos el tipo de servicio en la base usando OrdenesServicio.CountAsync como fallback; si la app tiene un servicio específico para tipos, debería usarse.
+            // Nota: buscamos el tipo de servicio en la base usando OrdenesServicio.CountAsync como fallback; 
+            // si la app tiene un servicio específico para tipos, debería usarse.
             // Si el count es 0 no implica ausencia del tipo; omitimos la validación estricta aquí para evitar consultas extra.
+            var tipoExists = await _unitOfWork.OrdenesServicio.CountAsync(o => o.TipoServId == ordenServicio.TipoServId, ct);
 
             await _unitOfWork.OrdenesServicio.AddAsync(ordenServicio, ct);
             await _unitOfWork.SaveChangesAsync(ct);
@@ -184,8 +184,4 @@ public class OrdenesServicioController : ControllerBase
             return StatusCode(500, "Error interno del servidor");
         }
     }
-
-
-
-
 }

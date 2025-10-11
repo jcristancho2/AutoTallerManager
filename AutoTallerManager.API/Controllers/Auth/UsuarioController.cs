@@ -1,3 +1,4 @@
+using System;
 using AutoTallerManager.API.DTOs.Auth;
 using AutoTallerManager.Application.Abstractions;
 using AutoTallerManager.Domain.Entities;
@@ -5,6 +6,7 @@ using AutoTallerManager.Domain.Entities.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using AutoTallerManager.API.Services;
+using AutoTallerManager.API.Services.Interfaces.Auth;
 
 namespace AutoTallerManager.API.Controllers.Auth;
 
@@ -15,40 +17,59 @@ public class UsuarioController : ControllerBase
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UsuarioController> _logger;
     private readonly IJwtService _jwtService;
+    private readonly IUserService _userService;
 
-    public UsuarioController(IUnitOfWork unitOfWork, ILogger<UsuarioController> logger, IJwtService jwtService)
+    public UsuarioController(
+        IUnitOfWork unitOfWork, 
+        ILogger<UsuarioController> logger, 
+        IJwtService jwtService,
+        IUserService userService)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
         _jwtService = jwtService;
+        _userService = userService;
     }
 
+    #region Autenticación y Tokens (Mejorado con Refresh Tokens)
+    
     [HttpPost("login")]
     public async Task<ActionResult<UsuarioLoginResponseDto>> Login([FromBody] LoginUsuarioDto request)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var isValid = await _unitOfWork.Usuarios.ValidateCredentialsAsync(request.Email, request.Password);
+        // Usar el servicio de autenticación mejorado
+        var loginDto = new LoginDto 
+        { 
+            Email = request.Email, 
+            Password = request.Password 
+        };
         
-        if (!isValid)
+        var tokenResult = await _userService.GetTokenAsync(loginDto);
+        
+        if (tokenResult == null || string.IsNullOrEmpty(tokenResult.Token))
             return Unauthorized("Credenciales inválidas");
 
+        // Establecer refresh token en cookie
+        if (!string.IsNullOrEmpty(tokenResult.RefreshToken))
+        {
+            SetRefreshTokenInCookie(tokenResult.RefreshToken);
+        }
+
+        // Obtener información del usuario para la respuesta
         var usuario = await _unitOfWork.Usuarios.GetByEmailAsync(request.Email);
-        
         if (usuario == null)
             return Unauthorized("Usuario no encontrado");
-
-        // Generar JWT token real
-        var token = _jwtService.GenerateToken(usuario);
 
         return Ok(new UsuarioLoginResponseDto
         {
             Id = usuario.Id,
-            Email = usuario.Email ?? string.Empty,                           // ✅ CORREGIR
-            RolNombre = usuario.Rol?.NombreRol ?? string.Empty,              // ✅ CORREGIR
-            EstadoNombre = usuario.EstadoUsuario?.NombreEstUsu ?? string.Empty, // ✅ CORREGIR
-            Token = token
+            Email = usuario.Email ?? string.Empty,
+            RolNombre = usuario.Rol?.NombreRol ?? string.Empty,
+            EstadoNombre = usuario.EstadoUsuario?.NombreEstUsu ?? string.Empty,
+            Token = tokenResult.Token,
+            RefreshToken = tokenResult.RefreshToken
         });
     }
 
@@ -59,41 +80,74 @@ public class UsuarioController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        // Verificar si el email ya existe
-        var existingUser = await _unitOfWork.Usuarios.GetByEmailAsync(request.Email);
-        if (existingUser != null)
-            return BadRequest("El email ya está registrado");
-
-        // Verificar que el rol existe
-        var rol = await _unitOfWork.Roles.GetByIdAsync(request.RolId);
-        if (rol == null)
-            return BadRequest("Rol no válido");
-
-        // Verificar que el estado existe
-        var estado = await _unitOfWork.EstadosUsuario.GetByIdAsync(request.EstadoUsuarioId);
-        if (estado == null)
-            return BadRequest("Estado de usuario no válido");
-
-        var usuario = new Usuario
+        // Usar servicio de registro mejorado
+        var registerDto = new RegisterDto
         {
             Email = request.Email,
-            PasswordHash = request.Password, // En producción usar BCrypt
+            Password = request.Password,
             RolId = request.RolId,
             EstadoUsuarioId = request.EstadoUsuarioId
         };
 
-        await _unitOfWork.Usuarios.CreateAsync(usuario);
+        var result = await _userService.RegisterAsync(registerDto);
+        
+        if (!result.IsSuccess)
+            return BadRequest(result.Message);
+
+        // Obtener usuario creado para respuesta detallada
+        var usuario = await _unitOfWork.Usuarios.GetByEmailAsync(request.Email);
+        if (usuario == null)
+            return BadRequest("Usuario creado pero no encontrado");
+
+        var rol = await _unitOfWork.Roles.GetByIdAsync(request.RolId);
+        var estado = await _unitOfWork.EstadosUsuario.GetByIdAsync(request.EstadoUsuarioId);
 
         _logger.LogInformation("Usuario creado exitosamente: {Email}", usuario.Email);
 
         return CreatedAtAction(nameof(GetById), new { id = usuario.Id }, new UsuarioDto
         {
             Id = usuario.Id,
-            Email = usuario.Email ?? string.Empty,              // ✅ CORREGIR
-            RolNombre = rol.NombreRol ?? string.Empty,          // ✅ CORREGIR
-            EstadoNombre = estado.NombreEstUsu ?? string.Empty  // ✅ CORREGIR
+            Email = usuario.Email ?? string.Empty,
+            RolNombre = rol?.NombreRol ?? string.Empty,
+            EstadoNombre = estado?.NombreEstUsu ?? string.Empty
         });
     }
+
+    [HttpPost("refresh-token")]
+    public async Task<IActionResult> RefreshToken()
+    {
+        var refreshToken = Request.Cookies["refreshToken"];
+        if (string.IsNullOrEmpty(refreshToken))
+        {
+            return BadRequest("Refresh token is missing.");
+        }
+
+        var response = await _userService.RefreshTokenAsync(refreshToken);
+        
+        if (response == null || string.IsNullOrEmpty(response.Token))
+            return Unauthorized("Refresh token inválido");
+
+        if (!string.IsNullOrEmpty(response.RefreshToken))
+            SetRefreshTokenInCookie(response.RefreshToken);
+
+        return Ok(response);
+    }
+
+    [HttpPost("addrole")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> AddRoleAsync([FromBody] AddRoleDto model)
+    {
+        var result = await _userService.AddRoleAsync(model);
+        
+        if (!result.IsSuccess)
+            return BadRequest(result.Message);
+
+        return Ok(result);
+    }
+
+    #endregion
+
+    #region Gestión de Usuarios (CRUD Completo)
 
     [HttpGet]
     [Authorize(Roles = "Admin")]
@@ -106,9 +160,9 @@ public class UsuarioController : ControllerBase
         var usuariosDto = usuarios.Select(u => new UsuarioDto
         {
             Id = u.Id,
-            Email = u.Email ?? string.Empty,                        // ✅ CORREGIR
-            RolNombre = u.Rol?.NombreRol ?? string.Empty,           // ✅ CORREGIR
-            EstadoNombre = u.EstadoUsuario?.NombreEstUsu ?? string.Empty // ✅ CORREGIR
+            Email = u.Email ?? string.Empty,
+            RolNombre = u.Rol?.NombreRol ?? string.Empty,
+            EstadoNombre = u.EstadoUsuario?.NombreEstUsu ?? string.Empty
         });
 
         return Ok(usuariosDto);
@@ -126,9 +180,9 @@ public class UsuarioController : ControllerBase
         return Ok(new UsuarioDto
         {
             Id = usuario.Id,
-            Email = usuario.Email ?? string.Empty,                      // ✅ CORREGIR
-            RolNombre = usuario.Rol?.NombreRol ?? string.Empty,         // ✅ CORREGIR
-            EstadoNombre = usuario.EstadoUsuario?.NombreEstUsu ?? string.Empty // ✅ CORREGIR
+            Email = usuario.Email ?? string.Empty,
+            RolNombre = usuario.Rol?.NombreRol ?? string.Empty,
+            EstadoNombre = usuario.EstadoUsuario?.NombreEstUsu ?? string.Empty
         });
     }
 
@@ -172,9 +226,9 @@ public class UsuarioController : ControllerBase
         return Ok(new UsuarioDto
         {
             Id = usuario.Id,
-            Email = usuario.Email ?? string.Empty,              // ✅ CORREGIR
-            RolNombre = rol.NombreRol ?? string.Empty,          // ✅ CORREGIR
-            EstadoNombre = estado.NombreEstUsu ?? string.Empty  // ✅ CORREGIR
+            Email = usuario.Email ?? string.Empty,
+            RolNombre = rol.NombreRol ?? string.Empty,
+            EstadoNombre = estado.NombreEstUsu ?? string.Empty
         });
     }
 
@@ -223,6 +277,10 @@ public class UsuarioController : ControllerBase
         return Ok("Usuario desactivado exitosamente");
     }
 
+    #endregion
+
+    #region Catálogos y Utilidades
+
     [HttpGet("roles")]
     public async Task<ActionResult<IEnumerable<RolDto>>> GetRoles()
     {
@@ -230,8 +288,8 @@ public class UsuarioController : ControllerBase
         var rolesDto = roles.Select(r => new RolDto
         {
             Id = r.Id,
-            NombreRol = r.NombreRol ?? string.Empty,    // ✅ CORREGIR
-            Descripcion = r.Descripcion ?? string.Empty // ✅ CORREGIR
+            NombreRol = r.NombreRol ?? string.Empty,
+            Descripcion = r.Descripcion ?? string.Empty
         });
 
         return Ok(rolesDto);
@@ -244,10 +302,27 @@ public class UsuarioController : ControllerBase
         var estadosDto = estados.Select(e => new EstadoUsuarioDto
         {
             Id = e.Id,
-            NombreEstUsu = e.NombreEstUsu ?? string.Empty // ✅ CORREGIR
+            NombreEstUsu = e.NombreEstUsu ?? string.Empty
         });
 
         return Ok(estadosDto);
     }
 
+    #endregion
+
+    #region Métodos Privados
+
+    private void SetRefreshTokenInCookie(string refreshToken)
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Expires = DateTime.UtcNow.AddDays(10),
+            Secure = true, // Solo en HTTPS en producción
+            SameSite = SameSiteMode.Strict
+        };
+        Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
+    }
+
+    #endregion
 }
