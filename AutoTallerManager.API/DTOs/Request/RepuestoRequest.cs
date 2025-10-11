@@ -7,28 +7,28 @@ namespace AutoTallerManager.API.DTOs.Request
     {
         [Required]
         [StringLength(30)]
-        public string? Codigo { get; init; }
+        public string? Codigo { get; set; }
 
         [Required]
         [StringLength(150)]
-        public string? NombreRepu { get; init; }
+        public string? NombreRepu { get; set; }
 
         [StringLength(500)]
-        public string? Descripcion { get; init; }
+        public string? Descripcion { get; set; }
 
         [Range(0, int.MaxValue)]
-        public int Stock { get; init; }
+        public int Stock { get; set; }
 
         [Range(0, double.MaxValue)]
-        public decimal PrecioUnitario { get; init; }
+        public decimal PrecioUnitario { get; set; }
 
         [Required]
-        public int CategoriaId { get; init; }
+        public int CategoriaId { get; set; }
 
         [Required]
-        public int TipoVehiculoId { get; init; }
+        public int TipoVehiculoId { get; set; }
 
         [Required]
-        public int FabricanteId { get; init; }
+        public int FabricanteId { get; set; }
     }
 }

@@ -4,11 +4,11 @@ namespace AutoTallerManager.API.DTOs.Response
 {
     public record OrdenServicioResponse
     {
-        public int OrdenServicioId { get; init; }
-        public DateTime FechaIngreso { get; init; }
-        public DateTime FechaEstimadaEntrega { get; init; }
-        public int VehiculoId { get; init; }
-        public int TipoServId { get; init; }
-        public int EstadoId { get; init; }
+        public int OrdenServicioId { get; set; }
+        public DateTime FechaIngreso { get; set; }
+        public DateTime FechaEstimadaEntrega { get; set; }
+        public int VehiculoId { get; set; }
+        public int TipoServId { get; set; }
+        public int EstadoId { get; set; }
     }
 }

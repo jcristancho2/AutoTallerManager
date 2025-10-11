@@ -5,21 +5,21 @@ namespace AutoTallerManager.API.DTOs.Response
 {
     public record ClienteResponse
     {
-        public int Id { get; init; }
-        public string? NombreCompleto { get; init; }
-        public string? Telefono { get; init; }
-        public string? Email { get; init; }
-        public int TipoCliente_Id { get; init; }
-        public int Direccion_Id { get; init; }
+        public int Id { get; set; }
+        public string? NombreCompleto { get; set; }
+        public string? Telefono { get; set; }
+        public string? Email { get; set; }
+        public int TipoCliente_Id { get; set; }
+        public int Direccion_Id { get; set; }
 
-        public IReadOnlyCollection<VehiculoSummary>? Vehiculos { get; init; }
+        public IReadOnlyCollection<VehiculoSummary>? Vehiculos { get; set; }
 
         public record VehiculoSummary
         {
-            public int VehiculoId { get; init; }
-            public string? Placa { get; init; }
-            public int Anio { get; init; }
-            public string? VIN { get; init; }
+            public int VehiculoId { get; set; }
+            public string? Placa { get; set; }
+            public int Anio { get; set; }
+            public string? VIN { get; set; }
         }
     }
 }

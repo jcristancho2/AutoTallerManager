@@ -4,15 +4,15 @@ namespace AutoTallerManager.API.DTOs.Response
 {
     public record RepuestoResponse
     {
-        public int RepuestoId { get; init; }
-        public string? Codigo { get; init; }
-        public string? NombreRepu { get; init; }
-        public string? Descripcion { get; init; }
-        public int Stock { get; init; }
-        public decimal PrecioUnitario { get; init; }
-        public int CategoriaId { get; init; }
-        public int TipoVehiculoId { get; init; }
-        public int FabricanteId { get; init; }
+        public int RepuestoId { get; set; }
+        public string? Codigo { get; set; }
+        public string? NombreRepu { get; set; }
+        public string? Descripcion { get; set; }
+        public int Stock { get; set; }
+        public decimal PrecioUnitario { get; set; }
+        public int CategoriaId { get; set; }
+        public int TipoVehiculoId { get; set; }
+        public int FabricanteId { get; set; }
     }
 }
 

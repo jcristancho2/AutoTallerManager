@@ -7,28 +7,27 @@ namespace AutoTallerManager.API.DTOs.Request
     {
         [Required]
         [StringLength(10)]
-        public string Placa { get; init; } = string.Empty;
+        public string? Placa { get; set; }
 
         [Range(1900, 2100)]
-        public int Anio { get; init; }
+        public int Anio { get; set; }
 
         [Required]
         [StringLength(30)]
-        public string VIN { get; init; } = string.Empty;
-
+        public string? VIN { get; set; }
         [Range(0, int.MaxValue)]
-        public int Kilometraje { get; init; }
+        public int Kilometraje { get; set; }
 
         [Required]
-        public int ClienteId { get; init; }
+        public int ClienteId { get; set; }
 
         [Required]
-        public int TipoVehiculoId { get; init; }
+        public int TipoVehiculoId { get; set; }
 
         [Required]
-        public int MarcaVehiculoId { get; init; }
+        public int MarcaVehiculoId { get; set; }
 
         [Required]
-        public int ModeloVehiculoId { get; init; }
+        public int ModeloVehiculoId { get; set; }
     }
 }
