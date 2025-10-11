@@ -10,7 +10,6 @@ namespace AutoTallerManager.Domain.Entities
     {
         public DateTime FechaIngreso { get; set; }
         public DateTime FechaEstimadaEntrega { get; set; }
-
         public int VehiculoId { get; set; }
         public Vehiculo? Vehiculo { get; set; }
 
@@ -22,12 +21,9 @@ namespace AutoTallerManager.Domain.Entities
 
         public int EstadoId { get; set; }
         public EstadoServ? Estado { get; set; }
-
         // Relaciones correctas
         public ICollection<DetalleOrden>? DetallesOrden { get; set; }
         public ICollection<Factura>? Facturas { get; set; }
-
-        // Relación inversa típica (si usas Factura)
-        public Factura? Factura { get; set; }
+        //public Factura? Factura { get; set; }
     }
 }

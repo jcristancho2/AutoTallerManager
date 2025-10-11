@@ -6,7 +6,7 @@ using AutoTallerManager.Domain.Entities.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AutoTallerManager.API.Configuration.Auth
+namespace AutoTallerManager.Infrastructure.Configurations.Auth
 {
     public class UserMemberRolConfiguration : IEntityTypeConfiguration<UserMemberRol>
     {
