@@ -48,27 +48,10 @@ namespace AutoTallerManager.API.Configuration.Auth;
             .HasColumnType("date")
             .HasDefaultValueSql("CURRENT_DATE")
             .ValueGeneratedOnAddOrUpdate();
-        builder
-               .HasMany(p => p.UserMemberRoles)
-               .WithMany()
-               .UsingEntity<UserMemberRol>(
-
-                   j => j
-                   .HasOne(pt => pt.Rol)
-                   .WithMany(t => t.UserMemberRoles)
-                   .HasForeignKey(ut => ut.RolId),
-
-                   j => j
-                   .HasOne(et => et.UserMember)
-                   .WithMany(et => et.UserMemberRoles)
-                   .HasForeignKey(el => el.UserMemberId),
-
-                   j =>
-                   {
-                       j.ToTable("users_rols");
-                       j.HasKey(t => new { t.UserMemberId, t.RolId });
-
-                   });
+        builder.HasMany(u => u.UserMemberRoles)
+               .WithOne(umr => umr.UserMember)
+               .HasForeignKey(umr => umr.UserMemberId)
+               .OnDelete(DeleteBehavior.Cascade);
 
                 builder.HasMany(p => p.RefreshTokens)
                 .WithOne(p => p.UserMember)
