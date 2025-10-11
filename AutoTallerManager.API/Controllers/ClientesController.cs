@@ -66,6 +66,7 @@ public class ClientesController : ControllerBase
     {
         try
         {
+            // ✅ MANTENIENDO TU ENFOQUE CON IUnitOfWork
             var cliente = await _unitOfWork.Clientes.GetByIdAsync(id, ct, new[] { "Vehiculos", "Facturas" });
             
             if (cliente == null)
@@ -119,6 +120,7 @@ public class ClientesController : ControllerBase
             if (existingCliente == null)
                 return NotFound($"Cliente con ID {id} no encontrado");
 
+            // ✅ VALIDACIÓN DE EMAIL ÚNICO (similar al ejemplo)
             var emailExists = await _unitOfWork.Clientes.ExistsAsync(
                 c => c.Email == cliente.Email && c.Id != id, ct);
             if (emailExists)

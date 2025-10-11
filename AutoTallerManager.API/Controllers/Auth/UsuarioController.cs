@@ -1,7 +1,6 @@
 using System;
 using AutoTallerManager.API.DTOs.Auth;
 using AutoTallerManager.Application.Abstractions;
-using AutoTallerManager.Domain.Entities;
 using AutoTallerManager.Domain.Entities.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -39,10 +38,10 @@ public class UsuarioController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        // Usar el servicio de autenticación mejorado
+        // Usa el servicio de autenticación mejorado
         var loginDto = new LoginDto 
         { 
-            Email = request.Email, 
+            Username = request.Email, 
             Password = request.Password 
         };
         
@@ -51,14 +50,14 @@ public class UsuarioController : ControllerBase
         if (tokenResult == null || string.IsNullOrEmpty(tokenResult.Token))
             return Unauthorized("Credenciales inválidas");
 
-        // Establecer refresh token en cookie
+        // Establece el refresh token en cookie
         if (!string.IsNullOrEmpty(tokenResult.RefreshToken))
         {
             SetRefreshTokenInCookie(tokenResult.RefreshToken);
         }
 
-        // Obtener información del usuario para la respuesta
-        var usuario = await _unitOfWork.Usuarios.GetByEmailAsync(request.Email);
+        // Obtiene información del usuario para la respuesta
+        var usuario = await _unitOfWork.UserMembers.GetByUserNameAsync(request.Email);
         if (usuario == null)
             return Unauthorized("Usuario no encontrado");
 
@@ -66,8 +65,8 @@ public class UsuarioController : ControllerBase
         {
             Id = usuario.Id,
             Email = usuario.Email ?? string.Empty,
-            RolNombre = usuario.Rol?.NombreRol ?? string.Empty,
-            EstadoNombre = usuario.EstadoUsuario?.NombreEstUsu ?? string.Empty,
+            RolNombre = usuario.UserMemberRoles?.FirstOrDefault()?.Rol?.NombreRol ?? string.Empty,
+            EstadoNombre = "Activo", 
             Token = tokenResult.Token,
             RefreshToken = tokenResult.RefreshToken
         });
@@ -83,24 +82,20 @@ public class UsuarioController : ControllerBase
         // Usar servicio de registro mejorado
         var registerDto = new RegisterDto
         {
+            Username = request.Email,
             Email = request.Email,
-            Password = request.Password,
-            RolId = request.RolId,
-            EstadoUsuarioId = request.EstadoUsuarioId
+            Password = request.Password
+            // UserMember maneja roles automáticamente
         };
 
         var result = await _userService.RegisterAsync(registerDto);
         
-        if (!result.IsSuccess)
-            return BadRequest(result.Message);
-
-        // Obtener usuario creado para respuesta detallada
-        var usuario = await _unitOfWork.Usuarios.GetByEmailAsync(request.Email);
+        // Obtiene usuario creado para respuesta detallada
+        var usuario = await _unitOfWork.UserMembers.GetByUserNameAsync(request.Email);
         if (usuario == null)
             return BadRequest("Usuario creado pero no encontrado");
 
-        var rol = await _unitOfWork.Roles.GetByIdAsync(request.RolId);
-        var estado = await _unitOfWork.EstadosUsuario.GetByIdAsync(request.EstadoUsuarioId);
+        var rol = usuario.UserMemberRoles?.FirstOrDefault()?.Rol;
 
         _logger.LogInformation("Usuario creado exitosamente: {Email}", usuario.Email);
 
@@ -109,7 +104,7 @@ public class UsuarioController : ControllerBase
             Id = usuario.Id,
             Email = usuario.Email ?? string.Empty,
             RolNombre = rol?.NombreRol ?? string.Empty,
-            EstadoNombre = estado?.NombreEstUsu ?? string.Empty
+            EstadoNombre = "Activo"
         });
     }
 
@@ -138,10 +133,6 @@ public class UsuarioController : ControllerBase
     public async Task<IActionResult> AddRoleAsync([FromBody] AddRoleDto model)
     {
         var result = await _userService.AddRoleAsync(model);
-        
-        if (!result.IsSuccess)
-            return BadRequest(result.Message);
-
         return Ok(result);
     }
 
@@ -153,16 +144,14 @@ public class UsuarioController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<IEnumerable<UsuarioDto>>> GetAll()
     {
-        var usuarios = await _unitOfWork.Usuarios.GetAllAsync(
-            includeProperties: "Rol,EstadoUsuario"
-        );
+        var usuarios = await _unitOfWork.UserMembers.GetAllAsync();
 
         var usuariosDto = usuarios.Select(u => new UsuarioDto
         {
             Id = u.Id,
             Email = u.Email ?? string.Empty,
-            RolNombre = u.Rol?.NombreRol ?? string.Empty,
-            EstadoNombre = u.EstadoUsuario?.NombreEstUsu ?? string.Empty
+            RolNombre = u.UserMemberRoles?.FirstOrDefault()?.Rol?.NombreRol ?? string.Empty,
+            EstadoNombre = "Activo"
         });
 
         return Ok(usuariosDto);
@@ -172,7 +161,7 @@ public class UsuarioController : ControllerBase
     [Authorize]
     public async Task<ActionResult<UsuarioDto>> GetById(int id)
     {
-        var usuario = await _unitOfWork.Usuarios.GetByIdAsync(id);
+        var usuario = await _unitOfWork.UserMembers.GetByIdAsync(id);
         
         if (usuario == null)
             return NotFound("Usuario no encontrado");
@@ -181,8 +170,8 @@ public class UsuarioController : ControllerBase
         {
             Id = usuario.Id,
             Email = usuario.Email ?? string.Empty,
-            RolNombre = usuario.Rol?.NombreRol ?? string.Empty,
-            EstadoNombre = usuario.EstadoUsuario?.NombreEstUsu ?? string.Empty
+            RolNombre = usuario.UserMemberRoles?.FirstOrDefault()?.Rol?.NombreRol ?? string.Empty,
+            EstadoNombre = "Activo"
         });
     }
 
@@ -193,33 +182,22 @@ public class UsuarioController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var usuario = await _unitOfWork.Usuarios.GetByIdAsync(id);
+        var usuario = await _unitOfWork.UserMembers.GetByIdAsync(id);
         if (usuario == null)
             return NotFound("Usuario no encontrado");
 
-        // Verificar email único si cambió
+        // Verifica email único si cambió
         if (usuario.Email != request.Email)
         {
-            var existingUser = await _unitOfWork.Usuarios.GetByEmailAsync(request.Email);
+            var existingUser = await _unitOfWork.UserMembers.GetByUserNameAsync(request.Email);
             if (existingUser != null)
                 return BadRequest("El email ya está en uso");
         }
 
-        // Verificar rol válido
-        var rol = await _unitOfWork.Roles.GetByIdAsync(request.RolId);
-        if (rol == null)
-            return BadRequest("Rol no válido");
-
-        // Verificar estado válido
-        var estado = await _unitOfWork.EstadosUsuario.GetByIdAsync(request.EstadoUsuarioId);
-        if (estado == null)
-            return BadRequest("Estado no válido");
-
         usuario.Email = request.Email;
-        usuario.RolId = request.RolId;
-        usuario.EstadoUsuarioId = request.EstadoUsuarioId;
+        usuario.Username = request.Email; // Mantiene sincronizado
 
-        await _unitOfWork.Usuarios.UpdateAsync(usuario);
+        await _unitOfWork.UserMembers.UpdateAsync(usuario);
 
         _logger.LogInformation("Usuario actualizado: {Email}", usuario.Email);
 
@@ -227,8 +205,8 @@ public class UsuarioController : ControllerBase
         {
             Id = usuario.Id,
             Email = usuario.Email ?? string.Empty,
-            RolNombre = rol.NombreRol ?? string.Empty,
-            EstadoNombre = estado.NombreEstUsu ?? string.Empty
+            RolNombre = usuario.UserMemberRoles?.FirstOrDefault()?.Rol?.NombreRol ?? string.Empty,
+            EstadoNombre = "Activo"
         });
     }
 
@@ -239,42 +217,19 @@ public class UsuarioController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var success = await _unitOfWork.Usuarios.ChangePasswordAsync(id, request.NewPassword);
-        
-        if (!success)
+        var usuario = await _unitOfWork.UserMembers.GetByIdAsync(id);
+        if (usuario == null)
             return NotFound("Usuario no encontrado");
+
+        // Cambia la contraseña usando el password hasher
+        var passwordHasher = new Microsoft.AspNetCore.Identity.PasswordHasher<UserMember>();
+        usuario.Password = passwordHasher.HashPassword(usuario, request.NewPassword);
+
+        await _unitOfWork.UserMembers.UpdateAsync(usuario);
 
         _logger.LogInformation("Contraseña cambiada para usuario ID: {UserId}", id);
         
         return Ok("Contraseña actualizada exitosamente");
-    }
-
-    [HttpPut("{id}/activar")]
-    [Authorize(Roles = "Admin")]
-    public async Task<ActionResult> ActivateUser(int id)
-    {
-        var success = await _unitOfWork.Usuarios.ActivateUserAsync(id);
-        
-        if (!success)
-            return NotFound("Usuario no encontrado o estado 'Activo' no existe");
-
-        _logger.LogInformation("Usuario activado ID: {UserId}", id);
-        
-        return Ok("Usuario activado exitosamente");
-    }
-
-    [HttpPut("{id}/desactivar")]
-    [Authorize(Roles = "Admin")]
-    public async Task<ActionResult> DeactivateUser(int id)
-    {
-        var success = await _unitOfWork.Usuarios.DeactivateUserAsync(id);
-        
-        if (!success)
-            return NotFound("Usuario no encontrado o estado 'NoActivo' no existe");
-
-        _logger.LogInformation("Usuario desactivado ID: {UserId}", id);
-        
-        return Ok("Usuario desactivado exitosamente");
     }
 
     #endregion
@@ -295,19 +250,6 @@ public class UsuarioController : ControllerBase
         return Ok(rolesDto);
     }
 
-    [HttpGet("estados")]
-    public async Task<ActionResult<IEnumerable<EstadoUsuarioDto>>> GetEstados()
-    {
-        var estados = await _unitOfWork.EstadosUsuario.GetAllAsync();
-        var estadosDto = estados.Select(e => new EstadoUsuarioDto
-        {
-            Id = e.Id,
-            NombreEstUsu = e.NombreEstUsu ?? string.Empty
-        });
-
-        return Ok(estadosDto);
-    }
-
     #endregion
 
     #region Métodos Privados
@@ -318,7 +260,7 @@ public class UsuarioController : ControllerBase
         {
             HttpOnly = true,
             Expires = DateTime.UtcNow.AddDays(10),
-            Secure = true, // Solo en HTTPS en producción
+            Secure = true,
             SameSite = SameSiteMode.Strict
         };
         Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);

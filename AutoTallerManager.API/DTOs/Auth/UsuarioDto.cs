@@ -10,7 +10,7 @@ public class UsuarioDto
     public int Id { get; set; }
     public string Email { get; set; } = string.Empty;
     public string RolNombre { get; set; } = string.Empty;
-    public string EstadoNombre { get; set; } = string.Empty;
+    public string EstadoNombre { get; set; } = "Activo";
 }
 
 
