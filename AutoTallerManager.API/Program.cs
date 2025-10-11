@@ -29,6 +29,8 @@ builder.Services.AddMediatR(cfg =>
     );
 });
 
+
+
 // Configurar DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
