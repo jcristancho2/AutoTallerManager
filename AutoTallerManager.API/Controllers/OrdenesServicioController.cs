@@ -25,6 +25,16 @@ public class OrdenesServicioController : ControllerBase
         _logger = logger;
     }
 
+    public class UpdateEstadoOrdenRequest
+    {
+        public int EstadoId { get; set; }
+    }
+
+    public class CerrarOrdenRequest
+    {
+        public int TipoPagoId { get; set; }
+    }
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<OrdenServicio>>> GetOrdenesServicio(
         [FromQuery] int pageNumber = 1,
@@ -64,12 +74,194 @@ public class OrdenesServicioController : ControllerBase
         }
     }
 
+    [HttpPost("{id}/detalles")]
+    [Authorize(Roles = "Admin,Mecanico")]
+    public async Task<ActionResult<DetalleOrden>> AddDetalle(int id, [FromBody] DetalleOrden detalle, CancellationToken ct = default)
+    {
+        try
+        {
+            var orden = await _unitOfWork.OrdenesServicio.GetByIdAsync(id, ct, "Vehiculo");
+            if (orden == null)
+                return NotFound($"Orden de servicio con ID {id} no encontrada");
+
+            detalle.OrdenServicioId = id;
+
+            if (detalle.RepuestoId.HasValue && detalle.RepuestoId.Value > 0)
+            {
+                var repuesto = await _unitOfWork.Repuestos.GetByIdAsync(detalle.RepuestoId.Value, ct);
+                if (repuesto == null) return BadRequest("Repuesto no existe");
+                if (detalle.Cantidad <= 0) return BadRequest("Cantidad debe ser mayor a 0");
+                if (repuesto.Stock < detalle.Cantidad) return BadRequest("Stock insuficiente del repuesto");
+
+                repuesto.Stock = repuesto.Stock - detalle.Cantidad;
+                await _unitOfWork.Repuestos.UpdateAsync(repuesto, ct);
+            }
+
+            await _unitOfWork.DetallesOrden.AddAsync(detalle, ct);
+            await _unitOfWork.SaveChangesAsync(ct);
+
+            _logger.LogInformation("Detalle agregado a orden {OrdenId}: DetalleId {DetalleOrdenId}", id, detalle.DetalleOrdenId);
+            return CreatedAtAction(nameof(GetOrdenServicio), new { id = id }, detalle);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al agregar detalle a orden {OrdenId}", id);
+            return StatusCode(500, "Error interno del servidor");
+        }
+    }
+
+    [HttpPut("{id}/detalles/{detalleId}")]
+    [Authorize(Roles = "Admin,Mecanico")]
+    public async Task<ActionResult<DetalleOrden>> UpdateDetalle(int id, int detalleId, [FromBody] DetalleOrden detalle, CancellationToken ct = default)
+    {
+        try
+        {
+            var existente = await _unitOfWork.DetallesOrden.GetByIdAsync(detalleId, id, ct);
+            if (existente == null) return NotFound("Detalle no encontrado");
+
+            // Ajuste de stock si cambian repuesto/cantidad
+            if (existente.RepuestoId != detalle.RepuestoId)
+            {
+                if (existente.RepuestoId.HasValue)
+                {
+                    var repuestoAnterior = await _unitOfWork.Repuestos.GetByIdAsync(existente.RepuestoId.Value, ct);
+                    if (repuestoAnterior != null)
+                    {
+                        repuestoAnterior.Stock += existente.Cantidad; // devolver stock anterior
+                        await _unitOfWork.Repuestos.UpdateAsync(repuestoAnterior, ct);
+                    }
+                }
+
+                if (detalle.RepuestoId.HasValue)
+                {
+                    var repuestoNuevo = await _unitOfWork.Repuestos.GetByIdAsync(detalle.RepuestoId.Value, ct);
+                    if (repuestoNuevo == null) return BadRequest("Repuesto nuevo no existe");
+                    if (repuestoNuevo.Stock < detalle.Cantidad) return BadRequest("Stock insuficiente del nuevo repuesto");
+                    repuestoNuevo.Stock -= detalle.Cantidad;
+                    await _unitOfWork.Repuestos.UpdateAsync(repuestoNuevo, ct);
+                }
+            }
+            else if (existente.RepuestoId.HasValue && detalle.RepuestoId.HasValue && existente.Cantidad != detalle.Cantidad)
+            {
+                var repuesto = await _unitOfWork.Repuestos.GetByIdAsync(detalle.RepuestoId.Value, ct);
+                if (repuesto == null) return BadRequest("Repuesto no existe");
+
+                var diferencia = detalle.Cantidad - existente.Cantidad; // si >0 consume más; si <0 devuelve
+                if (diferencia > 0 && repuesto.Stock < diferencia) return BadRequest("Stock insuficiente del repuesto");
+                repuesto.Stock -= diferencia;
+                await _unitOfWork.Repuestos.UpdateAsync(repuesto, ct);
+            }
+
+            existente.RepuestoId = detalle.RepuestoId;
+            existente.Descripcion = detalle.Descripcion;
+            existente.Cantidad = detalle.Cantidad;
+            existente.PrecioUnitario = detalle.PrecioUnitario;
+            existente.PrecioManoDeObra = detalle.PrecioManoDeObra;
+
+            await _unitOfWork.DetallesOrden.UpdateAsync(existente, ct);
+            await _unitOfWork.SaveChangesAsync(ct);
+            return Ok(existente);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al actualizar detalle {DetalleId} de orden {OrdenId}", detalleId, id);
+            return StatusCode(500, "Error interno del servidor");
+        }
+    }
+
+    [HttpDelete("{id}/detalles/{detalleId}")]
+    [Authorize(Roles = "Admin,Mecanico")]
+    public async Task<ActionResult> DeleteDetalle(int id, int detalleId, CancellationToken ct = default)
+    {
+        try
+        {
+            var existente = await _unitOfWork.DetallesOrden.GetByIdAsync(detalleId, id, ct);
+            if (existente == null) return NotFound("Detalle no encontrado");
+
+            if (existente.RepuestoId.HasValue)
+            {
+                var repuesto = await _unitOfWork.Repuestos.GetByIdAsync(existente.RepuestoId.Value, ct);
+                if (repuesto != null)
+                {
+                    repuesto.Stock += existente.Cantidad; // devolver stock
+                    await _unitOfWork.Repuestos.UpdateAsync(repuesto, ct);
+                }
+            }
+
+            var deleted = await _unitOfWork.DetallesOrden.DeleteAsync(detalleId, id, ct);
+            if (!deleted) return NotFound();
+
+            await _unitOfWork.SaveChangesAsync(ct);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al eliminar detalle {DetalleId} de orden {OrdenId}", detalleId, id);
+            return StatusCode(500, "Error interno del servidor");
+        }
+    }
+
+    [HttpPut("{id}/estado")]
+    [Authorize(Roles = "Admin,Mecanico,Recepcionista")]
+    public async Task<ActionResult> UpdateEstado(int id, [FromBody] UpdateEstadoOrdenRequest request, CancellationToken ct = default)
+    {
+        try
+        {
+            var orden = await _unitOfWork.OrdenesServicio.GetByIdAsync(id, ct);
+            if (orden == null) return NotFound("Orden de servicio no encontrada");
+
+            orden.EstadoId = request.EstadoId;
+            await _unitOfWork.OrdenesServicio.UpdateAsync(orden, ct);
+            await _unitOfWork.SaveChangesAsync(ct);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al actualizar estado de orden {OrdenId}", id);
+            return StatusCode(500, "Error interno del servidor");
+        }
+    }
+
+    [HttpPost("{id}/cerrar")]
+    [Authorize(Roles = "Admin,Mecanico")]
+    public async Task<ActionResult> CerrarOrden(int id, [FromBody] CerrarOrdenRequest request, CancellationToken ct = default)
+    {
+        try
+        {
+            var orden = await _unitOfWork.OrdenesServicio.GetByIdAsync(id, ct, "Vehiculo,DetallesOrden");
+            if (orden == null) return NotFound("Orden de servicio no encontrada");
+
+            var detalles = await _unitOfWork.DetallesOrden.GetDetallesByOrdenAsync(id, ct);
+            var total = detalles.Sum(d => (d.PrecioUnitario * d.Cantidad) + d.PrecioManoDeObra);
+
+            var clienteId = orden.Vehiculo?.ClienteId ?? 0;
+            if (clienteId == 0) return BadRequest("No se puede determinar el cliente de la orden");
+
+            var factura = new Factura
+            {
+                Fecha = DateTime.UtcNow,
+                Total = total,
+                OrdenServicioId = id,
+                ClienteId = clienteId,
+                TipoPagoId = request.TipoPagoId
+            };
+
+            await _unitOfWork.Facturas.AddAsync(factura, ct);
+            await _unitOfWork.SaveChangesAsync(ct);
+            return Ok(new { FacturaId = factura.Id, Total = factura.Total });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al cerrar orden {OrdenId}", id);
+            return StatusCode(500, "Error interno del servidor");
+        }
+    }
     [HttpGet("{id}")]
     public async Task<ActionResult<OrdenServicio>> GetOrdenServicio(int id, CancellationToken ct = default)
     {
         try
         {
-            var orden = await _unitOfWork.OrdenesServicio.GetByIdAsync(id, ct, "Vehiculo,Mecanico,TipoServicio,Estado,DetallesOrden,Facturas");
+            var orden = await _unitOfWork.OrdenesServicio.GetByIdAsync(id, ct, "Vehiculo, Mecanico, TipoServicio, Estado, DetallesOrden, Facturas");
             if (orden == null)
                 return NotFound($"Orden de servicio con ID {id} no encontrada");
 
