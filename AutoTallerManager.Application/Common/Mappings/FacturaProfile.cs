@@ -1,5 +1,3 @@
-using AutoTallerManager.API.DTOs.Request;
-using AutoTallerManager.API.DTOs.Response;
 using AutoMapper;
 using AutoTallerManager.Domain.Entities;
 
@@ -9,24 +7,10 @@ namespace AutoTallerManager.Application.Common.Mappings
     {
         public FacturaProfile()
         {
-            // REQUEST -> DOMAIN
-            CreateMap<FacturaRequest, Factura>()
+            CreateMap<Factura, Factura>()
                 .ForMember(d => d.Id, o => o.Ignore())
-                .ForMember(d => d.ClienteId, o => o.MapFrom(s => s.ClienteId))
-                .ForMember(d => d.OrdenServicioId, o => o.MapFrom(s => s.OrdenServicioId))
-                .ForMember(d => d.Fecha, o => o.MapFrom(s => s.Fecha))
-                .ForMember(d => d.TipoPagoId, o => o.MapFrom(s => s.TipoPagoId))
-                .ForMember(d => d.Total, o => o.MapFrom(s => s.Total))
-                .ForAllMembers(o => o.Condition((src, dest, val) => val != null));
-
-            // DOMAIN -> RESPONSE
-            CreateMap<Factura, FacturaResponse>()
-                .ForMember(d => d.ClienteId, o => o.MapFrom(s => s.ClienteId))
-                .ForMember(d => d.OrdenServicioId, o => o.MapFrom(s => s.OrdenServicioId))
-                .ForMember(d => d.Fecha, o => o.MapFrom(s => s.Fecha))
-                .ForMember(d => d.FacturaId, o => o.MapFrom(s => s.Id))
-                .ForMember(d => d.TipoPagoId, o => o.MapFrom(s => s.TipoPagoId))
-                .ForMember(d => d.Total, o => o.MapFrom(s => s.Total));
+                .ForMember(d => d.CreatedAt, o => o.Ignore())
+                .ForMember(d => d.UpdatedAt, o => o.Ignore());
         }
     }
 }

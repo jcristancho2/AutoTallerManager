@@ -87,9 +87,10 @@ public class OrdenServicioRepository : IOrdenServicioService
         await _context.OrdenesServicio.AddAsync(ordenServicio, ct);
     }
 
-    public async Task UpdateAsync(OrdenServicio ordenServicio, CancellationToken ct = default)
+    public Task UpdateAsync(OrdenServicio ordenServicio, CancellationToken ct = default)
     {
         _context.OrdenesServicio.Update(ordenServicio);
+        return Task.CompletedTask;
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)

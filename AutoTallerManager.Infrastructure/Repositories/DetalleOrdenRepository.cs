@@ -83,9 +83,10 @@ public class DetalleOrdenRepository : IDetalleOrdenService
         await _context.DetalleOrdenes.AddAsync(detalleOrden, ct);
     }
 
-    public async Task UpdateAsync(DetalleOrden detalleOrden, CancellationToken ct = default)
+    public Task UpdateAsync(DetalleOrden detalleOrden, CancellationToken ct = default)
     {
         _context.DetalleOrdenes.Update(detalleOrden);
+        return Task.CompletedTask;
     }
 
     public async Task<bool> DeleteAsync(int detalleOrdenId, int ordenServicioId, CancellationToken ct = default)

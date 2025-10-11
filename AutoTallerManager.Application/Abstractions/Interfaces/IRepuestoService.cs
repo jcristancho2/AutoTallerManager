@@ -1,3 +1,4 @@
+using AutoTallerManager.Application.Common.Models;
 using AutoTallerManager.Domain.Entities;
 using System.Linq.Expressions;
 
@@ -44,11 +45,3 @@ public interface IRepuestoService
     Task UpdateStockAsync(int id, int nuevoStock, CancellationToken ct = default);
     Task<IEnumerable<Repuesto>> GetRepuestosPorCategoriaAsync(int categoriaId, CancellationToken ct = default);
 }
-
-// Record para paginación (agregar en el mismo namespace)
-public record PagedResult<T>(
-    IEnumerable<T> Items,
-    int TotalCount,
-    int PageNumber,
-    int PageSize
-);

@@ -1,4 +1,5 @@
 using AutoTallerManager.Application.Abstractions.Interfaces;
+using AutoTallerManager.Application.Common.Models;
 using AutoTallerManager.Domain.Entities;
 using AutoTallerManager.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
@@ -112,9 +113,10 @@ public class RepuestoRepository : IRepuestoService
         await _context.Repuestos.AddAsync(repuesto, ct);
     }
 
-    public async Task UpdateAsync(Repuesto repuesto, CancellationToken ct = default)
+    public Task UpdateAsync(Repuesto repuesto, CancellationToken ct = default)
     {
         _context.Repuestos.Update(repuesto);
+        return Task.CompletedTask;
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)

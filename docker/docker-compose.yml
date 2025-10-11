@@ -1,36 +1,66 @@
-version: '3.9'
+#red interna para los servicios
+networks:
+  autotaller_net:
+    driver: bridge
+# definimos un volumen para persistir los datos de la base de datos
+volumes:
+  autotaller_data:
 
+# definimos los servicios
 services:
   db:
+    # imagen oficial de PostgreSQL
     image: postgres:16
+    # nombre del contenedor
     container_name: autotaller_db
+    # variable de  entorno para configurar la base de datos
     environment:
       POSTGRES_DB: autotallerdb
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    # mapeo de puertos 
+      # Así puedes conectarte desde DBeaver con:
+      #   Host: localhost
+      #   Port: 5433
+      #   Database: autotallerdb
+      #   User: postgres
+      #   Password: postgres
+    # significa que en tu máquina local el puerto 5433 se redirige al puerto 5432 del contenedor
     ports:
-      - "5433:5432"   # localhost:5433 -> container:5432
+      - "5433:5432"
+    # volumen para persistir los datos
     volumes:
       - autotaller_data:/var/lib/postgresql/data
+    
+    # healthcheck para asegurarnos de que la base de datos está lista antes de que otros servicios intenten conectarse a ella
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d autotallerdb"]
       interval: 5s
       timeout: 3s
       retries: 10
-
+    # conexión a la red interna
+    networks:
+      - autotaller_net
   api:
     build:
       context: ..                    
       dockerfile: AutoTallerManager.API/Api.Dockerfile
+      container_name: autotaller_api
+      restart: always
+      depends_on:
+        db:
+          condition: service_healthy
+    # Variables de entorno para la aplicación
     environment:
-      ASPNETCORE_HTTP_PORTS: "8080" 
-      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_ENVIRONMENT: "Development" # define el entorno de ejecución
+      ASPNETCORE_HTTP_PORTS: "8080" # Puerto en el que la aplicación escuchará
+      
+      # "Host=db" usa el nombre del servicio, no "localhost".
       ConnectionStrings__Default: "Host=db;Port=5432;Database=autotallerdb;Username=postgres;Password=postgres"
+    # mapeo de puertos
     ports:
       - "8081:8080"
-    depends_on:
-      db:
-        condition: service_healthy
 
-volumes:
-  autotaller_data:
+    # conexión a la red interna
+    networks:
+      - autotaller_net

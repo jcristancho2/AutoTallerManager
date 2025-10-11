@@ -87,9 +87,10 @@ public class FacturaRepository : IFacturaService
         await _context.Facturas.AddAsync(factura, ct);
     }
 
-    public async Task UpdateAsync(Factura factura, CancellationToken ct = default)
+    public Task UpdateAsync(Factura factura, CancellationToken ct = default)
     {
         _context.Facturas.Update(factura);
+        return Task.CompletedTask;
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)
