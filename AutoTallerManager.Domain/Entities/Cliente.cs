@@ -13,11 +13,9 @@ namespace AutoTallerManager.Domain.Entities
         public int TipoCliente_Id { get; set; }
         public int Direccion_Id { get; set; }
 
-        //constructor
-
         public virtual Direccion Direccion { get; set; } = null!;
         public virtual TipoCliente TipoCliente { get; set; } = null!;
         public virtual ICollection<Vehiculo> Vehiculos { get; set; } = new List<Vehiculo>();
         public virtual ICollection<Factura> Facturas { get; set; } = new List<Factura>();
-    }    
+    }
 }

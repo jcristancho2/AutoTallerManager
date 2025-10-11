@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using AutoTallerManager.Application.Abstractions;
 using AutoTallerManager.Domain.Entities;
+using MediatR;
+using AutoTallerManager.Application.Features.Clientes.Commands;
 
 namespace AutoTallerManager.API.Controllers;
 
@@ -12,11 +14,13 @@ public class ClientesController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<ClientesController> _logger;
+    private readonly IMediator _mediator;
 
-    public ClientesController(IUnitOfWork unitOfWork, ILogger<ClientesController> logger)
+    public ClientesController(IUnitOfWork unitOfWork, ILogger<ClientesController> logger, IMediator mediator)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _mediator = mediator;
     }
 
     [HttpGet]
@@ -62,7 +66,8 @@ public class ClientesController : ControllerBase
     {
         try
         {
-            var cliente = await _unitOfWork.Clientes.GetByIdAsync(id, ct, "Vehiculos", "Facturas");
+            // ✅ MANTENIENDO TU ENFOQUE CON IUnitOfWork
+            var cliente = await _unitOfWork.Clientes.GetByIdAsync(id, ct, new[] { "Vehiculos", "Facturas" });
             
             if (cliente == null)
                 return NotFound($"Cliente con ID {id} no encontrado");
@@ -78,26 +83,19 @@ public class ClientesController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "Admin,Recepcionista")]
-    public async Task<ActionResult<Cliente>> CreateCliente(Cliente cliente, CancellationToken ct = default)
+    public async Task<ActionResult<Cliente>> CreateCliente([FromBody] CreateClienteCommand command, CancellationToken ct = default)
     {
         try
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            var clienteId = await _mediator.Send(command, ct);
+            _logger.LogInformation("Cliente creado con ID {ClienteId}", clienteId);
 
-            if (string.IsNullOrEmpty(cliente.Email) || 
-                await _unitOfWork.Clientes.GetByEmailAsync(cliente.Email!, ct) != null)
-            {
-                return BadRequest("Ya existe un cliente con este email");
-            }
-
-            cliente.CreatedAt = DateTime.UtcNow;
-            await _unitOfWork.Clientes.AddAsync(cliente, ct);
-            await _unitOfWork.SaveChangesAsync(ct);
-
-            _logger.LogInformation("Cliente creado: {ClienteId} - {ClienteNombre}", cliente.Id, cliente.NombreCompleto);
-
-            return CreatedAtAction(nameof(GetCliente), new { id = cliente.Id }, cliente);
+            return CreatedAtAction(nameof(GetCliente), new { id = clienteId }, new { Id = clienteId });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Error de negocio al crear cliente");
+            return BadRequest(ex.Message);
         }
         catch (Exception ex)
         {
@@ -122,6 +120,7 @@ public class ClientesController : ControllerBase
             if (existingCliente == null)
                 return NotFound($"Cliente con ID {id} no encontrado");
 
+            // ✅ VALIDACIÓN DE EMAIL ÚNICO (similar al ejemplo)
             var emailExists = await _unitOfWork.Clientes.ExistsAsync(
                 c => c.Email == cliente.Email && c.Id != id, ct);
             if (emailExists)
@@ -130,7 +129,6 @@ public class ClientesController : ControllerBase
             existingCliente.NombreCompleto = cliente.NombreCompleto;
             existingCliente.Email = cliente.Email;
             existingCliente.Telefono = cliente.Telefono;
-            existingCliente.Direccion = cliente.Direccion;
 
             await _unitOfWork.Clientes.UpdateAsync(existingCliente, ct);
             await _unitOfWork.SaveChangesAsync(ct);
@@ -152,7 +150,7 @@ public class ClientesController : ControllerBase
     {
         try
         {
-            var cliente = await _unitOfWork.Clientes.GetByIdAsync(id, ct, "Vehiculos.OrdenesServicio");
+            var cliente = await _unitOfWork.Clientes.GetByIdAsync(id, ct, new[] { "Vehiculos.OrdenesServicio" });
             if (cliente == null)
                 return NotFound($"Cliente con ID {id} no encontrado");
 

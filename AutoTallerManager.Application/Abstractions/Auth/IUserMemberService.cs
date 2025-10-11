@@ -18,7 +18,6 @@ namespace AutoTallerManager.Application.Abstractions.Auth
         Task UpdateAsync(UserMember entity, CancellationToken ct = default);
         Task RemoveAsync(UserMember entity, CancellationToken ct = default);
         Task<UserMember?> GetByUserNameAsync(string userName, CancellationToken ct = default);
-
         Task<UserMember> GetByRefreshTokenAsync(string refreshToken);
     }
 }

@@ -1,8 +1,9 @@
-
-
+using MediatR;
+using System.Reflection;
 using AutoTallerManager.API.Extensions;
 using AutoTallerManager.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using AutoTallerManager.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,12 +13,23 @@ var configuration = builder.Configuration;
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 // REGISTRA SERVICIOS Y CONFIGURACIONES PERSONALIZADAS DEL APPLICATIONSERVICEEXTENSION 
 builder.Services.ConfigureCors();
 builder.Services.AddApplicationServices();
 builder.Services.AddJwt(builder.Configuration);
 builder.Services.AddValidationErrors();
 builder.Services.AddCustomRateLimiter();
+
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssemblies(
+        Assembly.GetExecutingAssembly(),                              // Tu API
+        typeof(AutoTallerManager.Application.Abstractions.IUnitOfWork).Assembly // Tu capa Application
+    );
+});
+
+
 
 // Configurar DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>

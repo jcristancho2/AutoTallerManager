@@ -70,6 +70,7 @@ public class FacturasController : ControllerBase
     {
         try
         {
+            // ✅ EQUIVALENTE A: GetByIdAsync(1, "Cliente", "OrdenServicio", "TipoPago")
             var factura = await _unitOfWork.Facturas.GetByIdAsync(id, ct, "Cliente,OrdenServicio,TipoPago");
             if (factura == null)
                 return NotFound($"Factura con ID {id} no encontrada");
@@ -88,6 +89,7 @@ public class FacturasController : ControllerBase
     {
         try
         {
+            // ✅ EQUIVALENTE A: GetFacturasByClienteAsync(clienteId: 5)
             var facturas = await _unitOfWork.Facturas.GetFacturasByClienteAsync(clienteId, ct);
             return Ok(facturas);
         }
@@ -103,6 +105,7 @@ public class FacturasController : ControllerBase
     {
         try
         {
+            // ✅ EQUIVALENTE A: GetTotalIngresosAsync(fechaDesde, fechaHasta)
             var total = await _unitOfWork.Facturas.GetTotalIngresosAsync(fechaDesde, fechaHasta, ct);
             return Ok(total);
         }
@@ -122,7 +125,7 @@ public class FacturasController : ControllerBase
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // Validar existencia de orden y cliente
+            // ✅ VALIDACIONES DE NEGOCIO (mejor que IFacturaService)
             var orden = await _unitOfWork.OrdenesServicio.GetByIdAsync(factura.OrdenServicioId, ct);
             if (orden == null)
                 return BadRequest("La orden de servicio especificada no existe");
@@ -132,7 +135,7 @@ public class FacturasController : ControllerBase
                 return BadRequest("El cliente especificado no existe");
 
             await _unitOfWork.Facturas.AddAsync(factura, ct);
-            await _unitOfWork.SaveChangesAsync(ct);
+            await _unitOfWork.SaveChangesAsync(ct); // ✅ TRANSACCIÓN
 
             _logger.LogInformation("Factura creada: {FacturaId}", factura.Id);
             return CreatedAtAction(nameof(GetFactura), new { id = factura.Id }, factura);

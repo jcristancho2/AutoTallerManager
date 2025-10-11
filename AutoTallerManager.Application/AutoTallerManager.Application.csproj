@@ -2,7 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AutoTallerManager.Domain\AutoTallerManager.Domain.csproj" />
-    <ProjectReference Include="..\AutoTallerManager.API\AutoTallerManager.API.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

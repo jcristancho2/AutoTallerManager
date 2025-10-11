@@ -36,6 +36,17 @@ public class RepuestoRepository : IRepuestoService
             .FirstOrDefaultAsync(r => r.Codigo == codigo, ct);
     }
 
+    public async Task<Repuesto?> GetByCodigoWithIncludesAsync(string codigo, CancellationToken ct = default, params string[] includeProperties)
+    {
+        IQueryable<Repuesto> query = _context.Repuestos;
+        foreach (var includeProperty in includeProperties)
+        {
+            query = query.Include(includeProperty);
+        }
+
+        return await query.FirstOrDefaultAsync(r => r.Codigo == codigo, ct);
+    }
+
     public async Task<IEnumerable<Repuesto>> GetAllAsync(
         Expression<Func<Repuesto, bool>>? filter = null,
         Func<IQueryable<Repuesto>, IOrderedQueryable<Repuesto>>? orderBy = null,
@@ -91,6 +102,11 @@ public class RepuestoRepository : IRepuestoService
         return await _context.Repuestos.AnyAsync(filter, ct);
     }
 
+    public async Task<bool> CodigoExistsAsync(string codigo, CancellationToken ct = default)
+    {
+        return await _context.Repuestos.AnyAsync(r => r.Codigo == codigo, ct);
+    }
+
     public async Task AddAsync(Repuesto repuesto, CancellationToken ct = default)
     {
         await _context.Repuestos.AddAsync(repuesto, ct);
@@ -118,6 +134,61 @@ public class RepuestoRepository : IRepuestoService
             .Include(r => r.Categoria)
             .Include(r => r.Fabricante)
             .OrderBy(r => r.Stock)
+            .ToListAsync(ct);
+    }
+
+    public async Task<PagedResult<Repuesto>> GetPagedAsync(
+        int pageNumber,
+        int pageSize,
+        Expression<Func<Repuesto, bool>>? filter = null,
+        Func<IQueryable<Repuesto>, IOrderedQueryable<Repuesto>>? orderBy = null,
+        string includeProperties = "",
+        CancellationToken ct = default)
+    {
+        IQueryable<Repuesto> query = _context.Repuestos;
+
+        if (filter != null)
+        {
+            query = query.Where(filter);
+        }
+
+        foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            query = query.Include(includeProperty);
+        }
+
+        var totalCount = await query.CountAsync(ct);
+
+        if (orderBy != null)
+        {
+            query = orderBy(query);
+        }
+
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(ct);
+
+        return new PagedResult<Repuesto>(items, totalCount, pageNumber, pageSize);
+    }
+
+    public async Task UpdateStockAsync(int id, int nuevoStock, CancellationToken ct = default)
+    {
+        var repuesto = await _context.Repuestos.FirstOrDefaultAsync(r => r.Id == id, ct);
+        if (repuesto == null)
+        {
+            return;
+        }
+
+        repuesto.Stock = nuevoStock;
+        _context.Repuestos.Update(repuesto);
+    }
+
+    public async Task<IEnumerable<Repuesto>> GetRepuestosPorCategoriaAsync(int categoriaId, CancellationToken ct = default)
+    {
+        return await _context.Repuestos
+            .Where(r => r.CategoriaId == categoriaId)
+            .Include(r => r.Categoria)
             .ToListAsync(ct);
     }
 }

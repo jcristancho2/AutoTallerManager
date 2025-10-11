@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using AutoTallerManager.Application.Abstractions;
 using AutoTallerManager.Domain.Entities;
 using AutoTallerManager.Domain.Enum;
+using AutoTallerManager.API.DTOs.Request;
+using AutoTallerManager.API.Validators;
 
 namespace AutoTallerManager.API.Controllers;
 
@@ -124,26 +126,53 @@ public class VehiculosController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "Admin,Recepcionista")]
-    public async Task<ActionResult<Vehiculo>> CreateVehiculo(Vehiculo vehiculo, CancellationToken ct = default)
+    [HttpPost]
+    public async Task<ActionResult<Vehiculo>> CreateVehiculo([FromBody] VehiculoRequest request, CancellationToken ct = default)
     {
         try
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            // Validación con FluentValidation
+            var validator = new VehiculoRequestValidator();
+            var validationResult = await validator.ValidateAsync(request, ct);
 
-            var clienteExists = await _unitOfWork.Clientes.ExistsAsync(c => c.Id == vehiculo.ClienteId, ct);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
+            // Validaciones de negocio
+            var clienteExists = await _unitOfWork.Clientes.ExistsAsync(c => c.Id == request.ClienteId, ct);
             if (!clienteExists)
                 return BadRequest("El cliente especificado no existe");
 
-            var vinExists = await _unitOfWork.Vehiculos.ExistsAsync(v => v.VIN == vehiculo.VIN, ct);
+            var vinExists = await _unitOfWork.Vehiculos.ExistsAsync(v => v.VIN == request.VIN, ct);
             if (vinExists)
                 return BadRequest("Ya existe un vehículo con este VIN");
+
+            // Mapeo de VehiculoRequest a Vehiculo
+            var vehiculo = new Vehiculo
+            {
+                Placa = request.Placa,
+                Anio = request.Anio,
+                VIN = request.VIN,
+                Kilometraje = request.Kilometraje,
+                ClienteId = request.ClienteId,
+                TipoVehiculoId = request.TipoVehiculoId,
+                MarcaVehiculoId = request.MarcaVehiculoId,
+                ModeloVehiculoId = request.ModeloVehiculoId,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
 
             await _unitOfWork.Vehiculos.AddAsync(vehiculo, ct);
             await _unitOfWork.SaveChangesAsync(ct);
 
             _logger.LogInformation("Vehículo creado: {VehiculoId} - {VIN}", vehiculo.Id, vehiculo.VIN);
-            return CreatedAtAction(nameof(GetVehiculo), new { id = vehiculo.Id }, vehiculo);
+
+            // Obtener el vehículo creado con relaciones para la respuesta
+            var vehiculoCreado = await _unitOfWork.Vehiculos.GetByIdAsync(vehiculo.Id, ct, "Cliente,MarcaVehiculo,ModeloVehiculo,TipoVehiculo");
+
+            return CreatedAtAction(nameof(GetVehiculo), new { id = vehiculo.Id }, vehiculoCreado);
         }
         catch (Exception ex)
         {

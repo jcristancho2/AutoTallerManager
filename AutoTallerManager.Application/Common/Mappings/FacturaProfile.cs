@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoTallerManager.API.DTOs.Request;
 using AutoTallerManager.API.DTOs.Response;
-using AutoTallerManager.Domain.Entities;
 using AutoMapper;
+using AutoTallerManager.Domain.Entities;
 
 namespace AutoTallerManager.Application.Common.Mappings
 {
@@ -15,7 +11,7 @@ namespace AutoTallerManager.Application.Common.Mappings
         {
             // REQUEST -> DOMAIN
             CreateMap<FacturaRequest, Factura>()
-                .ForMember(d => d.Id, o => o.Ignore()) // lo genera DB/app
+                .ForMember(d => d.Id, o => o.Ignore())
                 .ForMember(d => d.ClienteId, o => o.MapFrom(s => s.ClienteId))
                 .ForMember(d => d.OrdenServicioId, o => o.MapFrom(s => s.OrdenServicioId))
                 .ForMember(d => d.Fecha, o => o.MapFrom(s => s.Fecha))

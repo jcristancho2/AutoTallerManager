@@ -1,3 +1,4 @@
+using AutoTallerManager.Application.Abstractions.Interfaces;
 using AutoTallerManager.Domain.Entities;
 using AutoTallerManager.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
@@ -5,7 +6,7 @@ using System.Linq.Expressions;
 
 namespace AutoTallerManager.Infrastructure.Repositories;
 
-public class DetalleOrdenRepository
+public class DetalleOrdenRepository : IDetalleOrdenService
 {
     private readonly AppDbContext _context;
 

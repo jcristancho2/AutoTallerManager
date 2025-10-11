@@ -10,10 +10,8 @@ namespace AutoTallerManager.Application.Abstractions.Interfaces
 {
     public interface IClienteService
     {
-
         Task<Cliente?> GetByIdAsync(int id, CancellationToken ct = default, params string[] includeProperties);
         Task<Cliente?> GetByEmailAsync(string email, CancellationToken ct = default);
-
 
         Task<IReadOnlyList<Cliente>> GetAllAsync(
             Expression<Func<Cliente, bool>>? filter = null,
@@ -23,7 +21,6 @@ namespace AutoTallerManager.Application.Abstractions.Interfaces
             int? take = null,
             CancellationToken ct = default);
 
-
         Task<IReadOnlyList<Cliente>> GetPagedAsync(
             int page, int pageSize, string? search = null, CancellationToken ct = default);
 
@@ -31,7 +28,6 @@ namespace AutoTallerManager.Application.Abstractions.Interfaces
         Task<bool> ExistsAsync(Expression<Func<Cliente, bool>> filter, CancellationToken ct = default);
         Task<bool> ExistsByIdAsync(int id, CancellationToken ct = default);
         Task<bool> EmailExistsAsync(string email, CancellationToken ct = default);
-
 
         Task AddAsync(Cliente cliente, CancellationToken ct = default);
         Task UpdateAsync(Cliente cliente, CancellationToken ct = default);

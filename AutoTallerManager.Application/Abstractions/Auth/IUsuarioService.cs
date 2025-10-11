@@ -17,11 +17,16 @@ namespace AutoTallerManager.Application.Abstractions.Auth
             Func<IQueryable<Usuario>, IOrderedQueryable<Usuario>>? orderBy = null,
             string includeProperties = "",
             CancellationToken ct = default);
+
         Task<bool> ValidateCredentialsAsync(string email, string password, CancellationToken ct = default);
+
         Task<Usuario> CreateAsync(Usuario usuario, CancellationToken ct = default);
         Task<Usuario> UpdateAsync(Usuario usuario, CancellationToken ct = default);
+
         Task<bool> ChangePasswordAsync(int usuarioId, string newPassword, CancellationToken ct = default);
         Task<bool> ActivateUserAsync(int usuarioId, CancellationToken ct = default);
         Task<bool> DeactivateUserAsync(int usuarioId, CancellationToken ct = default);
     }
 }
+
+

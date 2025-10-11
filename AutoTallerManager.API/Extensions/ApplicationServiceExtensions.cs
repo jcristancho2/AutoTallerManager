@@ -1,4 +1,3 @@
-
 using FluentValidation;
 using MediatR;
 using AutoTallerManager.Application.Abstractions;
@@ -18,59 +17,64 @@ using AutoTallerManager.API.Services.Interfaces.Auth;
 using AutoTallerManager.API.Services.Implementations.Auth;
 using AutoTallerManager.API.Services;
 
-
 namespace AutoTallerManager.API.Extensions;
 
-// este archivo define ciertos metodos de extensión para la aplicación, como CORS, JWT, servicios de aplicacion, RateLimiter, errores de validación, etc...
+// this file defines application extension methods such as CORS, JWT, app services,
+// RateLimiter, validation errors, etc.
 public static class ApplicationServiceExtensions
 {
-    // este es el metodo de CORS que se usa en la aplicación
+    // CORS policy registration
     public static void ConfigureCors(this IServiceCollection services) =>
 
         services.AddCors(options =>
         {
-            // estos son los dominios permitidos para la aplicación
+            // allowed domains for the application
             HashSet<String> allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "https://app.ejemplo.com",
                 "https://admin.ejemplo.com"
             };
-            // este es el comportamiento de CORS
+            // default CORS behavior
             options.AddPolicy("CorsPolicy", builder =>
                 builder.AllowAnyOrigin()   //WithOrigins("https://dominio.com")
                 .AllowAnyMethod()          //WithMethods("GET","POST")
                 .AllowAnyHeader());        //WithHeaders("accept","content-type")
 
-            // este es el comportamiento de CORS para URLs específicas
+            // CORS behavior for specific URLs
             options.AddPolicy("CorsPolicyUrl", builder =>
                 builder.WithOrigins("https://localhost:4200", "https://localhost:5500")   //WithOrigins("https://dominio.com")
                 .AllowAnyMethod()          //WithMethods("GET","POST")
                 .AllowAnyHeader());
-            // otro comportamiento de CORS
+            // another CORS behavior using a dynamic origin list
             options.AddPolicy("Dinamica", builder =>
                 builder.SetIsOriginAllowed(origin => allowed.Contains(origin))   //WithOrigins("https://dominio.com")
                 .WithMethods("GET", "POST")
                 .WithHeaders("Content-Type", "Authorization"));        //WithHeaders("accept","content-type")
         });
-    // este método registra los servicios de la aplicación
+
+    // registers application services
     public static void AddApplicationServices(this IServiceCollection services)
     {
-        // estp registrar el hasher de contraseñas
+        // register password hasher
         services.AddScoped<IPasswordHasher<UserMember>, PasswordHasher<UserMember>>();
-        // registrar servicios 
-
-        // este es el servicio de autenticación
+        
+        // register services 
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IJwtService, JwtService>();
-
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        // Registrar MediatR/Validators/AutoMapper desde la capa de Application
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
-        //services.AddValidatorsFromAssembly(typeof(Program).Assembly);
-        //services.AddAutoMapper(typeof(Program).Assembly);
-        // esto aparentemente es para agregar directamente todos los mapeos
-        //services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+        // FluentValidation registration
+        // If using FluentValidation.DependencyInjectionExtensions
+        // services.AddValidatorsFromAssemblyContaining<Program>();
+        services.AddAutoMapper(typeof(Program).Assembly);
+        
+        // también agregar todos los mapeos de los ensamblados actualmente cargados
+        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
     }
-    // este es el meetodo para agregar el RateLimiter 
+
+    // adds the RateLimiter
     public static IServiceCollection AddCustomRateLimiter(this IServiceCollection services)
     {
         services.AddRateLimiter(options =>
@@ -84,7 +88,7 @@ public static class ApplicationServiceExtensions
                 await context.HttpContext.Response.WriteAsync(mensaje, token);
             };
 
-            // Aquí no se define GlobalLimiter
+            // GlobalLimiter is not defined here
             options.AddPolicy("ipLimiter", httpContext =>
             {
                 var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
@@ -96,6 +100,7 @@ public static class ApplicationServiceExtensions
                     QueueProcessingOrder = QueueProcessingOrder.OldestFirst
                 });
             });
+            
             // Fixed Window Limiter
             // options.AddFixedWindowLimiter("fixed", opt =>
             // {
@@ -126,18 +131,18 @@ public static class ApplicationServiceExtensions
             //     opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
             //     opt.AutoReplenishment = true;
             // });
-
         });
 
         return services;
     }
-    // este es el metodo para agregar el JWT
+
+    // adds JWT authentication and authorization
     public static void AddJwt(this IServiceCollection services, IConfiguration configuration)
     {
         //Configuration from AppSettings
         services.Configure<JWT>(configuration.GetSection("JWT"));
 
-        //Adding Athentication - JWT
+        //Adding Authentication - JWT
         _ = services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -159,10 +164,11 @@ public static class ApplicationServiceExtensions
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Key"]!))
                 };
             });
-        // 3. Authorization – Policies
+        
+        // Authorization – Policies
         services.AddAuthorization(options =>
         {
-            // Política que exige rol Admin
+            // Policy requiring Administrator role
             options.AddPolicy("Admins", policy =>
                 policy.RequireRole("Administrator"));
 
@@ -172,11 +178,11 @@ public static class ApplicationServiceExtensions
             options.AddPolicy("Pro", policy =>
                 policy.RequireRole("Professional"));
 
-            // Política que exige claim Subscription = "Premium"
+            // Policy requiring claim Subscription = "Premium"
             options.AddPolicy("Professional", policy =>
                 policy.RequireClaim("Subscription", "Premium"));
 
-            // Política compuesta: rol Admin o claim Premium
+            // Composite policy: role Other or Subscription claim Premium
             options.AddPolicy("OtherOPremium", policy =>
                 policy.RequireAssertion(context =>
                     context.User.IsInRole("Other")
@@ -184,14 +190,14 @@ public static class ApplicationServiceExtensions
                         c.Type == "Subscription" && c.Value == "Premium")));
         });
     }
-    // este metodos sirve para agregar los errores de validacion
+
+    // adds custom validation error response formatting
     public static void AddValidationErrors(this IServiceCollection services)
     {
         services.Configure<ApiBehaviorOptions>(options =>
         {
             options.InvalidModelStateResponseFactory = actionContext =>
             {
-
                 var errors = actionContext.ModelState.Where(u => u.Value!.Errors.Count > 0)
                                                 .SelectMany(u => u.Value!.Errors)
                                                 .Select(u => u.ErrorMessage).ToArray();
