@@ -163,7 +163,6 @@ namespace AutoTallerManager.API.Services.Implementations.Auth
 
             var roleName = model.Role.Trim();
             var rolExists = _unitOfWork.Roles
-                                //.Find(u => EF.Functions.ILike(u.NombreRol, roleName))
                                 .Find(u => u.NombreRol != null && EF.Functions.ILike(u.NombreRol, roleName))
                                 .FirstOrDefault();
 

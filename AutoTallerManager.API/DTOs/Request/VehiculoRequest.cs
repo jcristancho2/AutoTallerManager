@@ -7,14 +7,14 @@ namespace AutoTallerManager.API.DTOs.Request
     {
         [Required]
         [StringLength(10)]
-        public string? Placa { get; init; }
+        public string Placa { get; init; } = string.Empty;
 
         [Range(1900, 2100)]
         public int Anio { get; init; }
 
         [Required]
         [StringLength(30)]
-        public string? VIN { get; init; }
+        public string VIN { get; init; } = string.Empty;
 
         [Range(0, int.MaxValue)]
         public int Kilometraje { get; init; }

@@ -1,4 +1,3 @@
-
 using MediatR;
 using System.Reflection;
 using AutoTallerManager.API.Extensions;
@@ -14,6 +13,7 @@ var configuration = builder.Configuration;
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 // REGISTRA SERVICIOS Y CONFIGURACIONES PERSONALIZADAS DEL APPLICATIONSERVICEEXTENSION 
 builder.Services.ConfigureCors();
 builder.Services.AddApplicationServices();

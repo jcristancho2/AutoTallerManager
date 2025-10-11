@@ -1,4 +1,3 @@
-
 using FluentValidation;
 using MediatR;
 using AutoTallerManager.Application.Abstractions;
@@ -17,7 +16,6 @@ using AutoTallerManager.API.Services.Interfaces;
 using AutoTallerManager.API.Services.Interfaces.Auth;
 using AutoTallerManager.API.Services.Implementations.Auth;
 using AutoTallerManager.API.Services;
-
 
 namespace AutoTallerManager.API.Extensions;
 
@@ -53,20 +51,27 @@ public static class ApplicationServiceExtensions
                 .WithMethods("GET", "POST")
                 .WithHeaders("Content-Type", "Authorization"));        //WithHeaders("accept","content-type")
         });
+
     // registers application services
     public static void AddApplicationServices(this IServiceCollection services)
     {
         // register password hasher
         services.AddScoped<IPasswordHasher<UserMember>, PasswordHasher<UserMember>>();
+        
         // register services 
-
-        // authentication service
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IJwtService, JwtService>();
-
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        // Registrar MediatR/Validators/AutoMapper desde la capa de Application
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+        services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+        services.AddAutoMapper(typeof(Program).Assembly);
+        
+        // también agregar todos los mapeos de los ensamblados actualmente cargados
+        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
     }
+
     // adds the RateLimiter
     public static IServiceCollection AddCustomRateLimiter(this IServiceCollection services)
     {
@@ -93,6 +98,7 @@ public static class ApplicationServiceExtensions
                     QueueProcessingOrder = QueueProcessingOrder.OldestFirst
                 });
             });
+            
             // Fixed Window Limiter
             // options.AddFixedWindowLimiter("fixed", opt =>
             // {
@@ -123,11 +129,11 @@ public static class ApplicationServiceExtensions
             //     opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
             //     opt.AutoReplenishment = true;
             // });
-
         });
 
         return services;
     }
+
     // adds JWT authentication and authorization
     public static void AddJwt(this IServiceCollection services, IConfiguration configuration)
     {
@@ -156,6 +162,7 @@ public static class ApplicationServiceExtensions
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Key"]!))
                 };
             });
+        
         // Authorization – Policies
         services.AddAuthorization(options =>
         {
@@ -181,6 +188,7 @@ public static class ApplicationServiceExtensions
                         c.Type == "Subscription" && c.Value == "Premium")));
         });
     }
+
     // adds custom validation error response formatting
     public static void AddValidationErrors(this IServiceCollection services)
     {
@@ -188,7 +196,6 @@ public static class ApplicationServiceExtensions
         {
             options.InvalidModelStateResponseFactory = actionContext =>
             {
-
                 var errors = actionContext.ModelState.Where(u => u.Value!.Errors.Count > 0)
                                                 .SelectMany(u => u.Value!.Errors)
                                                 .Select(u => u.ErrorMessage).ToArray();
