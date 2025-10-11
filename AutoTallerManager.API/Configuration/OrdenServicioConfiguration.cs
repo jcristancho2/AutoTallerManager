@@ -12,9 +12,9 @@ namespace AutoTallerManager.Infrastructure.Configurations
                      builder.ToTable("service_orders");
 
                      // PK
-                     builder.HasKey(o => o.OrdenServicioId);
+            builder.HasKey(o => o.Id);
 
-                     builder.Property(o => o.OrdenServicioId)
+            builder.Property(o => o.Id)
                             .HasColumnName("orden_servicio_id")
                             .ValueGeneratedOnAdd();
 

@@ -28,14 +28,14 @@ namespace AutoTallerManager.API.Configuration.Auth
                    .IsRequired();
 
             // Relaciones
-            builder.HasOne(umr => umr.UserMembers)
-                   .WithMany(um => um.UserMemberRols) 
+            builder.HasOne(umr => umr.UserMember)
+                   .WithMany(um => um.UserMemberRoles) 
                    .HasForeignKey(umr => umr.UserMemberId)
                    .HasConstraintName("fk_user_member_rol_user_member")
                    .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(umr => umr.Rol)
-                   .WithMany(r => r.UserMemberRols) 
+                   .WithMany(r => r.UserMemberRoles) 
                    .HasForeignKey(umr => umr.RolId)
                    .HasConstraintName("fk_user_member_rol_rol")
                    .OnDelete(DeleteBehavior.Restrict);

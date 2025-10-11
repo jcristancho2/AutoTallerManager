@@ -18,13 +18,13 @@ namespace AutoTallerManager.API.Configuration.Auth;
                    .IsRequired()
                    .HasColumnName("id");
 
-            builder.Property(p => p.Name)
-            .HasColumnName("rolName")
+            builder.Property(p => p.NombreRol)
+            .HasColumnName("rol_name")
             .HasColumnType("varchar")
             .HasMaxLength(50)
             .IsRequired();
 
-            builder.Property(r => r.Description)
+            builder.Property(r => r.Descripcion)
                    .IsRequired()
                    .HasMaxLength(50);
 

@@ -65,7 +65,9 @@ public static class ApplicationServiceExtensions
 
         // Registrar MediatR/Validators/AutoMapper desde la capa de Application
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
-        services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+        // FluentValidation registration
+        // If using FluentValidation.DependencyInjectionExtensions
+        // services.AddValidatorsFromAssemblyContaining<Program>();
         services.AddAutoMapper(typeof(Program).Assembly);
         
         // también agregar todos los mapeos de los ensamblados actualmente cargados
