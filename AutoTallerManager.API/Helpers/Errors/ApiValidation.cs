@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoTallerManager.Shared.API.Errors;
+using AutoTallerManager.API.Helpers.Errors;
 
 namespace AutoTallerManager.API.Helpers.Errors;
 
