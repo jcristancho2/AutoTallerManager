@@ -28,6 +28,7 @@ public class UnitOfWork : IUnitOfWork
         Repuestos = new RepuestoRepository(_context);
         Facturas = new FacturaRepository(_context);
         Auditorias = new AuditoriaRepository(_context);
+        DetallesOrden = new DetalleOrdenRepository(_context);
         Usuarios = new UsuarioRepository(_context);
         EstadosUsuario = new EstadoUsuarioRepository(_context);
     }
@@ -44,6 +45,7 @@ public class UnitOfWork : IUnitOfWork
     public IRepuestoService Repuestos { get; }
     public IFacturaService Facturas { get; }
     public IAuditoriaService Auditorias { get; }
+    public IDetalleOrdenService DetallesOrden { get; }
     public IUsuarioService Usuarios { get; }
     public IEstadoUsuarioService EstadosUsuario { get; }
 

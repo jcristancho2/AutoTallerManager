@@ -23,6 +23,7 @@ public interface IUnitOfWork
     IRepuestoService Repuestos { get; }
     IFacturaService Facturas { get; }
     IAuditoriaService Auditorias { get; }
+    IDetalleOrdenService DetallesOrden { get; }
 
     Task<int> SaveChanges(CancellationToken ct = default);
     Task<int> SaveChangesAsync(CancellationToken ct = default);
