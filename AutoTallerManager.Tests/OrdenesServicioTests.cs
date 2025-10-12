@@ -91,6 +91,10 @@ public class OrdenesServicioTests
         // If not OK, fail with diagnostic info
         if (closeResult == null)
         {
+            if (closeActionResult is BadRequestObjectResult bad)
+            {
+                Assert.True(false, $"CerrarOrden returned BadRequest: {bad.Value}");
+            }
             Assert.True(false, $"CerrarOrden returned {closeActionResult?.GetType().FullName ?? "null"}");
         }
 
