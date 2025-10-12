@@ -235,6 +235,12 @@ public class OrdenesServicioController : ControllerBase
             var total = detalles.Sum(d => (d.PrecioUnitario * d.Cantidad) + d.PrecioManoDeObra);
 
             var clienteId = orden.Vehiculo?.ClienteId ?? 0;
+            if (clienteId == 0 && orden.VehiculoId > 0)
+            {
+                var veh = await _unitOfWork.Vehiculos.GetByIdAsync(orden.VehiculoId, ct);
+                clienteId = veh?.ClienteId ?? 0;
+            }
+
             if (clienteId == 0) return BadRequest("No se puede determinar el cliente de la orden");
 
             var factura = new Factura
