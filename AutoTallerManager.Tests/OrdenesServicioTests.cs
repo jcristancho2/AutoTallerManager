@@ -41,7 +41,9 @@ public class OrdenesServicioTests
     db.OrdenesServicio.Add(orden);
     db.Repuestos.Add(repuesto);
     await db.SaveChangesAsync();
-    // asegurarse que la orden tenga el VehiculoId persistido
+    // persistir relaciones correctamente: Vehiculo.ClienteId y Orden.VehiculoId
+    vehiculo.ClienteId = cliente.Id;
+    db.Vehiculos.Update(vehiculo);
     orden.VehiculoId = vehiculo.Id;
     db.OrdenesServicio.Update(orden);
     await db.SaveChangesAsync();
@@ -73,6 +75,8 @@ public class OrdenesServicioTests
     db.OrdenesServicio.Add(orden);
     db.Repuestos.Add(repuesto);
     await db.SaveChangesAsync();
+    vehiculo.ClienteId = cliente.Id;
+    db.Vehiculos.Update(vehiculo);
     orden.VehiculoId = vehiculo.Id;
     db.OrdenesServicio.Update(orden);
     await db.SaveChangesAsync();
