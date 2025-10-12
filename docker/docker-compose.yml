@@ -4,6 +4,7 @@ version: '3.9'
 networks:
   autotaller_net:
     driver: bridge
+    name: autotaller_net
 
 # Volumen para persistir los datos de la base de datos
 volumes:
@@ -16,6 +17,7 @@ services:
     image: postgres:16
     # Nombre del contenedor
     container_name: autotaller_db
+    restart: always
     # Variables de entorno para configurar la base de datos
     environment:
       POSTGRES_DB: autotallerdb
@@ -29,7 +31,7 @@ services:
     #   User: postgres
     #   Password: postgres
     ports:
-      - "5433:5432"
+      - "5433:5432" # Puerto externo 5433 -> interno 5432
     # Volumen para persistir los datos
     volumes:
       - autotaller_data:/var/lib/postgresql/data
@@ -39,6 +41,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+      start_period: 10s # Tiempo de espera inicial antes de comenzar las comprobaciones
     # Conexión a la red interna
     networks:
       - autotaller_net
@@ -50,15 +53,19 @@ services:
       dockerfile: AutoTallerManager.API/Api.Dockerfile
     container_name: autotaller_api
     restart: always
+    # La API esperará a que la base de datos esté saludable
     depends_on:
       db:
         condition: service_healthy
     # Variables de entorno para la aplicación
     environment:
+      # Variable para detectar que estamos en Docker
+      DOTNET_RUNNING_IN_CONTAINER: "true"
+      # entorno de desarrollo
       ASPNETCORE_ENVIRONMENT: "Development"
+      # Puerto en el que la aplicación escuchará dentro del contenedor
       ASPNETCORE_HTTP_PORTS: "8080"
-      ConnectionStrings__Default: "Host=autotaller_db;Port=5432;Database=autotallerdb;Username=postgres;Password=postgres"
-    # Mapeo de puertos
+      ConnectionStrings__PostgresDocker: "Host=autotaller_db;Port=5432;Database=autotallerdb;Username=postgres;Password=postgres"    # Mapeo de puertos
     ports:
       - "8081:8080"
     # Conexión a la red interna
