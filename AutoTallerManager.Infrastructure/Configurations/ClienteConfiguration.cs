@@ -20,7 +20,7 @@ namespace AutoTallerManager.Infrastructure.Configuration
 
             builder.Property(c => c.Id)
                    .HasColumnName("id")
-                   .ValueGeneratedNever(); 
+                   .ValueGeneratedOnAdd(); 
 
             // Propiedades básicas
             builder.Property(c => c.NombreCompleto)
