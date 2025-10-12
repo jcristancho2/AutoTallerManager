@@ -34,7 +34,7 @@ public class OrdenesServicioTests
         var cliente = new Cliente { NombreCompleto = "Cliente" };
     var vehiculo = new Vehiculo { Cliente = cliente, ClienteId = cliente.Id, Placa = "TEST-001", VIN = "VIN-TEST-001" };
         var orden = new OrdenServicio { Vehiculo = vehiculo, VehiculoId = vehiculo.Id, FechaIngreso = DateTime.UtcNow, FechaEstimadaEntrega = DateTime.UtcNow.AddDays(1) };
-        var repuesto = new Repuesto { Codigo = "R1", NombreRepu = "Filtro", Stock = 5, PrecioUnitario = 10, CategoriaId = 1, TipoVehiculoId = 1, FabricanteId = 1 };
+    var repuesto = new Repuesto { Codigo = "R1", NombreRepu = "Filtro", Descripcion = "Filtro de aceite", Stock = 5, PrecioUnitario = 10, CategoriaId = 1, TipoVehiculoId = 1, FabricanteId = 1 };
 
         db.Clientes.Add(cliente);
         db.Vehiculos.Add(vehiculo);
@@ -62,7 +62,7 @@ public class OrdenesServicioTests
         var cliente = new Cliente { NombreCompleto = "Cliente2" };
     var vehiculo = new Vehiculo { Cliente = cliente, ClienteId = cliente.Id, Placa = "TEST-002", VIN = "VIN-TEST-002" };
         var orden = new OrdenServicio { Vehiculo = vehiculo, VehiculoId = vehiculo.Id, FechaIngreso = DateTime.UtcNow, FechaEstimadaEntrega = DateTime.UtcNow.AddDays(1) };
-        var repuesto = new Repuesto { Codigo = "R2", NombreRepu = "Aceite", Stock = 10, PrecioUnitario = 20, CategoriaId = 1, TipoVehiculoId = 1, FabricanteId = 1 };
+    var repuesto = new Repuesto { Codigo = "R2", NombreRepu = "Aceite", Descripcion = "Aceite 5W-30", Stock = 10, PrecioUnitario = 20, CategoriaId = 1, TipoVehiculoId = 1, FabricanteId = 1 };
 
         db.Clientes.Add(cliente);
         db.Vehiculos.Add(vehiculo);
