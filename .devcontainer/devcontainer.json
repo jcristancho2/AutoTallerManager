@@ -10,6 +10,30 @@
 
 	"postCreateCommand": "dotnet tool install --global dotnet-ef && echo 'export PATH=$PATH:/root/.dotnet/tools' >> ~/.bashrc",
 
+	  // Conectar a la red de Docker y agregar el host
+		"runArgs": [
+			"--network=autotaller_net"
+		],
+		
+		"containerEnv": {
+		"REMOTE_CONTAINERS": "true"
+		},
+		
+		// Reenviar puertos para acceso local
+		"forwardPorts": [5433, 8081],
+
+	// Configuración de puertos
+	"portsAttributes": {
+		"5433": {
+		"label": "PostgreSQL",
+		"onAutoForward": "notify"
+		},
+		"8081": {
+		"label": "API",
+		"onAutoForward": "notify"
+		}
+	}
+
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
