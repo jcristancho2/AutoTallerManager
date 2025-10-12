@@ -36,11 +36,15 @@ public class OrdenesServicioTests
         var orden = new OrdenServicio { Vehiculo = vehiculo, VehiculoId = vehiculo.Id, FechaIngreso = DateTime.UtcNow, FechaEstimadaEntrega = DateTime.UtcNow.AddDays(1) };
     var repuesto = new Repuesto { Codigo = "R1", NombreRepu = "Filtro", Descripcion = "Filtro de aceite", Stock = 5, PrecioUnitario = 10, CategoriaId = 1, TipoVehiculoId = 1, FabricanteId = 1 };
 
-        db.Clientes.Add(cliente);
-        db.Vehiculos.Add(vehiculo);
-        db.OrdenesServicio.Add(orden);
-        db.Repuestos.Add(repuesto);
-        await db.SaveChangesAsync();
+    db.Clientes.Add(cliente);
+    db.Vehiculos.Add(vehiculo);
+    db.OrdenesServicio.Add(orden);
+    db.Repuestos.Add(repuesto);
+    await db.SaveChangesAsync();
+    // asegurarse que la orden tenga el VehiculoId persistido
+    orden.VehiculoId = vehiculo.Id;
+    db.OrdenesServicio.Update(orden);
+    await db.SaveChangesAsync();
 
         var logger = Mock.Of<ILogger<OrdenesServicioController>>();
         var controller = new OrdenesServicioController(uow, logger);
@@ -64,11 +68,14 @@ public class OrdenesServicioTests
         var orden = new OrdenServicio { Vehiculo = vehiculo, VehiculoId = vehiculo.Id, FechaIngreso = DateTime.UtcNow, FechaEstimadaEntrega = DateTime.UtcNow.AddDays(1) };
     var repuesto = new Repuesto { Codigo = "R2", NombreRepu = "Aceite", Descripcion = "Aceite 5W-30", Stock = 10, PrecioUnitario = 20, CategoriaId = 1, TipoVehiculoId = 1, FabricanteId = 1 };
 
-        db.Clientes.Add(cliente);
-        db.Vehiculos.Add(vehiculo);
-        db.OrdenesServicio.Add(orden);
-        db.Repuestos.Add(repuesto);
-        await db.SaveChangesAsync();
+    db.Clientes.Add(cliente);
+    db.Vehiculos.Add(vehiculo);
+    db.OrdenesServicio.Add(orden);
+    db.Repuestos.Add(repuesto);
+    await db.SaveChangesAsync();
+    orden.VehiculoId = vehiculo.Id;
+    db.OrdenesServicio.Update(orden);
+    await db.SaveChangesAsync();
 
         // add detalle (consume 1 repuesto)
         var logger = Mock.Of<ILogger<OrdenesServicioController>>();
