@@ -1,14 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoTallerManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AutoTallerManager.Infrastructure.Configuration
 {
-     public class FacturaConfiguration : IEntityTypeConfiguration<Factura>
+    public class FacturaConfiguration : IEntityTypeConfiguration<Factura>
     {
         public void Configure(EntityTypeBuilder<Factura> builder)
         {
@@ -21,18 +17,17 @@ namespace AutoTallerManager.Infrastructure.Configuration
                    .HasColumnName("factura_id")
                    .ValueGeneratedOnAdd();
 
-            // 🧾 Relación con OrdenServicio (1:1 o 1:N según modelo)
+            // 🧾 Relación con OrdenServicio (1:N)
             builder.Property(f => f.OrdenServicioId)
                    .HasColumnName("orden_servicio_id")
                    .IsRequired();
 
-      builder.HasOne(f => f.OrdenServicio)
-             .WithOne(o => o.Factura)
-             .HasForeignKey<Factura>(f => f.OrdenServicioId)
-             .OnDelete(DeleteBehavior.Restrict);
-                
+            builder.HasOne(f => f.OrdenServicio)
+                   .WithMany(o => o.Facturas) // ✅ relación correcta
+                   .HasForeignKey(f => f.OrdenServicioId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
-            // 👤 Relación con Cliente
+            // 👤 Relación con Cliente (1:N)
             builder.Property(f => f.ClienteId)
                    .HasColumnName("cliente_id")
                    .IsRequired();
@@ -42,12 +37,12 @@ namespace AutoTallerManager.Infrastructure.Configuration
                    .HasForeignKey(f => f.ClienteId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            // 💳 Relación con TipoPago
+            // 💳 Relación con TipoPago (1:N)
             builder.Property(f => f.TipoPagoId)
                    .HasColumnName("pago_id")
                    .IsRequired();
 
-                builder.HasOne(f => f.TipoPago)
+            builder.HasOne(f => f.TipoPago)
                    .WithMany(p => p.Facturas)
                    .HasForeignKey(f => f.TipoPagoId)
                    .OnDelete(DeleteBehavior.Restrict);
@@ -64,13 +59,8 @@ namespace AutoTallerManager.Infrastructure.Configuration
                    .HasColumnType("decimal(10,2)")
                    .IsRequired();
 
-            // Configurar tabla con check constraint
+            // 🧩 Check constraint: total positivo
             builder.ToTable(t => t.HasCheckConstraint("CK_Factura_Total_Positive", "total >= 0"));
-
-            // 🔒 Único en OrdenServicioId
-            builder.HasIndex(f => f.OrdenServicioId)
-                   .IsUnique();
         }
     }
 }
-    

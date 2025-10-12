@@ -29,8 +29,6 @@ builder.Services.AddMediatR(cfg =>
     );
 });
 
-
-
 // Configurar DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
@@ -41,11 +39,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 
 var app = builder.Build();
-Console.WriteLine(builder.Configuration.GetConnectionString("Postgres"));
 
-// Swagger y middlewares
+// Swagger y middlewares de desarrollo
 if (app.Environment.IsDevelopment())
 {
+    app.MapOpenApi();
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
@@ -55,13 +54,20 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseCors("CorsPolicy");
+// Middleware de excepciones (después de Swagger en desarrollo)
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
+
+// Solo una política CORS (elige la que necesites)
+app.UseCors("CorsPolicy"); // O la política que prefieras
+
 app.UseRateLimiter();
 
+// ORDEN CORRECTO: Authentication ANTES de Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
 app.Run();
