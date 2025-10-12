@@ -86,10 +86,15 @@ public class OrdenesServicioTests
         var controller = new OrdenesServicioController(uow, logger);
         await controller.AddDetalle(orden.Id, new DetalleOrden { RepuestoId = repuesto.Id, Cantidad = 1, PrecioUnitario = 20, PrecioManoDeObra = 30 }, CancellationToken.None);
 
-        var closeResult = await controller.CerrarOrden(orden.Id, new OrdenesServicioController.CerrarOrdenRequest { TipoPagoId = 1 }, CancellationToken.None) as OkObjectResult;
-        Assert.NotNull(closeResult);
+        var closeActionResult = await controller.CerrarOrden(orden.Id, new OrdenesServicioController.CerrarOrdenRequest { TipoPagoId = 1 }, CancellationToken.None);
+        var closeResult = closeActionResult as OkObjectResult;
+        // If not OK, fail with diagnostic info
+        if (closeResult == null)
+        {
+            Assert.True(false, $"CerrarOrden returned {closeActionResult?.GetType().FullName ?? "null"}");
+        }
 
-        var payload = closeResult!.Value as dynamic;
+        var payload = closeResult.Value as dynamic;
         int facturaId = payload.FacturaId;
         decimal total = payload.Total;
 
