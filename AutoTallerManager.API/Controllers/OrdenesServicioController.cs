@@ -228,7 +228,7 @@ public class OrdenesServicioController : ControllerBase
     {
         try
         {
-            var orden = await _unitOfWork.OrdenesServicio.GetByIdAsync(id, ct, "Vehiculo,DetallesOrden");
+            var orden = await _unitOfWork.OrdenesServicio.GetByIdAsync(id, ct, "Vehiculo", "DetallesOrden");
             if (orden == null) return NotFound("Orden de servicio no encontrada");
 
             var detalles = await _unitOfWork.DetallesOrden.GetDetallesByOrdenAsync(id, ct);
