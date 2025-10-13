@@ -10,7 +10,7 @@ networks:
 volumes:
   autotaller_data:
 
-# Definición de servicios
+    # Definición de servicios
 services:
   db:
     # Imagen oficial de PostgreSQL
@@ -26,18 +26,18 @@ services:
     # Mapeo de puertos 
     # Así puedes conectarte desde DBeaver con:
     #   Host: localhost
-    #   Port: 5433
+    #   Port: 5434
     #   Database: autotallerdb
     #   User: postgres
     #   Password: postgres
     ports:
-      - "5433:5432" # Puerto externo 5433 -> interno 5432
+      - "5434:5432" # Puerto externo 5434 -> interno 5432
     # Volumen para persistir los datos
     volumes:
       - autotaller_data:/var/lib/postgresql/data
     # Healthcheck para asegurarnos de que la base de datos está lista antes de que otros servicios intenten conectarse
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d autotallerdb"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d autotallerdb" ]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -49,7 +49,7 @@ services:
   api:
     # Construcción del contenedor desde el Dockerfile del proyecto API
     build:
-      context: ..                    
+      context: ..
       dockerfile: AutoTallerManager.API/Api.Dockerfile
     container_name: autotaller_api
     restart: always
@@ -65,7 +65,7 @@ services:
       ASPNETCORE_ENVIRONMENT: "Development"
       # Puerto en el que la aplicación escuchará dentro del contenedor
       ASPNETCORE_HTTP_PORTS: "8080"
-      ConnectionStrings__PostgresDocker: "Host=autotaller_db;Port=5432;Database=autotallerdb;Username=postgres;Password=postgres"    # Mapeo de puertos
+      ConnectionStrings__PostgresDocker: "Host=autotaller_db;Port=5432;Database=autotallerdb;Username=postgres;Password=postgres" # Mapeo de puertos
     ports:
       - "8081:8080"
     # Conexión a la red interna

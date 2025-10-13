@@ -32,7 +32,7 @@ namespace AutoTallerManager.Infrastructure.Configuration
                      .HasMaxLength(20);
                      
             builder.Property(f => f.Email)
-                     .HasColumnName("Email")
+                     .HasColumnName("email")
                      .HasMaxLength(80);
         }
     }

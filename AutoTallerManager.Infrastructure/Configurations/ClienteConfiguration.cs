@@ -34,7 +34,7 @@ namespace AutoTallerManager.Infrastructure.Configurations
                    .IsRequired(false);
 
             builder.Property(c => c.Email)
-                   .HasColumnName("Email")
+                   .HasColumnName("email")
                    .HasMaxLength(100)
                    .IsRequired(false);
 

@@ -2,19 +2,12 @@
 @token = 
 
 ### ===========================================
-### PASO 1: AUTENTICACIÓN
+### PASO 1: AUTENTICACIÓN (ENDPOINTS UNIFICADOS)
 ### ===========================================
 
-### 1.1 Crear Usuario Admin
-POST {{AutoTallerManager.API_HostAddress}}/api/auth/register
+### 1.1 Crear Usuario Admin Inicial
+POST {{AutoTallerManager.API_HostAddress}}/api/auth/setup/admin
 Content-Type: application/json
-
-{
-  "username": "admin",
-  "email": "admin@taller.com",
-  "password": "Admin123!",
-  "roles": ["Admin"]
-}
 
 ### 1.2 Login para obtener token
 # @name login
@@ -22,18 +15,75 @@ POST {{AutoTallerManager.API_HostAddress}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "admin@taller.com",
-  "password": "Admin123!"
+  "email": "admin@autotaller.com",
+  "password": "admin123"
 }
 
 ### 1.3 Guardar token automáticamente
 @token = {{login.response.body.token}}
 
+### 1.4 Verificar estado del sistema
+GET {{AutoTallerManager.API_HostAddress}}/api/auth/health
+
 ### ===========================================
-### PASO 2: DATOS MAESTROS
+### PASO 2: INICIALIZAR DATOS BÁSICOS
 ### ===========================================
 
-### 2.1 Crear Tipo Cliente
+### 2.1 Inicializar datos básicos del sistema
+POST {{AutoTallerManager.API_HostAddress}}/api/auth/setup/seed-data
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### 2.2 Obtener roles disponibles
+GET {{AutoTallerManager.API_HostAddress}}/api/auth/roles
+Authorization: Bearer {{token}}
+
+### ===========================================
+### PASO 3: GESTIÓN DE USUARIOS
+### ===========================================
+
+### 3.1 Registrar nuevo usuario
+POST {{AutoTallerManager.API_HostAddress}}/api/auth/register
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "email": "mecanico@taller.com",
+  "password": "Mecanico123!",
+  "username": "mecanico"
+}
+
+### 3.2 Obtener todos los usuarios
+GET {{AutoTallerManager.API_HostAddress}}/api/auth/users
+Authorization: Bearer {{token}}
+
+### 3.3 Obtener usuario por ID
+GET {{AutoTallerManager.API_HostAddress}}/api/auth/users/1
+Authorization: Bearer {{token}}
+
+### 3.4 Actualizar usuario
+PUT {{AutoTallerManager.API_HostAddress}}/api/auth/users/2
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "email": "mecanico.actualizado@taller.com"
+}
+
+### 3.5 Cambiar contraseña
+PUT {{AutoTallerManager.API_HostAddress}}/api/auth/users/2/change-password
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "newPassword": "NuevaPassword123!"
+}
+
+### ===========================================
+### PASO 4: DATOS MAESTROS (MANUAL)
+### ===========================================
+
+### 4.1 Crear Tipo Cliente
 POST {{AutoTallerManager.API_HostAddress}}/api/tiposcliente
 Authorization: Bearer {{token}}
 Content-Type: application/json

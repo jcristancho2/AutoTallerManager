@@ -46,5 +46,39 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<Direccion> Direcciones { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
-        => modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+    {
+        // Configurar naming convention global para snake_case
+        foreach (var entity in modelBuilder.Model.GetEntityTypes())
+        {
+            // Convertir nombres de tablas a snake_case
+            entity.SetTableName(ToSnakeCase(entity.GetTableName()));
+            
+            // Convertir nombres de columnas a snake_case
+            foreach (var property in entity.GetProperties())
+            {
+                property.SetColumnName(ToSnakeCase(property.GetColumnName()));
+            }
+            
+            // Convertir nombres de claves foráneas a snake_case
+            foreach (var key in entity.GetKeys())
+            {
+                key.SetName(ToSnakeCase(key.GetName()));
+            }
+            
+            // Convertir nombres de índices a snake_case
+            foreach (var index in entity.GetIndexes())
+            {
+                index.SetDatabaseName(ToSnakeCase(index.GetDatabaseName()));
+            }
+        }
+        
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+    }
+    
+    private static string ToSnakeCase(string? input)
+    {
+        if (string.IsNullOrEmpty(input)) return input ?? string.Empty;
+        
+        return string.Concat(input.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToLower();
+    }
 }
