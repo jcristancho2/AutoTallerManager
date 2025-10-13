@@ -9,6 +9,8 @@ namespace AutoTallerManager.Domain.Entities;
     {
         public DateTime Fecha { get; set; }
         public decimal Total { get; set; }
+        public string NumeroFactura { get; set; } = string.Empty;
+        public string? Observaciones { get; set; }
 
         public int OrdenServicioId { get; set; }
         public OrdenServicio? OrdenServicio { get; set; }
@@ -18,6 +20,4 @@ namespace AutoTallerManager.Domain.Entities;
 
         public int TipoPagoId { get; set; }
         public TipoPago? TipoPago { get; set; }
-
-  
     }

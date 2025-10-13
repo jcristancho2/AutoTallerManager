@@ -10,6 +10,7 @@ namespace AutoTallerManager.Domain.Entities
     {
         public DateTime FechaIngreso { get; set; }
         public DateTime FechaEstimadaEntrega { get; set; }
+        public string? DescripcionTrabajo { get; set; }
         public int VehiculoId { get; set; }
         public Vehiculo? Vehiculo { get; set; }
 

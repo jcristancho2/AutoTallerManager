@@ -119,4 +119,20 @@ public class FacturaRepository : IFacturaService
             .Where(f => f.Fecha >= fechaDesde && f.Fecha <= fechaHasta)
             .SumAsync(f => f.Total, ct);
     }
+
+    public async Task<Factura?> GetByOrdenServicioIdAsync(int ordenServicioId, CancellationToken ct = default)
+    {
+        return await _context.Facturas
+            .Include(f => f.OrdenServicio)
+            .Include(f => f.Cliente)
+            .Include(f => f.TipoPago)
+            .FirstOrDefaultAsync(f => f.OrdenServicioId == ordenServicioId, ct);
+    }
+
+    public async Task<Factura?> GetUltimaFacturaAsync(CancellationToken ct = default)
+    {
+        return await _context.Facturas
+            .OrderByDescending(f => f.Id)
+            .FirstOrDefaultAsync(ct);
+    }
 }

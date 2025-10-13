@@ -16,6 +16,7 @@ using AutoTallerManager.API.Services.Interfaces;
 using AutoTallerManager.API.Services.Interfaces.Auth;
 using AutoTallerManager.API.Services.Implementations.Auth;
 using AutoTallerManager.API.Services;
+using AutoTallerManager.Application.Services;
 
 namespace AutoTallerManager.API.Extensions;
 
@@ -62,6 +63,10 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        
+        // Register application services
+        services.AddScoped<ICalculadoraFechasService, CalculadoraFechasService>();
+        services.AddScoped<IValidadorDisponibilidadVehiculoService, ValidadorDisponibilidadVehiculoService>();
 
         // Registrar MediatR/Validators/AutoMapper desde la capa de Application
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
