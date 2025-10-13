@@ -1,6 +1,7 @@
 using AutoTallerManager.Application.Services;
 using AutoTallerManager.Domain.Entities;
 using Xunit;
+using System;
 
 namespace AutoTallerManager.Tests.Services
 {

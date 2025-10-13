@@ -4,6 +4,13 @@ using AutoTallerManager.Application.Abstractions;
 using AutoTallerManager.Domain.Entities;
 using Moq;
 using Xunit;
+using AutoTallerManager.Application.Abstractions.Interfaces;
+using AutoTallerManager.Application.Abstractions.Auth;
+using AutoTallerManager.Application.Services;
+using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace AutoTallerManager.Tests.Handlers
 {
@@ -170,9 +177,9 @@ namespace AutoTallerManager.Tests.Handlers
                 MecanicoId = 1,
                 TipoServicioId = 1,
                 FechaIngreso = DateTime.UtcNow,
-                RepuestosRequeridos = new List<RepuestoRequeridoCommand>
+                RepuestosRequeridos = new List<RepuestoRequeridoDto>
                 {
-                    new RepuestoRequeridoCommand { RepuestoId = 1, Cantidad = 10 }
+                    new RepuestoRequeridoDto { RepuestoId = 1, Cantidad = 10 }
                 }
             };
 

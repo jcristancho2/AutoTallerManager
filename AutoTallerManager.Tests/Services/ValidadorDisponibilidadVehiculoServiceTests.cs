@@ -1,8 +1,15 @@
 using AutoTallerManager.Application.Services;
 using AutoTallerManager.Application.Abstractions;
+using AutoTallerManager.Application.Abstractions.Interfaces;
 using AutoTallerManager.Domain.Entities;
 using Moq;
 using Xunit;
+using System.Threading.Tasks;
+using System.Linq.Expressions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 
 namespace AutoTallerManager.Tests.Services
 {
@@ -33,6 +40,8 @@ namespace AutoTallerManager.Tests.Services
                     It.IsAny<Expression<Func<OrdenServicio, bool>>>(),
                     It.IsAny<Func<IQueryable<OrdenServicio>, IOrderedQueryable<OrdenServicio>>>(),
                     It.IsAny<string>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<int?>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(ordenesActivas);
 
@@ -66,6 +75,8 @@ namespace AutoTallerManager.Tests.Services
                     It.IsAny<Expression<Func<OrdenServicio, bool>>>(),
                     It.IsAny<Func<IQueryable<OrdenServicio>, IOrderedQueryable<OrdenServicio>>>(),
                     It.IsAny<string>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<int?>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(ordenesActivas);
 
@@ -99,6 +110,8 @@ namespace AutoTallerManager.Tests.Services
                     It.IsAny<Expression<Func<OrdenServicio, bool>>>(),
                     It.IsAny<Func<IQueryable<OrdenServicio>, IOrderedQueryable<OrdenServicio>>>(),
                     It.IsAny<string>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<int?>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(ordenesActivas);
 
@@ -133,6 +146,8 @@ namespace AutoTallerManager.Tests.Services
                     It.IsAny<Expression<Func<OrdenServicio, bool>>>(),
                     It.IsAny<Func<IQueryable<OrdenServicio>, IOrderedQueryable<OrdenServicio>>>(),
                     It.IsAny<string>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<int?>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(ordenesActivas);
 
@@ -185,6 +200,8 @@ namespace AutoTallerManager.Tests.Services
                     It.IsAny<Expression<Func<OrdenServicio, bool>>>(),
                     It.IsAny<Func<IQueryable<OrdenServicio>, IOrderedQueryable<OrdenServicio>>>(),
                     It.IsAny<string>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<int?>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(ordenes.Where(o => new[] { 1, 2, 5 }.Contains(o.EstadoId)).ToList());
 
