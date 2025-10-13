@@ -6,7 +6,7 @@ using AutoTallerManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AutoTallerManager.Infrastructure.Configuration
+namespace AutoTallerManager.Infrastructure.Configurations
 {
     public class MarcaVehiculoConfiguration : IEntityTypeConfiguration<MarcaVehiculo>
     {
@@ -28,12 +28,7 @@ namespace AutoTallerManager.Infrastructure.Configuration
                    .HasMaxLength(100)
                    .IsRequired();
 
-            // Relación 1:N con Vehiculo
-            builder.HasMany(m => m.Vehiculos)
-                   .WithOne(v => v.MarcaVehiculo)
-                   .HasForeignKey(v => v.MarcaVehiculoId)
-                   .HasConstraintName("fk_vehiculo_marca")
-                   .OnDelete(DeleteBehavior.Restrict);
+            // La relación con Vehiculo se configura en VehiculoConfiguration
 
             // Índice opcional para búsquedas por nombre
             builder.HasIndex(m => m.Nombre)

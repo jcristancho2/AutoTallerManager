@@ -73,23 +73,27 @@ namespace AutoTallerManager.Infrastructure.Configurations
 
             // Relaciones
             builder.HasOne(v => v.Cliente)
-                   .WithMany()
+                   .WithMany(c => c.Vehiculos)
                    .HasForeignKey(v => v.ClienteId)
+                   .HasConstraintName("FK_Vehiculos_Clientes_ClienteId")
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(v => v.TipoVehiculo)
-                   .WithMany()
+                   .WithMany(tv => tv.Vehiculos)
                    .HasForeignKey(v => v.TipoVehiculoId)
+                   .HasConstraintName("FK_Vehiculos_TiposVehiculo_TipoVehiculoId")
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(v => v.MarcaVehiculo)
-                   .WithMany()
+                   .WithMany(mv => mv.Vehiculos)
                    .HasForeignKey(v => v.MarcaVehiculoId)
+                   .HasConstraintName("FK_Vehiculos_MarcasVehiculo_MarcaVehiculoId")
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(v => v.ModeloVehiculo)
-                   .WithMany()
+                   .WithMany(mv => mv.Vehiculos)
                    .HasForeignKey(v => v.ModeloVehiculoId)
+                   .HasConstraintName("FK_Vehiculos_ModelosVehiculo_ModeloVehiculoId")
                    .OnDelete(DeleteBehavior.Restrict);
         }
     }

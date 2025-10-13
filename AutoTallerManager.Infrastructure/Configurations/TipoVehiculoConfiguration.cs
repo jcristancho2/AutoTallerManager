@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using AutoTallerManager.Domain.Entities;
 
-namespace AutoTallerManager.Infrastructure.Configuration
+namespace AutoTallerManager.Infrastructure.Configurations
 {
     public class TipoVehiculoConfiguration : IEntityTypeConfiguration<TipoVehiculo>
     {

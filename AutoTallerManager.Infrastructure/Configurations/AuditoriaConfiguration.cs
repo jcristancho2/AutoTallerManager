@@ -2,7 +2,7 @@ using AutoTallerManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AutoTallerManager.Infrastructure.Configuration;
+namespace AutoTallerManager.Infrastructure.Configurations;
 
 public class AuditoriaConfiguration : IEntityTypeConfiguration<Auditoria>
 {
