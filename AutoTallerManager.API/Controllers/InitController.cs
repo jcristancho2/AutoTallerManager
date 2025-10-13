@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using AutoTallerManager.Application.Abstractions;
 using AutoTallerManager.Domain.Entities;
 using AutoTallerManager.Domain.Entities.Auth;

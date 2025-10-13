@@ -1,4 +1,5 @@
 using System;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -13,6 +14,7 @@ namespace AutoTallerManager.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[EnableRateLimiting("Repuestos")]
 public class RepuestosController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;

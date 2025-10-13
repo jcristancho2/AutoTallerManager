@@ -1,4 +1,5 @@
  using System;
+using Microsoft.AspNetCore.RateLimiting;
 using AutoTallerManager.API.DTOs.Auth;
 using AutoTallerManager.Application.Abstractions;
 using AutoTallerManager.Domain.Entities.Auth;
@@ -11,6 +12,7 @@ namespace AutoTallerManager.API.Controllers.Auth;
 
 [ApiController]
 [Route("api/[controller]")]
+[EnableRateLimiting("Auth")]
 public class UsuarioController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;

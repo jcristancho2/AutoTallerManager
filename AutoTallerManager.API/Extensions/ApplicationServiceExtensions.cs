@@ -79,63 +79,107 @@ public static class ApplicationServiceExtensions
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
     }
 
-    // adds the RateLimiter
+    // adds the RateLimiter with specific rules for AutoTallerManager
     public static IServiceCollection AddCustomRateLimiter(this IServiceCollection services)
     {
         services.AddRateLimiter(options =>
         {
+            // Configurar respuesta personalizada cuando se excede el límite
             options.OnRejected = async (context, token) =>
             {
                 var ip = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "desconocida";
+                var endpoint = context.HttpContext.Request.Path;
+                
                 context.HttpContext.Response.StatusCode = 429;
                 context.HttpContext.Response.ContentType = "application/json";
-                var mensaje = $"{{\"message\": \"Demasiadas peticiones desde la IP {ip}. Intenta más tarde.\"}}";
+                
+                var mensaje = $@"{{
+                    ""error"": ""Rate limit exceeded"",
+                    ""message"": ""Demasiadas peticiones desde la IP {ip} para el endpoint {endpoint}. Intenta más tarde."",
+                    ""retryAfter"": ""60 segundos"",
+                    ""timestamp"": ""{DateTime.UtcNow:yyyy-MM-ddTHH:mm:ssZ}""
+                }}";
+                
                 await context.HttpContext.Response.WriteAsync(mensaje, token);
             };
 
-            // GlobalLimiter is not defined here
-            options.AddPolicy("ipLimiter", httpContext =>
+            // Regla específica para órdenes de servicio: 60 solicitudes por minuto
+            options.AddPolicy("OrdenesServicio", httpContext =>
             {
                 var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
                 return RateLimitPartition.GetFixedWindowLimiter(ip, _ => new FixedWindowRateLimiterOptions
                 {
-                    PermitLimit = 5,
-                    Window = TimeSpan.FromSeconds(10),
-                    QueueLimit = 0,
+                    PermitLimit = 60,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 5,
                     QueueProcessingOrder = QueueProcessingOrder.OldestFirst
                 });
             });
-            
-            // Fixed Window Limiter
-            // options.AddFixedWindowLimiter("fixed", opt =>
-            // {
-            //     opt.Window = TimeSpan.FromSeconds(10);
-            //     opt.PermitLimit = 5;
-            //     opt.QueueLimit = 0;
-            //     opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            // });
 
-            // Sliding Window Limiter
-            // options.AddSlidingWindowLimiter("sliding", opt =>
-            // {
-            //     opt.Window = TimeSpan.FromSeconds(10);
-            //     opt.SegmentsPerWindow = 3;
-            //     opt.PermitLimit = 6;
-            //     opt.QueueLimit = 0;
-            //     opt.QueueProcessingOrder = QueueProcessingOrder.NewestFirst;
-            //     // Aquí se personaliza la respuesta cuando se excede el límite
-            // });
+            // Regla específica para repuestos: 30 solicitudes por minuto
+            options.AddPolicy("Repuestos", httpContext =>
+            {
+                var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                return RateLimitPartition.GetFixedWindowLimiter(ip, _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 30,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 3,
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+                });
+            });
 
-            // Token Bucket Limiter
-            // options.AddTokenBucketLimiter("token", opt =>
-            // {
-            //     opt.TokenLimit = 20;
-            //     opt.TokensPerPeriod = 4;
-            //     opt.ReplenishmentPeriod = TimeSpan.FromSeconds(10);
-            //     opt.QueueLimit = 2;
-            //     opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            //     opt.AutoReplenishment = true;
-            // });
+            // Regla específica para autenticación: 10 intentos por minuto
+            options.AddPolicy("Auth", httpContext =>
+            {
+                var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                return RateLimitPartition.GetFixedWindowLimiter(ip, _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 10,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 2,
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+                });
+            });
+
+            // Regla específica para facturas: 20 solicitudes por minuto
+            options.AddPolicy("Facturas", httpContext =>
+            {
+                var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                return RateLimitPartition.GetFixedWindowLimiter(ip, _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 20,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 3,
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+                });
+            });
+
+            // Regla global para endpoints generales: 100 solicitudes por minuto
+            options.AddPolicy("Global", httpContext =>
+            {
+                var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                return RateLimitPartition.GetFixedWindowLimiter(ip, _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 100,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 10,
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+                });
+            });
+
+            // Regla para usuarios autenticados: límites más altos
+            options.AddPolicy("Authenticated", httpContext =>
+            {
+                var userId = httpContext.User?.Identity?.Name ?? "anonymous";
+                return RateLimitPartition.GetFixedWindowLimiter(userId, _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 200,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 20,
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+                });
+            });
         });
 
         return services;

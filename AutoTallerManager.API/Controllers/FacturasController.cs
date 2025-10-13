@@ -1,4 +1,5 @@
 using System;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -14,6 +15,7 @@ namespace AutoTallerManager.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[EnableRateLimiting("Facturas")]
 public class FacturasController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;

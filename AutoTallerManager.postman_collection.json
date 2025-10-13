@@ -1,0 +1,579 @@
+{
+  "info": {
+    "name": "AutoTallerManager API Tests",
+    "description": "Colección completa de pruebas para AutoTallerManager API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "clienteId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "vehiculoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "repuestoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ordenId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "facturaId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Autenticación",
+      "item": [
+        {
+          "name": "Login Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@autotaller.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Usuario/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Usuario", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('token', response.token);",
+                  "    console.log('Token guardado:', response.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Catálogos",
+      "item": [
+        {
+          "name": "Obtener Tipos de Cliente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Clientes/tipos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Clientes", "tipos"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Tipos de Vehículo",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Vehiculos/tipos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Vehiculos", "tipos"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Marcas de Vehículo",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Vehiculos/marcas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Vehiculos", "marcas"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Tipos de Servicio",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/OrdenesServicio/tipos-servicio",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "OrdenesServicio", "tipos-servicio"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Clientes",
+      "item": [
+        {
+          "name": "Crear Cliente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Juan Carlos\",\n  \"apellido\": \"Pérez García\",\n  \"telefono\": \"3001234567\",\n  \"email\": \"juan.perez@email.com\",\n  \"tipoClienteId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Clientes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Clientes"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('clienteId', response.id);",
+                  "    console.log('Cliente ID guardado:', response.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Obtener Clientes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Clientes?pageNumber=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Clientes"],
+              "query": [
+                {
+                  "key": "pageNumber",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Obtener Cliente por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Clientes/{{clienteId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Clientes", "{{clienteId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Vehículos",
+      "item": [
+        {
+          "name": "Crear Vehículo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vin\": \"1HGBH41JXMN109186\",\n  \"ano\": 2020,\n  \"kilometraje\": 45000,\n  \"clienteId\": {{clienteId}},\n  \"tipoVehiculoId\": 1,\n  \"marcaId\": 1,\n  \"modeloId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Vehiculos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Vehiculos"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('vehiculoId', response.id);",
+                  "    console.log('Vehículo ID guardado:', response.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Obtener Vehículos por Cliente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Vehiculos?clienteId={{clienteId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Vehiculos"],
+              "query": [
+                {
+                  "key": "clienteId",
+                  "value": "{{clienteId}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Repuestos",
+      "item": [
+        {
+          "name": "Crear Repuesto",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoRepuesto\": \"FIL-002\",\n  \"nombreRepu\": \"Filtro de Aceite Premium\",\n  \"descripcion\": \"Filtro de aceite de alta calidad\",\n  \"stock\": 25,\n  \"precioUnitario\": 18.99,\n  \"stockMinimo\": 5,\n  \"categoriaId\": 6,\n  \"fabricanteId\": 4\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Repuestos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Repuestos"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('repuestoId', response.id);",
+                  "    console.log('Repuesto ID guardado:', response.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Obtener Repuestos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Repuestos?pageNumber=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Repuestos"],
+              "query": [
+                {
+                  "key": "pageNumber",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Órdenes de Servicio",
+      "item": [
+        {
+          "name": "Crear Orden de Servicio",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehiculoId\": {{vehiculoId}},\n  \"mecanicoId\": 1,\n  \"tipoServicioId\": 1,\n  \"fechaIngreso\": \"2024-12-20T10:00:00Z\",\n  \"descripcionTrabajo\": \"Mantenimiento preventivo completo\",\n  \"repuestosRequeridos\": [\n    {\n      \"repuestoId\": {{repuestoId}},\n      \"cantidad\": 2\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/OrdenesServicio",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "OrdenesServicio"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('ordenId', response);",
+                  "    console.log('Orden ID guardado:', response);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar Estado de Orden",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estadoId\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/OrdenesServicio/{{ordenId}}/estado",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "OrdenesServicio", "{{ordenId}}", "estado"]
+            }
+          }
+        },
+        {
+          "name": "Registrar Trabajo Realizado",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descripcionTrabajoRealizado\": \"Cambio de aceite y filtro completado\",\n  \"manoDeObra\": 50.00,\n  \"repuestosUtilizados\": [\n    {\n      \"repuestoId\": {{repuestoId}},\n      \"cantidad\": 2,\n      \"precioUnitario\": 18.99,\n      \"descripcion\": \"Filtro de aceite premium\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/OrdenesServicio/{{ordenId}}/trabajo-realizado",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "OrdenesServicio", "{{ordenId}}", "trabajo-realizado"]
+            }
+          }
+        },
+        {
+          "name": "Cerrar Orden de Servicio",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoPagoId\": 1,\n  \"observacionesFactura\": \"Servicio completado satisfactoriamente\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/OrdenesServicio/{{ordenId}}/cerrar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "OrdenesServicio", "{{ordenId}}", "cerrar"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('facturaId', response.facturaId);",
+                  "    console.log('Factura ID guardado:', response.facturaId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7. Facturas",
+      "item": [
+        {
+          "name": "Obtener Factura por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Facturas/{{facturaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Facturas", "{{facturaId}}"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Facturas por Cliente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Facturas/cliente/{{clienteId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Facturas", "cliente", "{{clienteId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Estadísticas",
+      "item": [
+        {
+          "name": "Obtener Estadísticas del Sistema",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Init/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Init", "stats"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

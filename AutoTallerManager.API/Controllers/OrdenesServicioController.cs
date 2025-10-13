@@ -1,4 +1,5 @@
 using System;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ namespace AutoTallerManager.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[EnableRateLimiting("OrdenesServicio")]
 public class OrdenesServicioController : ControllerBase
 {
     // Aquí las órdenes de servicio: crear, obtener, actualizar, eliminar

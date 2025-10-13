@@ -4,12 +4,14 @@ using AutoTallerManager.Application.Abstractions;
 using AutoTallerManager.Domain.Entities;
 using MediatR;
 using AutoTallerManager.Application.Features.Clientes.Commands;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AutoTallerManager.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[EnableRateLimiting("Global")]
 public class ClientesController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
