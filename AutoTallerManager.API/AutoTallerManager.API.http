@@ -1,6 +1,354 @@
-@AutoTallerManager.API_HostAddress = http://localhost:5013
+@AutoTallerManager.API_HostAddress = http://localhost:5000
+@token = 
 
-GET {{AutoTallerManager.API_HostAddress}}/weatherforecast/
-Accept: application/json
+### ===========================================
+### PASO 1: AUTENTICACIÓN
+### ===========================================
 
-###
+### 1.1 Crear Usuario Admin
+POST {{AutoTallerManager.API_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "email": "admin@taller.com",
+  "password": "Admin123!",
+  "roles": ["Admin"]
+}
+
+### 1.2 Login para obtener token
+# @name login
+POST {{AutoTallerManager.API_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@taller.com",
+  "password": "Admin123!"
+}
+
+### 1.3 Guardar token automáticamente
+@token = {{login.response.body.token}}
+
+### ===========================================
+### PASO 2: DATOS MAESTROS
+### ===========================================
+
+### 2.1 Crear Tipo Cliente
+POST {{AutoTallerManager.API_HostAddress}}/api/tiposcliente
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nombreTipoCliente": "Particular"
+}
+
+### 2.2 Crear Dirección
+POST {{AutoTallerManager.API_HostAddress}}/api/direcciones
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "direccion": "Calle 123 #45-67",
+  "ciudadId": 1,
+  "departamentoId": 1,
+  "paisId": 1
+}
+
+### 2.3 Crear Tipo Vehículo
+POST {{AutoTallerManager.API_HostAddress}}/api/tiposvehiculo
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nombreTipoVehiculo": "Automóvil"
+}
+
+### 2.4 Crear Marca Vehículo
+POST {{AutoTallerManager.API_HostAddress}}/api/marcasvehiculo
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nombreMarcaVehiculo": "Toyota"
+}
+
+### 2.5 Crear Modelo Vehículo
+POST {{AutoTallerManager.API_HostAddress}}/api/modelosvehiculo
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nombreModeloVehiculo": "Corolla",
+  "marcaVehiculoId": 1
+}
+
+### 2.6 Crear Estado Servicio
+POST {{AutoTallerManager.API_HostAddress}}/api/estadosservicio
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nombreEstServ": "Pendiente"
+}
+
+### 2.7 Crear Tipo Servicio
+POST {{AutoTallerManager.API_HostAddress}}/api/tiposservicio
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nombreTipoServ": "Mantenimiento Preventivo"
+}
+
+### 2.8 Crear Tipo Pago
+POST {{AutoTallerManager.API_HostAddress}}/api/tipospago
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nombreTipoPag": "Efectivo"
+}
+
+### ===========================================
+### PASO 3: GESTIÓN DE CLIENTES
+### ===========================================
+
+### 3.1 Crear Cliente
+POST {{AutoTallerManager.API_HostAddress}}/api/clientes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nombreCompleto": "Juan Pérez",
+  "telefono": "3001234567",
+  "email": "juan.perez@email.com",
+  "tipoCliente_Id": 1,
+  "direccion_Id": 1
+}
+
+### 3.2 Consultar Clientes (con paginación)
+GET {{AutoTallerManager.API_HostAddress}}/api/clientes?pageNumber=1&pageSize=10
+Authorization: Bearer {{token}}
+
+### 3.3 Consultar Cliente Específico
+GET {{AutoTallerManager.API_HostAddress}}/api/clientes/1
+Authorization: Bearer {{token}}
+
+### 3.4 Actualizar Cliente
+PUT {{AutoTallerManager.API_HostAddress}}/api/clientes/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id": 1,
+  "nombreCompleto": "Juan Carlos Pérez",
+  "telefono": "3001234567",
+  "email": "juan.perez@email.com",
+  "tipoCliente_Id": 1,
+  "direccion_Id": 1
+}
+
+### ===========================================
+### PASO 4: GESTIÓN DE VEHÍCULOS
+### ===========================================
+
+### 4.1 Crear Vehículo
+POST {{AutoTallerManager.API_HostAddress}}/api/vehiculos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "placa": "ABC123",
+  "anio": 2020,
+  "vin": "1HGBH41JXMN109186",
+  "kilometraje": 50000,
+  "clienteId": 1,
+  "tipoVehiculoId": 1,
+  "marcaVehiculoId": 1,
+  "modeloVehiculoId": 1
+}
+
+### 4.2 Consultar Vehículos
+GET {{AutoTallerManager.API_HostAddress}}/api/vehiculos?pageNumber=1&pageSize=10&clienteId=1
+Authorization: Bearer {{token}}
+
+### 4.3 Consultar Vehículo por VIN
+GET {{AutoTallerManager.API_HostAddress}}/api/vehiculos?vin=1HGBH41JXMN109186
+Authorization: Bearer {{token}}
+
+### ===========================================
+### PASO 5: GESTIÓN DE REPUESTOS
+### ===========================================
+
+### 5.1 Crear Categoría
+POST {{AutoTallerManager.API_HostAddress}}/api/categorias
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nombreCategoria": "Filtros"
+}
+
+### 5.2 Crear Fabricante
+POST {{AutoTallerManager.API_HostAddress}}/api/fabricantes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nombreFabricante": "Bosch"
+}
+
+### 5.3 Crear Repuesto 1
+POST {{AutoTallerManager.API_HostAddress}}/api/repuestos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "codigo": "FIL001",
+  "nombreRepu": "Filtro de Aceite",
+  "descripcion": "Filtro de aceite para motor",
+  "stock": 50,
+  "precioUnitario": 25000,
+  "categoriaId": 1,
+  "tipoVehiculoId": 1,
+  "fabricanteId": 1
+}
+
+### 5.4 Crear Repuesto 2
+POST {{AutoTallerManager.API_HostAddress}}/api/repuestos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "codigo": "FRE001",
+  "nombreRepu": "Pastillas de Freno",
+  "descripcion": "Pastillas de freno delanteras",
+  "stock": 30,
+  "precioUnitario": 80000,
+  "categoriaId": 1,
+  "tipoVehiculoId": 1,
+  "fabricanteId": 1
+}
+
+### 5.5 Consultar Repuestos
+GET {{AutoTallerManager.API_HostAddress}}/api/repuestos?pageNumber=1&pageSize=20
+Authorization: Bearer {{token}}
+
+### ===========================================
+### PASO 6: GESTIÓN DE ÓRDENES DE SERVICIO
+### ===========================================
+
+### 6.1 Crear Orden de Servicio
+POST {{AutoTallerManager.API_HostAddress}}/api/ordenesservicio
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "fechaIngreso": "2024-01-15T08:00:00Z",
+  "fechaEstimadaEntrega": "2024-01-16T17:00:00Z",
+  "vehiculoId": 1,
+  "mecanicoId": 1,
+  "tipoServId": 1,
+  "estadoId": 1
+}
+
+### 6.2 Consultar Órdenes
+GET {{AutoTallerManager.API_HostAddress}}/api/ordenesservicio?pageNumber=1&pageSize=10
+Authorization: Bearer {{token}}
+
+### 6.3 Asignar Repuestos a Orden
+POST {{AutoTallerManager.API_HostAddress}}/api/ordenesservicio/1/asignar-repuestos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "repuestos": [
+    {
+      "repuestoId": 1,
+      "cantidad": 2
+    },
+    {
+      "repuestoId": 2,
+      "cantidad": 1
+    }
+  ]
+}
+
+### 6.4 Actualizar Estado de Orden
+PUT {{AutoTallerManager.API_HostAddress}}/api/ordenesservicio/1/estado
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "estadoId": 2
+}
+
+### ===========================================
+### PASO 7: GESTIÓN DE FACTURAS
+### ===========================================
+
+### 7.1 Cerrar Orden y Generar Factura
+POST {{AutoTallerManager.API_HostAddress}}/api/ordenesservicio/1/cerrar
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "tipoPagoId": 1
+}
+
+### 7.2 Consultar Facturas
+GET {{AutoTallerManager.API_HostAddress}}/api/facturas?pageNumber=1&pageSize=10
+Authorization: Bearer {{token}}
+
+### ===========================================
+### PASO 8: CASOS DE PRUEBA DE ERRORES
+### ===========================================
+
+### 8.1 Error: VIN Duplicado
+POST {{AutoTallerManager.API_HostAddress}}/api/vehiculos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "placa": "XYZ789",
+  "anio": 2021,
+  "vin": "1HGBH41JXMN109186",
+  "kilometraje": 30000,
+  "clienteId": 1,
+  "tipoVehiculoId": 1,
+  "marcaVehiculoId": 1,
+  "modeloVehiculoId": 1
+}
+
+### 8.2 Error: Stock Insuficiente
+POST {{AutoTallerManager.API_HostAddress}}/api/ordenesservicio/1/asignar-repuestos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "repuestos": [
+    {
+      "repuestoId": 1,
+      "cantidad": 100
+    }
+  ]
+}
+
+### 8.3 Error: Acceso sin Token
+GET {{AutoTallerManager.API_HostAddress}}/api/clientes
+
+### ===========================================
+### PASO 9: CONSULTAS ADICIONALES
+### ===========================================
+
+### 9.1 Consultar Detalles de Orden
+GET {{AutoTallerManager.API_HostAddress}}/api/detalleorden?ordenServicioId=1
+Authorization: Bearer {{token}}
+
+### 9.2 Consultar Auditoría
+GET {{AutoTallerManager.API_HostAddress}}/api/auditorias?pageNumber=1&pageSize=20
+Authorization: Bearer {{token}}
+
+### 9.3 Consultar Usuarios
+GET {{AutoTallerManager.API_HostAddress}}/api/usuarios?pageNumber=1&pageSize=20
+Authorization: Bearer {{token}}

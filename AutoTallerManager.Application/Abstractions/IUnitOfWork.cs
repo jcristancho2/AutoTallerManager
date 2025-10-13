@@ -24,6 +24,7 @@ public interface IUnitOfWork
     IFacturaService Facturas { get; }
     IAuditoriaService Auditorias { get; }
     IDetalleOrdenService DetallesOrden { get; }
+    ITipoServicioService TiposServicio { get; }
 
     Task<int> SaveChanges(CancellationToken ct = default);
     Task<int> SaveChangesAsync(CancellationToken ct = default);

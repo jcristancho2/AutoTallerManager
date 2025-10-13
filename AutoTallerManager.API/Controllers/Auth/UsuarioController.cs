@@ -1,4 +1,4 @@
-using System;
+ using System;
 using AutoTallerManager.API.DTOs.Auth;
 using AutoTallerManager.Application.Abstractions;
 using AutoTallerManager.Domain.Entities.Auth;
@@ -72,8 +72,9 @@ public class UsuarioController : ControllerBase
         });
     }
 
+
     [HttpPost("register")]
-    [Authorize(Roles = "Admin")]
+    // [Authorize(Roles = "Admin")] // Temporalmente comentado para crear el primer admin
     public async Task<ActionResult<UsuarioDto>> Register([FromBody] CreateUsuarioDto request)
     {
         if (!ModelState.IsValid)

@@ -3,7 +3,7 @@ using MediatR;
 namespace AutoTallerManager.Application.Features.Clientes.Commands;
 
 public sealed record UpdateClienteCommand(
-    Guid Id,
+    int Id,
     string NombreCompleto,
     string Telefono,
     string Correo,

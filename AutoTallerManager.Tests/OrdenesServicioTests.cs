@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
+using MediatR;
 
 namespace AutoTallerManager.Tests;
 
@@ -47,7 +48,8 @@ public class OrdenesServicioTests
     await db.SaveChangesAsync();
 
         var logger = Mock.Of<ILogger<OrdenesServicioController>>();
-        var controller = new OrdenesServicioController(uow, logger);
+        var mediator = Mock.Of<IMediator>();
+        var controller = new OrdenesServicioController(uow, logger, mediator);
 
         var detalle = new DetalleOrden { RepuestoId = repuesto.Id, Cantidad = 2, PrecioUnitario = 10, PrecioManoDeObra = 5 };
         var result = await controller.AddDetalle(orden.Id, detalle, CancellationToken.None);
@@ -80,7 +82,8 @@ public class OrdenesServicioTests
 
         // add detalle (consume 1 repuesto)
         var logger = Mock.Of<ILogger<OrdenesServicioController>>();
-        var controller = new OrdenesServicioController(uow, logger);
+        var mediator = Mock.Of<IMediator>();
+        var controller = new OrdenesServicioController(uow, logger, mediator);
         await controller.AddDetalle(orden.Id, new DetalleOrden { RepuestoId = repuesto.Id, Cantidad = 1, PrecioUnitario = 20, PrecioManoDeObra = 30 }, CancellationToken.None);
 
     // Diagnostic: reload order via unit of work to inspect relationships

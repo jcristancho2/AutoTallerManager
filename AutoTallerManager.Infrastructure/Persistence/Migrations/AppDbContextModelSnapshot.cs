@@ -298,8 +298,11 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("AutoTallerManager.Domain.Entities.Cliente", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -403,10 +406,16 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasDefaultValue(1)
                         .HasColumnName("cantidad");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Descripcion")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("descripcion");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("PrecioManoDeObra")
                         .ValueGeneratedOnAdd()
@@ -425,6 +434,9 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     b.Property<int?>("RepuestoId")
                         .HasColumnType("integer")
                         .HasColumnName("repuesto_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("DetalleOrdenId", "OrdenServicioId")
                         .HasName("pk_order_detail");
@@ -563,6 +575,13 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnType("date")
                         .HasColumnName("fecha");
 
+                    b.Property<string>("NumeroFactura")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Observaciones")
+                        .HasColumnType("text");
+
                     b.Property<int>("OrdenServicioId")
                         .HasColumnType("integer")
                         .HasColumnName("orden_servicio_id");
@@ -660,6 +679,9 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DescripcionTrabajo")
+                        .HasColumnType("text");
 
                     b.Property<int>("EstadoId")
                         .HasColumnType("integer")

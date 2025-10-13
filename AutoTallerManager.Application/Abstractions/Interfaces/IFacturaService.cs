@@ -20,4 +20,6 @@ public interface IFacturaService
     Task<bool> DeleteAsync(int id, CancellationToken ct = default);
     Task<IEnumerable<Factura>> GetFacturasByClienteAsync(int clienteId, CancellationToken ct = default);
     Task<decimal> GetTotalIngresosAsync(DateTime fechaDesde, DateTime fechaHasta, CancellationToken ct = default);
+    Task<Factura?> GetByOrdenServicioIdAsync(int ordenServicioId, CancellationToken ct = default);
+    Task<Factura?> GetUltimaFacturaAsync(CancellationToken ct = default);
 }

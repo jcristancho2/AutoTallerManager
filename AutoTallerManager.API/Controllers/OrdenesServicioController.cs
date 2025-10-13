@@ -7,6 +7,9 @@ using AutoTallerManager.Domain.Entities;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MediatR;
+using AutoTallerManager.Application.Features.OrdenesServicio.Commands;
+using AutoTallerManager.Application.Features.Facturas.Commands;
 
 namespace AutoTallerManager.API.Controllers;
 
@@ -18,11 +21,13 @@ public class OrdenesServicioController : ControllerBase
     // Aquí las órdenes de servicio: crear, obtener, actualizar, eliminar
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<OrdenesServicioController> _logger;
+    private readonly IMediator _mediator;
 
-    public OrdenesServicioController(IUnitOfWork unitOfWork, ILogger<OrdenesServicioController> logger)
+    public OrdenesServicioController(IUnitOfWork unitOfWork, ILogger<OrdenesServicioController> logger, IMediator mediator)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _mediator = mediator;
     }
 
     public class UpdateEstadoOrdenRequest
@@ -455,6 +460,134 @@ public class OrdenesServicioController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error al eliminar orden de servicio {OrdenId}", id);
+            return StatusCode(500, "Error interno del servidor");
+        }
+    }
+
+    [HttpPost("crear-orden")]
+    [Authorize(Roles = "Admin,Recepcionista")]
+    public async Task<ActionResult<int>> CrearOrdenServicio(
+        [FromBody] CrearOrdenServicioCommand command,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            var ordenId = await _mediator.Send(command, ct);
+            
+            _logger.LogInformation("Orden de servicio creada: {OrdenId}", ordenId);
+            
+            return CreatedAtAction(nameof(GetOrdenServicio), new { id = ordenId }, new { ordenId });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Error de validación al crear orden de servicio");
+            return BadRequest(ex.Message);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Recurso no encontrado al crear orden de servicio");
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al crear orden de servicio");
+            return StatusCode(500, "Error interno del servidor");
+        }
+    }
+
+    [HttpPut("{id}/actualizar-trabajo")]
+    [Authorize(Roles = "Admin,Mecanico")]
+    public async Task<ActionResult> ActualizarOrdenConTrabajoRealizado(
+        int id,
+        [FromBody] ActualizarOrdenConTrabajoRealizadoCommand command,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            command = command with { OrdenId = id };
+            var resultado = await _mediator.Send(command, ct);
+            
+            _logger.LogInformation("Trabajo actualizado en orden: {OrdenId}", id);
+            
+            return Ok(new { success = resultado, message = "Trabajo actualizado correctamente" });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Error de validación al actualizar trabajo en orden {OrdenId}", id);
+            return BadRequest(ex.Message);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Recurso no encontrado al actualizar trabajo en orden {OrdenId}", id);
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al actualizar trabajo en orden {OrdenId}", id);
+            return StatusCode(500, "Error interno del servidor");
+        }
+    }
+
+    [HttpPost("{id}/cerrar-orden")]
+    [Authorize(Roles = "Admin,Mecanico")]
+    public async Task<ActionResult<CerrarOrdenServicioResponse>> CerrarOrdenServicio(
+        int id,
+        [FromBody] CerrarOrdenServicioCommand command,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            command = command with { OrdenId = id };
+            var resultado = await _mediator.Send(command, ct);
+            
+            _logger.LogInformation("Orden cerrada: {OrdenId}, Factura: {FacturaId}", id, resultado.FacturaId);
+            
+            return Ok(resultado);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Error de validación al cerrar orden {OrdenId}", id);
+            return BadRequest(ex.Message);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Recurso no encontrado al cerrar orden {OrdenId}", id);
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al cerrar orden {OrdenId}", id);
+            return StatusCode(500, "Error interno del servidor");
+        }
+    }
+
+    [HttpPost("generar-factura")]
+    [Authorize(Roles = "Admin,Mecanico")]
+    public async Task<ActionResult<GenerarFacturaResponse>> GenerarFactura(
+        [FromBody] GenerarFacturaCommand command,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            var resultado = await _mediator.Send(command, ct);
+            
+            _logger.LogInformation("Factura generada: {FacturaId} para orden {OrdenId}", resultado.FacturaId, command.OrdenServicioId);
+            
+            return Ok(resultado);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Error de validación al generar factura para orden {OrdenId}", command.OrdenServicioId);
+            return BadRequest(ex.Message);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Recurso no encontrado al generar factura para orden {OrdenId}", command.OrdenServicioId);
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al generar factura para orden {OrdenId}", command.OrdenServicioId);
             return StatusCode(500, "Error interno del servidor");
         }
     }

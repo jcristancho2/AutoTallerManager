@@ -126,7 +126,6 @@ public class VehiculosController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "Admin,Recepcionista")]
-    [HttpPost]
     public async Task<ActionResult<Vehiculo>> CreateVehiculo([FromBody] VehiculoRequest request, CancellationToken ct = default)
     {
         try

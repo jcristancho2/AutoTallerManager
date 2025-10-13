@@ -5,6 +5,7 @@ using AutoTallerManager.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using AutoTallerManager.API.Middleware;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -12,7 +13,40 @@ var configuration = builder.Configuration;
 // Agregar controladores y Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo 
+    { 
+        Title = "AutoTallerManager API", 
+        Version = "v1",
+        Description = "API para gestión de taller automotriz"
+    });
+    
+    // Configurar autenticación JWT en Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header usando el esquema Bearer. Ejemplo: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+    
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 
 // REGISTRA SERVICIOS Y CONFIGURACIONES PERSONALIZADAS DEL APPLICATIONSERVICEEXTENSION 
 builder.Services.ConfigureCors();
@@ -56,6 +90,9 @@ if (app.Environment.IsDevelopment())
 
 // Middleware de excepciones (después de Swagger en desarrollo)
 app.UseMiddleware<ExceptionMiddleware>();
+
+// Middleware de auditoría
+app.UseMiddleware<AuditoriaMiddleware>();
 
 app.UseHttpsRedirection();
 

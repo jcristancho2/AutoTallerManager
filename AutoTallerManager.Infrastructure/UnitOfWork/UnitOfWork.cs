@@ -31,6 +31,7 @@ public class UnitOfWork : IUnitOfWork
         DetallesOrden = new DetalleOrdenRepository(_context);
         Usuarios = new UsuarioRepository(_context);
         EstadosUsuario = new EstadoUsuarioRepository(_context);
+        TiposServicio = new TipoServicioRepository(_context);
     }
 
     // Repositorios de Auth
@@ -48,6 +49,7 @@ public class UnitOfWork : IUnitOfWork
     public IDetalleOrdenService DetallesOrden { get; }
     public IUsuarioService Usuarios { get; }
     public IEstadoUsuarioService EstadosUsuario { get; }
+    public ITipoServicioService TiposServicio { get; }
 
     public Task<int> SaveChanges(CancellationToken ct = default)
         => _context.SaveChangesAsync(ct);
