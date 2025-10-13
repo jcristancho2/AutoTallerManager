@@ -424,7 +424,7 @@ Agradecemos a todos los contribuidores que han hecho posible este proyecto:
         <sub><b>Leidy Johana Niño</b></sub>
       </a>
       <br />
-      <sub>Testing </sub>
+      <sub>Testing & Backend </sub>
     </td>
     <td align="center">
       <a href="https://github.com/EduardoCastellanosP">
@@ -433,7 +433,7 @@ Agradecemos a todos los contribuidores que han hecho posible este proyecto:
         <sub><b>Eduardo Castellanos</b></sub>
       </a>
       <br />
-      <sub>🔧 Backend </sub>
+      <sub> Backend </sub>
     </td>
     <td align="center">
       <a href="https://github.com/sheyla08samur">
@@ -442,7 +442,7 @@ Agradecemos a todos los contribuidores que han hecho posible este proyecto:
         <sub><b>Esther Samur</b></sub>
       </a>
       <br />
-      <sub> Business Logic &  Frontend & UX </sub>
+      <sub> Business Logic & Fullstack & UX </sub>
     </td>
     <td align="center">
       <a href="https://github.com/jcristancho2">
@@ -451,7 +451,7 @@ Agradecemos a todos los contribuidores que han hecho posible este proyecto:
         <sub><b>Jorge Cristancho</b></sub>
       </a>
       <br />
-      <sub> DevOps & Infrastructure & Architecture</sub>
+      <sub> DevOps & Architecture</sub>
     </td>
   </tr>
 </table>
