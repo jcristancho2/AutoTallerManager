@@ -94,7 +94,11 @@ app.UseMiddleware<ExceptionMiddleware>();
 // Middleware de auditoría
 app.UseMiddleware<AuditoriaMiddleware>();
 
-app.UseHttpsRedirection();
+var isDockerRuntime = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+if (!isDockerRuntime)
+{
+    app.UseHttpsRedirection();
+}
 
 // Solo una política CORS (elige la que necesites)
 app.UseCors("CorsPolicy"); // O la política que prefieras
