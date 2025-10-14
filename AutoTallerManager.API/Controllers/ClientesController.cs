@@ -4,6 +4,7 @@ using AutoTallerManager.Application.Abstractions;
 using AutoTallerManager.Domain.Entities;
 using MediatR;
 using AutoTallerManager.Application.Features.Clientes.Commands;
+using AutoTallerManager.API.DTOs.Request;
 
 namespace AutoTallerManager.API.Controllers;
 
@@ -101,6 +102,119 @@ public class ClientesController : ControllerBase
         {
             _logger.LogError(ex, "Error al crear cliente");
             return StatusCode(500, "Error interno del servidor");
+        }
+    }
+
+    /// <summary>
+    /// Crear cliente con dirección completa (país, departamento, ciudad)
+    /// </summary>
+    /// <param name="request">Datos del cliente con dirección completa</param>
+    /// <param name="ct">Token de cancelación</param>
+    /// <returns>Cliente creado con información de ubicación</returns>
+    [HttpPost("completo")]
+    [Authorize(Roles = "Admin,Recepcionista")]
+    public async Task<ActionResult<CreateClienteCompletoResponse>> CreateClienteCompleto(
+        [FromBody] CreateClienteCompletoDto request, 
+        CancellationToken ct = default)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var command = new CreateClienteCompletoCommand(
+                request.NombreCompleto,
+                request.Telefono,
+                request.Email,
+                request.TipoClienteId,
+                request.Direccion.Descripcion,
+                request.Direccion.PaisId,
+                request.Direccion.DepartamentoId,
+                request.Direccion.CiudadId
+            );
+
+            var response = await _mediator.Send(command, ct);
+            _logger.LogInformation("Cliente completo creado con ID {ClienteId}", response.ClienteId);
+
+            return CreatedAtAction(nameof(GetCliente), new { id = response.ClienteId }, response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Error de negocio al crear cliente completo");
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al crear cliente completo");
+            return StatusCode(500, new { error = "Error interno del servidor", details = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Registrar cliente con vehículos y dirección completa
+    /// </summary>
+    /// <param name="request">Datos del cliente con vehículos y dirección</param>
+    /// <param name="ct">Token de cancelación</param>
+    /// <returns>Cliente y vehículos creados</returns>
+    [HttpPost("registrar-con-vehiculo-completo")]
+    [Authorize(Roles = "Admin,Recepcionista")]
+    public async Task<ActionResult<object>> RegistrarClienteCompletoConVehiculo(
+        [FromBody] RegistrarClienteCompletoConVehiculoDto request, 
+        CancellationToken ct = default)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            // Primero crear el cliente completo
+            var clienteCommand = new CreateClienteCompletoCommand(
+                request.Cliente.NombreCompleto,
+                request.Cliente.Telefono,
+                request.Cliente.Email,
+                request.Cliente.TipoClienteId,
+                request.Cliente.Direccion.Descripcion,
+                request.Cliente.Direccion.PaisId,
+                request.Cliente.Direccion.DepartamentoId,
+                request.Cliente.Direccion.CiudadId
+            );
+
+            var clienteResponse = await _mediator.Send(clienteCommand, ct);
+
+            // Luego crear los vehículos si se proporcionaron
+            var vehiculosCreados = new List<object>();
+            if (request.Vehiculos.Any())
+            {
+                foreach (var vehiculoRequest in request.Vehiculos)
+                {
+                    // Aquí podrías implementar la lógica para crear vehículos
+                    // Por ahora solo registramos que se recibieron
+                    vehiculosCreados.Add(new { 
+                        vin = vehiculoRequest.Vin,
+                        ano = vehiculoRequest.Ano,
+                        mensaje = "Vehículo pendiente de implementación"
+                    });
+                }
+            }
+
+            _logger.LogInformation("Cliente completo con vehículos registrado: {ClienteId}", clienteResponse.ClienteId);
+
+            return Ok(new
+            {
+                cliente = clienteResponse,
+                vehiculos = vehiculosCreados,
+                message = "Cliente registrado exitosamente con dirección completa"
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Error de negocio al registrar cliente completo con vehículos");
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al registrar cliente completo con vehículos");
+            return StatusCode(500, new { error = "Error interno del servidor", details = ex.Message });
         }
     }
 
