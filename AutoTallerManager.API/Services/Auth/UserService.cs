@@ -12,7 +12,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using AutoTallerManager.API.Services.Interfaces.Auth;
-using AutoTallerManager.Infrastructure.Persistence.Context;
 
 namespace AutoTallerManager.API.Services.Implementations.Auth
 {
@@ -22,15 +21,13 @@ namespace AutoTallerManager.API.Services.Implementations.Auth
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordHasher<UserMember> _passwordHasher;
         private readonly IJwtService _jwtService;
-        private readonly AppDbContext _context;
 
-        public UserService(IOptions<JWT> jwt, IUnitOfWork unitOfWork, IPasswordHasher<UserMember> passwordHasher, IJwtService jwtService, AppDbContext context)
+        public UserService(IOptions<JWT> jwt, IUnitOfWork unitOfWork, IPasswordHasher<UserMember> passwordHasher, IJwtService jwtService)
         {
             _jwt = jwt.Value;
             _unitOfWork = unitOfWork;
             _passwordHasher = passwordHasher;
             _jwtService = jwtService;
-            _context = context;
         }
 
         public async Task<string> RegisterAsync(RegisterDto registerDto)
@@ -40,8 +37,8 @@ namespace AutoTallerManager.API.Services.Implementations.Auth
                 Username = registerDto.Username ?? throw new ArgumentNullException(nameof(registerDto.Username)),
                 Email = registerDto.Email ?? throw new ArgumentNullException(nameof(registerDto.Email)),
                 Password = registerDto.Password ?? throw new ArgumentNullException(nameof(registerDto.Password)),
-                CreatedAt = registerDto.CreatedAt,
-                UpdatedAt = registerDto.UpdatedAt
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
             usuario.Password = _passwordHasher.HashPassword(usuario, registerDto.Password!);
@@ -53,54 +50,32 @@ namespace AutoTallerManager.API.Services.Implementations.Auth
             if (usuarioExiste != null)
                 return $"El usuario {registerDto.Username} ya se encuentra registrado.";
 
-            // Verificar si el rol especificado existe
-            var rolAsignado = await _unitOfWork.Roles.GetByIdAsync(registerDto.RolId);
-            if (rolAsignado == null)
-            {
-                // Si el rol no existe, usar rol por defecto
-                var defaultRoleName = UserAuthorization.rol_default.ToString();
-                rolAsignado = _unitOfWork.Roles
+            var defaultRoleName = UserAuthorization.rol_default.ToString();
+            var rolPredeterminado = _unitOfWork.Roles
                                     .Find(u => u.NombreRol != null && EF.Functions.ILike(u.NombreRol, defaultRoleName))
                                     .FirstOrDefault();
 
-                if (rolAsignado == null)
-                {
-                    var nuevoRol = new Rol
-                    {
-                        NombreRol = defaultRoleName,
-                        Descripcion = "Default role"
-                    };
-                    await _unitOfWork.Roles.AddAsync(nuevoRol);
-                    await _unitOfWork.SaveChanges();
-                    rolAsignado = nuevoRol;
-                }
-            }
-
-            // Usar el contexto directamente para manejar las relaciones
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            if (rolPredeterminado == null)
             {
-                // Agregar el usuario
-                await _context.UsersMembers.AddAsync(usuario);
-                await _context.SaveChangesAsync();
-
-                // Agregar la relación con el rol
-                var userRole = new UserMemberRol
+                var nuevoRol = new Rol
                 {
-                    UserMemberId = usuario.Id,
-                    RolId = rolAsignado.Id
+                    NombreRol = defaultRoleName,
+                    Descripcion = "Default role"
                 };
-
-                await _context.UserMemberRols.AddAsync(userRole);
-                await _context.SaveChangesAsync();
-
-                await transaction.CommitAsync();
+                await _unitOfWork.Roles.AddAsync(nuevoRol);
+                await _unitOfWork.SaveChanges();
+                rolPredeterminado = nuevoRol;
             }
-            catch
+
+            usuario.UserMemberRoles.Add(new UserMemberRol
             {
-                await transaction.RollbackAsync();
-                throw;
-            }
+                UserMemberId = usuario.Id,
+                RolId = rolPredeterminado.Id,
+                Rol = rolPredeterminado
+            });
+
+            await _unitOfWork.UserMembers.AddAsync(usuario);
+            await _unitOfWork.SaveChanges();
 
             return $"El usuario {registerDto.Username} ha sido registrado exitosamente.";
         }

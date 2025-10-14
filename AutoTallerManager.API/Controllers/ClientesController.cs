@@ -4,14 +4,12 @@ using AutoTallerManager.Application.Abstractions;
 using AutoTallerManager.Domain.Entities;
 using MediatR;
 using AutoTallerManager.Application.Features.Clientes.Commands;
-using Microsoft.AspNetCore.RateLimiting;
 
 namespace AutoTallerManager.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-[EnableRateLimiting("Global")]
 public class ClientesController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
@@ -175,32 +173,6 @@ public class ClientesController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error al eliminar cliente {ClienteId}", id);
-            return StatusCode(500, "Error interno del servidor");
-        }
-    }
-
-    [HttpPost("registrar-con-vehiculo")]
-    [Authorize(Roles = "Admin,Recepcionista")]
-    public async Task<ActionResult<int>> RegistrarClienteConVehiculo(
-        [FromBody] RegistrarClienteConVehiculoCommand command,
-        CancellationToken ct = default)
-    {
-        try
-        {
-            var clienteId = await _mediator.Send(command, ct);
-            
-            _logger.LogInformation("Cliente registrado con vehículos: {ClienteId}", clienteId);
-            
-            return CreatedAtAction(nameof(GetCliente), new { id = clienteId }, new { clienteId });
-        }
-        catch (InvalidOperationException ex)
-        {
-            _logger.LogWarning(ex, "Error de validación al registrar cliente con vehículo");
-            return BadRequest(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error al registrar cliente con vehículo");
             return StatusCode(500, "Error interno del servidor");
         }
     }

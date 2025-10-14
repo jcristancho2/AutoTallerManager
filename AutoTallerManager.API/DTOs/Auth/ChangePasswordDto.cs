@@ -1,15 +1,12 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace AutoTallerManager.API.DTOs.Auth
+namespace AutoTallerManager.API.DTOs.Auth;
+
+public class ChangePasswordDto
 {
-    public class ChangePasswordDto
-    {
-        [Required]
-        [MinLength(4, ErrorMessage = "La contraseña debe tener al menos 4 caracteres")]
-        public string NewPassword { get; set; } = string.Empty;
-    }
+    [Required]
+    [MinLength(6)]
+    public string NewPassword { get; set; } = string.Empty;
+
+    public string? CurrentPassword { get; set; }
 }

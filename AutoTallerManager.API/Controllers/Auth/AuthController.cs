@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace AutoTallerManager.API.Controllers.Auth;
 
@@ -66,6 +67,7 @@ public class AuthController : ControllerBase
     /// <param name="request">Datos del nuevo usuario</param>
     /// <returns>Confirmación de registro</returns>
     [HttpPost("register")]
+    [Authorize(Roles = "Admin")] // Solo administradores pueden registrar usuarios
     public async Task<ActionResult<string>> Register([FromBody] RegisterDto request)
     {
         try
@@ -99,6 +101,276 @@ public class AuthController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Cerrar sesión del usuario
+    /// </summary>
+    /// <returns>Confirmación de logout</returns>
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IActionResult> Logout()
+    {
+        try
+        {
+            // Obtener el usuario actual del token
+            var userIdClaim = User.FindFirst("uid")?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized("Token inválido");
+            }
+
+            var user = await _unitOfWork.UserMembers.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound("Usuario no encontrado");
+            }
+
+            // Revocar todos los refresh tokens activos
+            if (user.RefreshTokens != null)
+            {
+                foreach (var token in user.RefreshTokens.Where(t => t.IsActive))
+                {
+                    token.Revoked = DateTime.UtcNow;
+                }
+                await _unitOfWork.UserMembers.UpdateAsync(user);
+                await _unitOfWork.SaveChanges();
+            }
+
+            _logger.LogInformation("Logout exitoso para usuario: {UserId}", userId);
+            return Ok(new { message = "Sesión cerrada exitosamente" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error durante el logout");
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    #endregion
+
+    #region Gestión de Usuarios
+
+    /// <summary>
+    /// Obtener todos los usuarios del sistema
+    /// </summary>
+    /// <returns>Lista de usuarios</returns>
+    [HttpGet("users")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<IEnumerable<UsuarioDto>>> GetUsers()
+    {
+        try
+        {
+            var users = await _db.UsersMembers
+                .Include(u => u.UserMemberRoles)
+                    .ThenInclude(umr => umr.Rol)
+                .ToListAsync();
+
+            var usersDto = users.Select(u => new UsuarioDto
+            {
+                Id = u.Id,
+                Email = u.Email ?? string.Empty,
+                RolNombre = u.UserMemberRoles?.FirstOrDefault()?.Rol?.NombreRol ?? "Sin rol",
+                EstadoNombre = "Activo" // Por defecto, podrías agregar un campo EstadoUsuario si lo necesitas
+            });
+
+            return Ok(usersDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al obtener usuarios");
+            return StatusCode(500, new { error = "Error interno del servidor", details = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Obtener usuario por ID
+    /// </summary>
+    /// <param name="id">ID del usuario</param>
+    /// <returns>Información del usuario</returns>
+    [HttpGet("users/{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<UsuarioDto>> GetUser(int id)
+    {
+        try
+        {
+            var user = await _db.UsersMembers
+                .Include(u => u.UserMemberRoles)
+                    .ThenInclude(umr => umr.Rol)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null)
+            {
+                return NotFound("Usuario no encontrado");
+            }
+
+            var userDto = new UsuarioDto
+            {
+                Id = user.Id,
+                Email = user.Email ?? string.Empty,
+                RolNombre = user.UserMemberRoles?.FirstOrDefault()?.Rol?.NombreRol ?? "Sin rol",
+                EstadoNombre = "Activo"
+            };
+
+            return Ok(userDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al obtener usuario {UserId}", id);
+            return StatusCode(500, new { error = "Error interno del servidor", details = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Actualizar información de usuario
+    /// </summary>
+    /// <param name="id">ID del usuario</param>
+    /// <param name="request">Datos actualizados</param>
+    /// <returns>Confirmación de actualización</returns>
+    [HttpPut("users/{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUsuarioDto request)
+    {
+        try
+        {
+            var user = await _db.UsersMembers
+                .Include(u => u.UserMemberRoles)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null)
+            {
+                return NotFound("Usuario no encontrado");
+            }
+
+            // Actualizar datos básicos
+            user.Email = request.Email;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            // Actualizar rol si es necesario
+            var currentRole = user.UserMemberRoles?.FirstOrDefault();
+            if (currentRole?.RolId != request.RolId)
+            {
+                // Eliminar rol actual
+                if (currentRole != null)
+                {
+                    _db.UserMemberRols.Remove(currentRole);
+                }
+
+                // Agregar nuevo rol
+                var newUserRole = new UserMemberRol
+                {
+                    UserMemberId = user.Id,
+                    RolId = request.RolId
+                };
+                _db.UserMemberRols.Add(newUserRole);
+            }
+
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation("Usuario {UserId} actualizado exitosamente", id);
+            return Ok(new { message = "Usuario actualizado exitosamente" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al actualizar usuario {UserId}", id);
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Cambiar contraseña de usuario
+    /// </summary>
+    /// <param name="id">ID del usuario</param>
+    /// <param name="request">Datos de cambio de contraseña</param>
+    /// <returns>Confirmación de cambio</returns>
+    [HttpPut("users/{id}/change-password")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> ChangePassword(int id, [FromBody] ChangePasswordDto request)
+    {
+        try
+        {
+            var user = await _db.UsersMembers.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+            {
+                return NotFound("Usuario no encontrado");
+            }
+
+            // Validar contraseña actual si se proporciona
+            if (!string.IsNullOrEmpty(request.CurrentPassword))
+            {
+                var verification = _passwordHasher.VerifyHashedPassword(user, user.Password ?? string.Empty, request.CurrentPassword);
+                if (verification == PasswordVerificationResult.Failed)
+                {
+                    return BadRequest(new { error = "Contraseña actual incorrecta" });
+                }
+            }
+
+            // Actualizar contraseña
+            user.Password = _passwordHasher.HashPassword(user, request.NewPassword);
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation("Contraseña cambiada para usuario {UserId}", id);
+            return Ok(new { message = "Contraseña cambiada exitosamente" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al cambiar contraseña para usuario {UserId}", id);
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Asignar rol a usuario
+    /// </summary>
+    /// <param name="request">Datos de asignación de rol</param>
+    /// <returns>Confirmación de asignación</returns>
+    [HttpPost("users/assign-role")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> AssignRole([FromBody] AssignRoleDto request)
+    {
+        try
+        {
+            var user = await _db.UsersMembers
+                .Include(u => u.UserMemberRoles)
+                .FirstOrDefaultAsync(u => u.Id == request.UserId);
+
+            if (user == null)
+            {
+                return NotFound("Usuario no encontrado");
+            }
+
+            var role = await _db.Roles.FirstOrDefaultAsync(r => r.Id == request.RoleId);
+            if (role == null)
+            {
+                return NotFound("Rol no encontrado");
+            }
+
+            // Eliminar roles existentes
+            if (user.UserMemberRoles != null && user.UserMemberRoles.Any())
+            {
+                _db.UserMemberRols.RemoveRange(user.UserMemberRoles);
+            }
+
+            // Asignar nuevo rol
+            var userRole = new UserMemberRol
+            {
+                UserMemberId = request.UserId,
+                RolId = request.RoleId
+            };
+
+            _db.UserMemberRols.Add(userRole);
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation("Rol {RoleId} asignado al usuario {UserId}", request.RoleId, request.UserId);
+            return Ok(new { message = "Rol asignado exitosamente" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al asignar rol al usuario {UserId}", request.UserId);
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     #endregion
 
     #region Setup y Configuración
@@ -125,13 +397,11 @@ public class AuthController : ControllerBase
             // Crear usuario admin
             var adminUser = new UserMember
             {
-                Username = "admin@autotaller.com",
                 Email = "admin@autotaller.com",
+                Password = _passwordHasher.HashPassword(null, "admin123"),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
-            
-            adminUser.Password = _passwordHasher.HashPassword(adminUser, "admin123");
 
             _db.UsersMembers.Add(adminUser);
             await _db.SaveChangesAsync();
@@ -420,6 +690,136 @@ public class AuthController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Crear nuevo rol en el sistema
+    /// </summary>
+    /// <param name="request">Datos del nuevo rol</param>
+    /// <returns>Confirmación de creación</returns>
+    [HttpPost("roles")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<RolDto>> CreateRole([FromBody] CreateRoleDto request)
+    {
+        try
+        {
+            // Verificar si el rol ya existe
+            var existingRole = await _db.Roles
+                .FirstOrDefaultAsync(r => r.NombreRol == request.NombreRol);
+            
+            if (existingRole != null)
+            {
+                return BadRequest(new { error = "El rol ya existe" });
+            }
+
+            // Crear nuevo rol
+            var newRole = new Rol
+            {
+                NombreRol = request.NombreRol,
+                Descripcion = request.Descripcion
+            };
+
+            _db.Roles.Add(newRole);
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation("Rol creado: {NombreRol}", newRole.NombreRol);
+
+            var roleDto = new RolDto
+            {
+                Id = newRole.Id,
+                NombreRol = newRole.NombreRol ?? string.Empty,
+                Descripcion = newRole.Descripcion ?? string.Empty
+            };
+
+            return CreatedAtAction(nameof(GetRoles), new { id = newRole.Id }, roleDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al crear rol: {Message}", ex.Message);
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Actualizar rol existente
+    /// </summary>
+    /// <param name="id">ID del rol</param>
+    /// <param name="request">Datos actualizados del rol</param>
+    /// <returns>Confirmación de actualización</returns>
+    [HttpPut("roles/{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateRole(int id, [FromBody] UpdateRoleDto request)
+    {
+        try
+        {
+            var role = await _db.Roles.FirstOrDefaultAsync(r => r.Id == id);
+            if (role == null)
+            {
+                return NotFound("Rol no encontrado");
+            }
+
+            // Verificar si el nuevo nombre ya existe en otro rol
+            var existingRole = await _db.Roles
+                .FirstOrDefaultAsync(r => r.NombreRol == request.NombreRol && r.Id != id);
+            
+            if (existingRole != null)
+            {
+                return BadRequest(new { error = "Ya existe un rol con ese nombre" });
+            }
+
+            // Actualizar datos
+            role.NombreRol = request.NombreRol;
+            role.Descripcion = request.Descripcion;
+
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation("Rol {RoleId} actualizado", id);
+            return Ok(new { message = "Rol actualizado exitosamente" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al actualizar rol {RoleId}", id);
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Eliminar rol del sistema
+    /// </summary>
+    /// <param name="id">ID del rol</param>
+    /// <returns>Confirmación de eliminación</returns>
+    [HttpDelete("roles/{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteRole(int id)
+    {
+        try
+        {
+            var role = await _db.Roles
+                .Include(r => r.UserMemberRols)
+                .FirstOrDefaultAsync(r => r.Id == id);
+            
+            if (role == null)
+            {
+                return NotFound("Rol no encontrado");
+            }
+
+            // Verificar si el rol está siendo usado por usuarios
+            if (role.UserMemberRols != null && role.UserMemberRols.Any())
+            {
+                return BadRequest(new { error = "No se puede eliminar el rol porque está asignado a usuarios" });
+            }
+
+            _db.Roles.Remove(role);
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation("Rol {RoleId} eliminado", id);
+            return Ok(new { message = "Rol eliminado exitosamente" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al eliminar rol {RoleId}", id);
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     #endregion
 
     #region Métodos Privados
@@ -463,82 +863,10 @@ public class AuthController : ControllerBase
     }
 
     #endregion
-
-    #region Gestión de Usuarios
-
-    /// <summary>
-    /// Obtener todos los usuarios del sistema
-    /// </summary>
-    /// <returns>Lista de usuarios</returns>
-    [HttpGet("users")]
-    [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<IEnumerable<UsuarioDto>>> GetAllUsers()
-    {
-        try
-        {
-            var usuarios = await _unitOfWork.UserMembers.GetAllAsync();
-
-            var usuariosDto = usuarios.Select(u => new UsuarioDto
-            {
-                Id = u.Id,
-                Email = u.Email ?? string.Empty,
-                RolNombre = u.UserMemberRoles?.FirstOrDefault()?.Rol?.NombreRol ?? string.Empty,
-                EstadoNombre = "Activo"
-            });
-
-            return Ok(usuariosDto);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error al obtener usuarios");
-            return StatusCode(500, "Error interno del servidor");
-        }
-    }
-
-    /// <summary>
-    /// Obtener usuario por ID
-    /// </summary>
-    /// <param name="id">ID del usuario</param>
-    /// <returns>Información del usuario</returns>
-    [HttpGet("users/{id}")]
-    [Authorize]
-    public async Task<ActionResult<UsuarioDto>> GetUserById(int id)
-    {
-        try
-        {
-            var usuario = await _unitOfWork.UserMembers.GetByIdAsync(id);
-            if (usuario == null)
-                return NotFound($"Usuario con ID {id} no encontrado");
-
-            var usuarioDto = new UsuarioDto
-            {
-                Id = usuario.Id,
-                Email = usuario.Email ?? string.Empty,
-                RolNombre = usuario.UserMemberRoles?.FirstOrDefault()?.Rol?.NombreRol ?? string.Empty,
-                EstadoNombre = "Activo"
-            };
-
-            return Ok(usuarioDto);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error al obtener usuario {UsuarioId}", id);
-            return StatusCode(500, "Error interno del servidor");
-        }
-    }
-
-    #endregion
 }
 
-// DTOs temporales
+// DTO temporal para refresh token
 public class RefreshTokenRequest
 {
     public string RefreshToken { get; set; } = string.Empty;
-}
-
-public class RolDto
-{
-    public int Id { get; set; }
-    public string NombreRol { get; set; } = string.Empty;
-    public string Descripcion { get; set; } = string.Empty;
 }
