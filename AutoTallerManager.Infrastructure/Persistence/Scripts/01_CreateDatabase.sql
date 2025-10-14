@@ -12,7 +12,7 @@ CREATE TABLE roles (
 );
 
 -- Table: user_statuses
-CREATE TABLE user_statuses (
+CREATE TABLE user_status (
     id SERIAL PRIMARY KEY,
     status_name VARCHAR(50) NOT NULL,
     description VARCHAR(200),
@@ -223,6 +223,7 @@ CREATE TABLE order_details (
     service_order_id INTEGER NOT NULL REFERENCES service_orders (id) ON DELETE CASCADE,
     spare_part_id INTEGER NOT NULL REFERENCES spare_parts (id) ON DELETE RESTRICT,
     quantity INTEGER NOT NULL DEFAULT 1,
+    description INTEGER,
     unit_price DECIMAL(10, 2) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),

@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace AutoTallerManager.Domain.Entities
 {
-    public class TipoPago : BaseEntity
+    public class PaymentType : BaseEntity
     {
-        public string? NombreTipoPag { get; set; }
-        public ICollection<Factura>? Facturas { get; set; }
+        public string? Name { get; set; }
+        public ICollection<Invoice>? Invoices { get; set; }
     }
 }
