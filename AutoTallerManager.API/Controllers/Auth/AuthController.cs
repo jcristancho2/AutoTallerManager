@@ -398,10 +398,12 @@ public class AuthController : ControllerBase
             var adminUser = new UserMember
             {
                 Email = "admin@autotaller.com",
-                Password = _passwordHasher.HashPassword(null, "admin123"),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
+            
+            // Hash de la contraseña después de crear el objeto
+            adminUser.Password = _passwordHasher.HashPassword(adminUser, "admin123");
 
             _db.UsersMembers.Add(adminUser);
             await _db.SaveChangesAsync();
@@ -793,7 +795,7 @@ public class AuthController : ControllerBase
         try
         {
             var role = await _db.Roles
-                .Include(r => r.UserMemberRols)
+                .Include(r => r.UserMemberRoles)
                 .FirstOrDefaultAsync(r => r.Id == id);
             
             if (role == null)
@@ -802,7 +804,7 @@ public class AuthController : ControllerBase
             }
 
             // Verificar si el rol está siendo usado por usuarios
-            if (role.UserMemberRols != null && role.UserMemberRols.Any())
+            if (role.UserMemberRoles != null && role.UserMemberRoles.Any())
             {
                 return BadRequest(new { error = "No se puede eliminar el rol porque está asignado a usuarios" });
             }
