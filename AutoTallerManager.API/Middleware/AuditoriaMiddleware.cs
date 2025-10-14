@@ -105,3 +105,5 @@ public class AuditoriaMiddleware
         return $"{method} en {path} por {user}";
     }
 }
+
+

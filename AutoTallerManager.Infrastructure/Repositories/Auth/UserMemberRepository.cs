@@ -34,14 +34,16 @@ public class UserMemberRepository : IUserMemberService
         return query.CountAsync(ct);
     }
 
-    // 🔹 Obtener por username con roles y tokens
+    // 🔹 Obtener por username o email con roles y tokens
     public async Task<UserMember?> GetByUserNameAsync(string userName, CancellationToken ct = default)
     {
         return await _db.UsersMembers
             .Include(u => u.UserMemberRoles)
                 .ThenInclude(umr => umr.Rol)
             .Include(u => u.RefreshTokens)
-            .FirstOrDefaultAsync(u => u.Username != null && EF.Functions.ILike(u.Username, userName), ct);
+            .FirstOrDefaultAsync(u => 
+                (u.Username != null && EF.Functions.ILike(u.Username, userName)) ||
+                (u.Email != null && EF.Functions.ILike(u.Email, userName)), ct);
     }
 
     // 🔹 Obtener por Id
@@ -74,21 +76,23 @@ public class UserMemberRepository : IUserMemberService
     public async Task AddAsync(UserMember userMember, CancellationToken ct = default)
     {
         await _db.UsersMembers.AddAsync(userMember, ct);
-        await _db.SaveChangesAsync(ct);
+        // No guardamos cambios aquí, se hace en el UnitOfWork
     }
 
     // 🔹 Actualizar usuario
-    public async Task UpdateAsync(UserMember userMember, CancellationToken ct = default)
+    public Task UpdateAsync(UserMember userMember, CancellationToken ct = default)
     {
         _db.UsersMembers.Update(userMember);
-        await _db.SaveChangesAsync(ct);
+        // No guardamos cambios aquí, se hace en el UnitOfWork
+        return Task.CompletedTask;
     }
 
     // 🔹 Eliminar usuario
-    public async Task RemoveAsync(UserMember userMember, CancellationToken ct = default)
+    public Task RemoveAsync(UserMember userMember, CancellationToken ct = default)
     {
         _db.UsersMembers.Remove(userMember);
-        await _db.SaveChangesAsync(ct);
+        // No guardamos cambios aquí, se hace en el UnitOfWork
+        return Task.CompletedTask;
     }
 
     // 🔹 Obtener todos los usuarios

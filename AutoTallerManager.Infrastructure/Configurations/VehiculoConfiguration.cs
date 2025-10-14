@@ -12,52 +12,52 @@ namespace AutoTallerManager.Infrastructure.Configurations
     {
         public void Configure(EntityTypeBuilder<Vehiculo> builder)
         {
-            builder.ToTable("Vehiculos");
+            builder.ToTable("vehiculos");
 
             builder.HasKey(v => v.Id);
             
             builder.Property(v => v.Id)
-                   .HasColumnName("Id")
+                   .HasColumnName("id")
                    .ValueGeneratedOnAdd();
 
             builder.Property(v => v.VIN)
-                   .HasColumnName("VIN")
+                   .HasColumnName("vin")
                    .HasMaxLength(17);
 
             builder.Property(v => v.Anio)
-                   .HasColumnName("Anio")
+                   .HasColumnName("anio")
                    .IsRequired();
 
             builder.Property(v => v.Kilometraje)
-                   .HasColumnName("Kilometraje")
+                   .HasColumnName("kilometraje")
                    .IsRequired();
 
             builder.Property(v => v.Placa)
-                   .HasColumnName("Placa")
+                   .HasColumnName("placa")
                    .HasMaxLength(20);
 
             builder.Property(v => v.ClienteId)
-                   .HasColumnName("ClienteId")
+                   .HasColumnName("cliente_id")
                    .IsRequired();
 
             builder.Property(v => v.TipoVehiculoId)
-                   .HasColumnName("TipoVehiculoId")
+                   .HasColumnName("tipo_vehiculo_id")
                    .IsRequired();
 
             builder.Property(v => v.MarcaVehiculoId)
-                   .HasColumnName("MarcaVehiculoId")
+                   .HasColumnName("marca_vehiculo_id")
                    .IsRequired();
 
             builder.Property(v => v.ModeloVehiculoId)
-                   .HasColumnName("ModeloVehiculoId")
+                   .HasColumnName("modelo_vehiculo_id")
                    .IsRequired();
 
             builder.Property(v => v.CreatedAt)
-                   .HasColumnName("CreatedAt")
+                   .HasColumnName("created_at")
                    .IsRequired();
 
             builder.Property(v => v.UpdatedAt)
-                   .HasColumnName("UpdatedAt")
+                   .HasColumnName("updated_at")
                    .IsRequired();
 
             // Índices únicos
@@ -68,8 +68,8 @@ namespace AutoTallerManager.Infrastructure.Configurations
                    .IsUnique();
 
             // Check constraints usando la nueva sintaxis
-            builder.ToTable(t => t.HasCheckConstraint("CK_Vehiculo_Kilometraje", "Kilometraje >= 0"));
-            builder.ToTable(t => t.HasCheckConstraint("CK_Vehiculo_Anio", "Anio >= 1900 AND Anio <= 2030"));
+            builder.ToTable(t => t.HasCheckConstraint("CK_Vehiculo_Kilometraje", "kilometraje >= 0"));
+            builder.ToTable(t => t.HasCheckConstraint("CK_Vehiculo_Anio", "anio >= 1900 AND anio <= 2030"));
 
             // Relaciones
             builder.HasOne(v => v.Cliente)

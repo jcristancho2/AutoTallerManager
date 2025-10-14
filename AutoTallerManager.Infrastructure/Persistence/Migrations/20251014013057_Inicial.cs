@@ -5,7 +5,7 @@
 namespace AutoTallerManager.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class migracionp5 : Migration
+    public partial class Inicial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

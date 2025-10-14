@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using AutoTallerManager.API.Services.Interfaces.Auth;
+using AutoTallerManager.Infrastructure.Persistence.Context;
 
 namespace AutoTallerManager.API.Services.Implementations.Auth
 {
@@ -20,12 +21,16 @@ namespace AutoTallerManager.API.Services.Implementations.Auth
         private readonly JWT _jwt;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordHasher<UserMember> _passwordHasher;
+        private readonly IJwtService _jwtService;
+        private readonly AppDbContext _context;
 
-        public UserService(IOptions<JWT> jwt, IUnitOfWork unitOfWork, IPasswordHasher<UserMember> passwordHasher)
+        public UserService(IOptions<JWT> jwt, IUnitOfWork unitOfWork, IPasswordHasher<UserMember> passwordHasher, IJwtService jwtService, AppDbContext context)
         {
             _jwt = jwt.Value;
             _unitOfWork = unitOfWork;
             _passwordHasher = passwordHasher;
+            _jwtService = jwtService;
+            _context = context;
         }
 
         public async Task<string> RegisterAsync(RegisterDto registerDto)
@@ -35,8 +40,8 @@ namespace AutoTallerManager.API.Services.Implementations.Auth
                 Username = registerDto.Username ?? throw new ArgumentNullException(nameof(registerDto.Username)),
                 Email = registerDto.Email ?? throw new ArgumentNullException(nameof(registerDto.Email)),
                 Password = registerDto.Password ?? throw new ArgumentNullException(nameof(registerDto.Password)),
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = registerDto.CreatedAt,
+                UpdatedAt = registerDto.UpdatedAt
             };
 
             usuario.Password = _passwordHasher.HashPassword(usuario, registerDto.Password!);
@@ -48,32 +53,54 @@ namespace AutoTallerManager.API.Services.Implementations.Auth
             if (usuarioExiste != null)
                 return $"El usuario {registerDto.Username} ya se encuentra registrado.";
 
-            var defaultRoleName = UserAuthorization.rol_default.ToString();
-            var rolPredeterminado = _unitOfWork.Roles
+            // Verificar si el rol especificado existe
+            var rolAsignado = await _unitOfWork.Roles.GetByIdAsync(registerDto.RolId);
+            if (rolAsignado == null)
+            {
+                // Si el rol no existe, usar rol por defecto
+                var defaultRoleName = UserAuthorization.rol_default.ToString();
+                rolAsignado = _unitOfWork.Roles
                                     .Find(u => u.NombreRol != null && EF.Functions.ILike(u.NombreRol, defaultRoleName))
                                     .FirstOrDefault();
 
-            if (rolPredeterminado == null)
-            {
-                var nuevoRol = new Rol
+                if (rolAsignado == null)
                 {
-                    NombreRol = defaultRoleName,
-                    Descripcion = "Default role"
-                };
-                await _unitOfWork.Roles.AddAsync(nuevoRol);
-                await _unitOfWork.SaveChanges();
-                rolPredeterminado = nuevoRol;
+                    var nuevoRol = new Rol
+                    {
+                        NombreRol = defaultRoleName,
+                        Descripcion = "Default role"
+                    };
+                    await _unitOfWork.Roles.AddAsync(nuevoRol);
+                    await _unitOfWork.SaveChanges();
+                    rolAsignado = nuevoRol;
+                }
             }
 
-            usuario.UserMemberRoles.Add(new UserMemberRol
+            // Usar el contexto directamente para manejar las relaciones
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                UserMemberId = usuario.Id,
-                RolId = rolPredeterminado.Id,
-                Rol = rolPredeterminado
-            });
+                // Agregar el usuario
+                await _context.UsersMembers.AddAsync(usuario);
+                await _context.SaveChangesAsync();
 
-            await _unitOfWork.UserMembers.AddAsync(usuario);
-            await _unitOfWork.SaveChanges();
+                // Agregar la relación con el rol
+                var userRole = new UserMemberRol
+                {
+                    UserMemberId = usuario.Id,
+                    RolId = rolAsignado.Id
+                };
+
+                await _context.UserMemberRols.AddAsync(userRole);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
 
             return $"El usuario {registerDto.Username} ha sido registrado exitosamente.";
         }
@@ -92,6 +119,13 @@ namespace AutoTallerManager.API.Services.Implementations.Auth
             }
 
             var usuario = await _unitOfWork.UserMembers.GetByUserNameAsync(username, ct);
+            
+            // Asegurar que los roles estén cargados
+            if (usuario != null && (usuario.UserMemberRoles == null || !usuario.UserMemberRoles.Any()))
+            {
+                // Recargar el usuario con roles incluidos
+                usuario = await _unitOfWork.UserMembers.GetByIdAsync(usuario.Id, ct);
+            }
             if (usuario == null)
             {
                 dto.Message = "Usuario o contraseña inválidos.";
@@ -125,7 +159,7 @@ namespace AutoTallerManager.API.Services.Implementations.Auth
             await _unitOfWork.UserMembers.UpdateAsync(usuario, ct);
             await _unitOfWork.SaveChanges(ct);
 
-            var jwt = CreateJwtToken(usuario);
+            var jwt = _jwtService.CreateJwtToken(usuario);
 
             dto.IsAuthenticated = true;
             dto.Token = new JwtSecurityTokenHandler().WriteToken(jwt);
@@ -213,7 +247,7 @@ namespace AutoTallerManager.API.Services.Implementations.Auth
             await _unitOfWork.UserMembers.UpdateAsync(usuario);
             await _unitOfWork.SaveChanges();
 
-            var jwtSecurityToken = CreateJwtToken(usuario);
+            var jwtSecurityToken = _jwtService.CreateJwtToken(usuario);
 
             dataUserDto.IsAuthenticated = true;
             dataUserDto.Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
@@ -229,47 +263,9 @@ namespace AutoTallerManager.API.Services.Implementations.Auth
             return dataUserDto;
         }
 
-        private JwtSecurityToken CreateJwtToken(UserMember usuario)
-        {
-            var roleClaims = usuario.UserMemberRoles?
-                                .Where(umr => umr.Rol != null)
-                                .Where(umr => umr.Rol!.NombreRol != null)
-                                .Select(umr => new Claim("roles", umr.Rol!.NombreRol!))
-                                .ToList() ?? new List<Claim>();
-
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, usuario.Username ?? ""),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, usuario.Email ?? ""),
-                new Claim("uid", usuario.Id.ToString())
-            }
-            .Union(roleClaims);
-
-            var key = Encoding.UTF8.GetBytes(_jwt.Key ?? throw new InvalidOperationException("JWT Key cannot be null"));
-            var creds = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
-
-            return new JwtSecurityToken(
-                issuer: _jwt.Issuer,
-                audience: _jwt.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_jwt.DurationInMinutes),
-                signingCredentials: creds
-            );
-        }
-
         private RefreshToken CreateRefreshToken()
         {
-            var randomNumber = new byte[32];
-            using var generator = RandomNumberGenerator.Create();
-            generator.GetBytes(randomNumber);
-
-            return new RefreshToken
-            {
-                Token = Convert.ToBase64String(randomNumber),
-                Expiries = DateTime.UtcNow.AddDays(10),
-                CreatedDate = DateTime.UtcNow
-            };
+            return _jwtService.CreateRefreshToken();
         }
     }
 }

@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace AutoTallerManager.Infrastructure.Persistence.Migrations
+namespace AutoTallerManager.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -19,12 +19,12 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     categoriaid = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     nombre_cat = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_categories", x => x.categoriaid);
+                    table.PrimaryKey("p_k_categorias", x => x.categoriaid);
                 });
 
             migrationBuilder.CreateTable(
@@ -34,8 +34,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     nombre = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -49,8 +49,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     nombre = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -58,18 +58,18 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "EstadosUsuario",
+                name: "estados_usuario",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
+                    id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    NombreEstUsu = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    nombre_est_usu = table.Column<string>(type: "text", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_EstadosUsuario", x => x.Id);
+                    table.PrimaryKey("p_k_estados_usuario", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -81,13 +81,13 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     nombrefab = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     descripcion = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     telefono = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
-                    Email = table.Column<string>(type: "character varying(80)", maxLength: 80, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    email = table.Column<string>(type: "character varying(80)", maxLength: 80, nullable: true),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_manufacturer", x => x.fabricanteid);
+                    table.PrimaryKey("p_k_fabricantes", x => x.fabricanteid);
                 });
 
             migrationBuilder.CreateTable(
@@ -97,12 +97,12 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     tipo_pago_id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     nombre_tipo_pag = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_payment_types", x => x.tipo_pago_id);
+                    table.PrimaryKey("p_k_tipos_pago", x => x.tipo_pago_id);
                 });
 
             migrationBuilder.CreateTable(
@@ -114,12 +114,12 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     nombre_rol = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     descripcion = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     activo = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_rols", x => x.id);
+                    table.PrimaryKey("p_k_roles", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -129,12 +129,12 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     tipo_servid = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     nombre_tipo_serv = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_service_types", x => x.tipo_servid);
+                    table.PrimaryKey("p_k_tipos_servicio", x => x.tipo_servid);
                 });
 
             migrationBuilder.CreateTable(
@@ -144,12 +144,12 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     estado_id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     nombre_est_serv = table.Column<string>(type: "character varying(80)", maxLength: 80, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_services_status", x => x.estado_id);
+                    table.PrimaryKey("p_k_estados_servicio", x => x.estado_id);
                 });
 
             migrationBuilder.CreateTable(
@@ -159,8 +159,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     nombre_accion = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -171,17 +171,17 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                 name: "users_members",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
+                    id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     username = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     email = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     password = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_users_members", x => x.Id);
+                    table.PrimaryKey("p_k_users_members", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -191,8 +191,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     nombre = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -206,8 +206,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     nombre = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -220,13 +220,13 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                 {
                     tipo_vehiculo_id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    NombreTipoVehiculo = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    nombre_tipo_vehiculo = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_vehicle_types", x => x.tipo_vehiculo_id);
+                    table.PrimaryKey("p_k_tipos_vehiculo", x => x.tipo_vehiculo_id);
                 });
 
             migrationBuilder.CreateTable(
@@ -237,8 +237,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     nombre = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: true),
                     pais_id = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -252,30 +252,30 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Usuarios",
+                name: "usuarios",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
+                    id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Email = table.Column<string>(type: "text", nullable: true),
-                    PasswordHash = table.Column<string>(type: "text", nullable: true),
-                    RolId = table.Column<int>(type: "integer", nullable: false),
-                    EstadoUsuarioId = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    email = table.Column<string>(type: "text", nullable: true),
+                    password_hash = table.Column<string>(type: "text", nullable: true),
+                    rol_id = table.Column<int>(type: "integer", nullable: false),
+                    estado_usuario_id = table.Column<int>(type: "integer", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Usuarios", x => x.Id);
+                    table.PrimaryKey("p_k_usuarios", x => x.id);
                     table.ForeignKey(
-                        name: "FK_Usuarios_EstadosUsuario_EstadoUsuarioId",
-                        column: x => x.EstadoUsuarioId,
-                        principalTable: "EstadosUsuario",
-                        principalColumn: "Id",
+                        name: "FK_usuarios_estados_usuario_estado_usuario_id",
+                        column: x => x.estado_usuario_id,
+                        principalTable: "estados_usuario",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Usuarios_rols_RolId",
-                        column: x => x.RolId,
+                        name: "FK_usuarios_rols_rol_id",
+                        column: x => x.rol_id,
                         principalTable: "rols",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -285,24 +285,24 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                 name: "RefreshTokens",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
+                    id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<int>(type: "integer", nullable: false),
-                    Token = table.Column<string>(type: "text", nullable: true),
-                    Expiries = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Revoked = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    user_id = table.Column<int>(type: "integer", nullable: false),
+                    token = table.Column<string>(type: "text", nullable: true),
+                    expiries = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    created_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    revoked = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
+                    table.PrimaryKey("p_k_refresh_tokens", x => x.id);
                     table.ForeignKey(
                         name: "fk_refresh_tokens_user_member",
-                        column: x => x.UserId,
+                        column: x => x.user_id,
                         principalTable: "users_members",
-                        principalColumn: "Id",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -326,7 +326,7 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         name: "fk_user_member_rol_user_member",
                         column: x => x.user_member_id,
                         principalTable: "users_members",
-                        principalColumn: "Id",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -341,30 +341,30 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     descripcion = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     stock = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     precio_unitario = table.Column<decimal>(type: "numeric(10,2)", nullable: false),
-                    CategoriaId = table.Column<int>(type: "integer", nullable: false),
-                    TipoVehiculoId = table.Column<int>(type: "integer", nullable: false),
-                    FabricanteId = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    categoria_id = table.Column<int>(type: "integer", nullable: false),
+                    tipo_vehiculo_id = table.Column<int>(type: "integer", nullable: false),
+                    fabricante_id = table.Column<int>(type: "integer", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_replacement", x => x.repuesto_id);
+                    table.PrimaryKey("p_k_repuestos", x => x.repuesto_id);
                     table.ForeignKey(
-                        name: "FK_replacement_categories_CategoriaId",
-                        column: x => x.CategoriaId,
+                        name: "FK_replacement_categories_categoria_id",
+                        column: x => x.categoria_id,
                         principalTable: "categories",
                         principalColumn: "categoriaid",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_replacement_manufacturer_FabricanteId",
-                        column: x => x.FabricanteId,
+                        name: "FK_replacement_manufacturer_fabricante_id",
+                        column: x => x.fabricante_id,
                         principalTable: "manufacturer",
                         principalColumn: "fabricanteid",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_replacement_vehicle_types_TipoVehiculoId",
-                        column: x => x.TipoVehiculoId,
+                        name: "FK_replacement_vehicle_types_tipo_vehiculo_id",
+                        column: x => x.tipo_vehiculo_id,
                         principalTable: "vehicle_types",
                         principalColumn: "tipo_vehiculo_id",
                         onDelete: ReferentialAction.Restrict);
@@ -378,8 +378,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     nombre = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: true),
                     departamento_id = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -403,8 +403,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     accion_id = table.Column<int>(type: "integer", nullable: false),
                     fecha_hora = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     descripcion_accion = table.Column<string>(type: "TEXT", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -418,8 +418,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     table.ForeignKey(
                         name: "fk_auditoria_usuario",
                         column: x => x.usuario_id,
-                        principalTable: "Usuarios",
-                        principalColumn: "Id",
+                        principalTable: "usuarios",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -431,8 +431,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     descripcion = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
                     ciudad_id = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -453,13 +453,13 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     nombre_completo = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     telefono = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
-                    Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     tipo_cliente_id = table.Column<int>(type: "integer", nullable: false),
                     direccion_id = table.Column<int>(type: "integer", nullable: false),
                     DireccionId = table.Column<int>(type: "integer", nullable: false),
                     TipoClienteId = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -491,48 +491,48 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Vehiculos",
+                name: "vehiculos",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
+                    id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Placa = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
-                    Anio = table.Column<int>(type: "integer", nullable: false),
-                    VIN = table.Column<string>(type: "character varying(17)", maxLength: 17, nullable: true),
-                    Kilometraje = table.Column<int>(type: "integer", nullable: false),
-                    ClienteId = table.Column<int>(type: "integer", nullable: false),
-                    TipoVehiculoId = table.Column<int>(type: "integer", nullable: false),
-                    MarcaVehiculoId = table.Column<int>(type: "integer", nullable: false),
-                    ModeloVehiculoId = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    placa = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    anio = table.Column<int>(type: "integer", nullable: false),
+                    vin = table.Column<string>(type: "character varying(17)", maxLength: 17, nullable: true),
+                    kilometraje = table.Column<int>(type: "integer", nullable: false),
+                    cliente_id = table.Column<int>(type: "integer", nullable: false),
+                    tipo_vehiculo_id = table.Column<int>(type: "integer", nullable: false),
+                    marca_vehiculo_id = table.Column<int>(type: "integer", nullable: false),
+                    modelo_vehiculo_id = table.Column<int>(type: "integer", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Vehiculos", x => x.Id);
-                    table.CheckConstraint("CK_Vehiculo_Anio", "Anio >= 1900 AND Anio <= 2030");
-                    table.CheckConstraint("CK_Vehiculo_Kilometraje", "Kilometraje >= 0");
+                    table.PrimaryKey("p_k_vehiculos", x => x.id);
+                    table.CheckConstraint("CK_Vehiculo_Anio", "anio >= 1900 AND anio <= 2030");
+                    table.CheckConstraint("CK_Vehiculo_Kilometraje", "kilometraje >= 0");
                     table.ForeignKey(
                         name: "FK_Vehiculos_Clientes_ClienteId",
-                        column: x => x.ClienteId,
+                        column: x => x.cliente_id,
                         principalTable: "customers",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Vehiculos_MarcasVehiculo_MarcaVehiculoId",
-                        column: x => x.MarcaVehiculoId,
+                        column: x => x.marca_vehiculo_id,
                         principalTable: "vehicle_brands",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Vehiculos_ModelosVehiculo_ModeloVehiculoId",
-                        column: x => x.ModeloVehiculoId,
+                        column: x => x.modelo_vehiculo_id,
                         principalTable: "vehicle_models",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Vehiculos_TiposVehiculo_TipoVehiculoId",
-                        column: x => x.TipoVehiculoId,
+                        column: x => x.tipo_vehiculo_id,
                         principalTable: "vehicle_types",
                         principalColumn: "tipo_vehiculo_id",
                         onDelete: ReferentialAction.Restrict);
@@ -546,13 +546,13 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     fecha_ingreso = table.Column<DateTime>(type: "DATE", nullable: false),
                     fecha_estimada_entrega = table.Column<DateTime>(type: "DATE", nullable: false),
-                    DescripcionTrabajo = table.Column<string>(type: "text", nullable: true),
+                    descripcion_trabajo = table.Column<string>(type: "text", nullable: true),
                     vehiculo_id = table.Column<int>(type: "integer", nullable: false),
                     mecanico_id = table.Column<int>(type: "integer", nullable: false),
                     tipo_serv_id = table.Column<int>(type: "integer", nullable: false),
                     estado_id = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -566,8 +566,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     table.ForeignKey(
                         name: "fk_orden_servicio_mecanico",
                         column: x => x.mecanico_id,
-                        principalTable: "Usuarios",
-                        principalColumn: "Id",
+                        principalTable: "usuarios",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "fk_orden_servicio_tipo_servicio",
@@ -578,8 +578,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     table.ForeignKey(
                         name: "fk_orden_servicio_vehiculo",
                         column: x => x.vehiculo_id,
-                        principalTable: "Vehiculos",
-                        principalColumn: "Id",
+                        principalTable: "vehiculos",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -591,17 +591,17 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     fecha = table.Column<DateTime>(type: "date", nullable: false),
                     total = table.Column<decimal>(type: "numeric(10,2)", nullable: false),
-                    NumeroFactura = table.Column<string>(type: "text", nullable: false),
-                    Observaciones = table.Column<string>(type: "text", nullable: true),
+                    numero_factura = table.Column<string>(type: "text", nullable: false),
+                    observaciones = table.Column<string>(type: "text", nullable: true),
                     orden_servicio_id = table.Column<int>(type: "integer", nullable: false),
                     cliente_id = table.Column<int>(type: "integer", nullable: false),
                     pago_id = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_bills", x => x.factura_id);
+                    table.PrimaryKey("p_k_facturas", x => x.factura_id);
                     table.CheckConstraint("CK_Factura_Total_Positive", "total >= 0");
                     table.ForeignKey(
                         name: "FK_bills_customers_cliente_id",
@@ -634,9 +634,9 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     cantidad = table.Column<int>(type: "integer", nullable: false, defaultValue: 1),
                     precio_unitario = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: false, defaultValue: 0m),
                     precio_mano_de_obra = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: false, defaultValue: 0m),
-                    Id = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    id = table.Column<int>(type: "integer", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -659,7 +659,7 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_addresses_ciudad_id",
+                name: "i_x_direcciones_ciudad_id",
                 table: "addresses",
                 column: "ciudad_id");
 
@@ -679,17 +679,17 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                 column: "usuario_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_bills_cliente_id",
+                name: "i_x_facturas_cliente_id",
                 table: "bills",
                 column: "cliente_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_bills_orden_servicio_id",
+                name: "i_x_facturas_orden_servicio_id",
                 table: "bills",
                 column: "orden_servicio_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_bills_pago_id",
+                name: "i_x_facturas_tipo_pago_id",
                 table: "bills",
                 column: "pago_id");
 
@@ -729,6 +729,16 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                 column: "nombre");
 
             migrationBuilder.CreateIndex(
+                name: "i_x_ordenes_servicio_mecanico_id",
+                table: "ordenes_servicio",
+                column: "mecanico_id");
+
+            migrationBuilder.CreateIndex(
+                name: "i_x_ordenes_servicio_vehiculo_id",
+                table: "ordenes_servicio",
+                column: "vehiculo_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_orden_servicio_estado_id",
                 table: "ordenes_servicio",
                 column: "estado_id");
@@ -739,19 +749,9 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                 column: "fecha_ingreso");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ordenes_servicio_mecanico_id",
-                table: "ordenes_servicio",
-                column: "mecanico_id");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_ordenes_servicio_tipo_serv_id",
                 table: "ordenes_servicio",
                 column: "tipo_serv_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ordenes_servicio_vehiculo_id",
-                table: "ordenes_servicio",
-                column: "vehiculo_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_order_detail_orden_servicio_id",
@@ -764,24 +764,24 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                 column: "repuesto_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RefreshTokens_UserId",
+                name: "IX_RefreshTokens_user_id",
                 table: "RefreshTokens",
-                column: "UserId");
+                column: "user_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_replacement_CategoriaId",
+                name: "i_x_repuestos_categoria_id",
                 table: "replacement",
-                column: "CategoriaId");
+                column: "categoria_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_replacement_FabricanteId",
+                name: "i_x_repuestos_fabricante_id",
                 table: "replacement",
-                column: "FabricanteId");
+                column: "fabricante_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_replacement_TipoVehiculoId",
+                name: "i_x_repuestos_tipo_vehiculo_id",
                 table: "replacement",
-                column: "TipoVehiculoId");
+                column: "tipo_vehiculo_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_departamento_nombre",
@@ -821,14 +821,14 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Usuarios_EstadoUsuarioId",
-                table: "Usuarios",
-                column: "EstadoUsuarioId");
+                name: "i_x_usuarios_estado_usuario_id",
+                table: "usuarios",
+                column: "estado_usuario_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Usuarios_RolId",
-                table: "Usuarios",
-                column: "RolId");
+                name: "i_x_usuarios_rol_id",
+                table: "usuarios",
+                column: "rol_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_marca_vehiculo_nombre",
@@ -836,35 +836,35 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                 column: "nombre");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Vehiculos_ClienteId",
-                table: "Vehiculos",
-                column: "ClienteId");
+                name: "i_x_vehiculos_cliente_id",
+                table: "vehiculos",
+                column: "cliente_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Vehiculos_MarcaVehiculoId",
-                table: "Vehiculos",
-                column: "MarcaVehiculoId");
+                name: "i_x_vehiculos_marca_vehiculo_id",
+                table: "vehiculos",
+                column: "marca_vehiculo_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Vehiculos_ModeloVehiculoId",
-                table: "Vehiculos",
-                column: "ModeloVehiculoId");
+                name: "i_x_vehiculos_modelo_vehiculo_id",
+                table: "vehiculos",
+                column: "modelo_vehiculo_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Vehiculos_Placa",
-                table: "Vehiculos",
-                column: "Placa",
+                name: "i_x_vehiculos_tipo_vehiculo_id",
+                table: "vehiculos",
+                column: "tipo_vehiculo_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_vehiculos_placa",
+                table: "vehiculos",
+                column: "placa",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Vehiculos_TipoVehiculoId",
-                table: "Vehiculos",
-                column: "TipoVehiculoId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Vehiculos_VIN",
-                table: "Vehiculos",
-                column: "VIN",
+                name: "IX_vehiculos_vin",
+                table: "vehiculos",
+                column: "vin",
                 unique: true);
         }
 
@@ -905,13 +905,13 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                 name: "services_status");
 
             migrationBuilder.DropTable(
-                name: "Usuarios");
+                name: "usuarios");
 
             migrationBuilder.DropTable(
                 name: "service_types");
 
             migrationBuilder.DropTable(
-                name: "Vehiculos");
+                name: "vehiculos");
 
             migrationBuilder.DropTable(
                 name: "categories");
@@ -920,7 +920,7 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                 name: "manufacturer");
 
             migrationBuilder.DropTable(
-                name: "EstadosUsuario");
+                name: "estados_usuario");
 
             migrationBuilder.DropTable(
                 name: "rols");

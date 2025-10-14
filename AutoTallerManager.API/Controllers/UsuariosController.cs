@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AutoTallerManager.API.Controllers
-{
+{/*
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
@@ -194,6 +194,6 @@ namespace AutoTallerManager.API.Controllers
         public class ChangePasswordRequest
         {
             public string? NewPassword { get; set; }
-        }
-    }
-}
+        }   
+    */
+    } 

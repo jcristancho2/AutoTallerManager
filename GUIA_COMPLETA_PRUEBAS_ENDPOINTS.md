@@ -212,7 +212,13 @@ Content-Type: application/json
 {
   "message": "Usuario administrador creado exitosamente",
   "email": "admin@autotaller.com",
-  "password": "admin123",
+  "password": "POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@autotaller.com",
+  "password": "admin123"
+
   "userId": 1,
   "roleId": 1
 }

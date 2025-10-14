@@ -9,11 +9,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace AutoTallerManager.Infrastructure.Persistence.Migrations
+namespace AutoTallerManager.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251013182334_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251014003128_SeedBasicData")]
+    partial class SeedBasicData
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -39,7 +39,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("accion_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("DescripcionAccion")
                         .HasColumnType("TEXT")
@@ -58,7 +59,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("integer")
@@ -83,55 +85,69 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("NombreEstUsu")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("nombre_est_usu");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("p_k_estados_usuario");
 
-                    b.ToTable("EstadosUsuario");
+                    b.ToTable("estados_usuario");
                 });
 
             modelBuilder.Entity("AutoTallerManager.Domain.Entities.Auth.RefreshToken", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_date");
 
                     b.Property<DateTime>("Expiries")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expiries");
 
                     b.Property<DateTime?>("Revoked")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked");
 
                     b.Property<string>("Token")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("token");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("user_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("p_k_refresh_tokens");
 
                     b.HasIndex("UserId");
 
@@ -154,7 +170,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("activo");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Descripcion")
                         .HasMaxLength(200)
@@ -168,9 +185,11 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("nombre_rol");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("p_k_roles");
 
                     b.ToTable("rols", (string)null);
                 });
@@ -179,12 +198,14 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -199,7 +220,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("password");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.Property<string>("Username")
                         .IsRequired()
@@ -207,7 +229,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("username");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("p_k_users_members");
 
                     b.HasIndex("Email")
                         .IsUnique();
@@ -250,7 +273,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("NombreCat")
                         .IsRequired()
@@ -259,9 +283,11 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("nombre_cat");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("p_k_categorias");
 
                     b.ToTable("categories", (string)null);
                 });
@@ -276,7 +302,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<int>("Departamento_Id")
                         .HasColumnType("integer")
@@ -288,7 +315,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("nombre");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id")
                         .HasName("pk_ciudad");
@@ -308,7 +336,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<int>("DireccionId")
                         .HasColumnType("integer");
@@ -320,7 +349,7 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     b.Property<string>("Email")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
-                        .HasColumnName("Email");
+                        .HasColumnName("email");
 
                     b.Property<string>("NombreCompleto")
                         .IsRequired()
@@ -341,7 +370,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("tipo_cliente_id");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id")
                         .HasName("pk_cliente");
@@ -367,7 +397,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Nombre")
                         .HasMaxLength(150)
@@ -379,7 +410,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("pais_id");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id")
                         .HasName("pk_departamento");
@@ -410,7 +442,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("cantidad");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Descripcion")
                         .HasMaxLength(255)
@@ -418,7 +451,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("descripcion");
 
                     b.Property<int>("Id")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     b.Property<decimal>("PrecioManoDeObra")
                         .ValueGeneratedOnAdd()
@@ -439,7 +473,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("repuesto_id");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("DetalleOrdenId", "OrdenServicioId")
                         .HasName("pk_order_detail");
@@ -474,7 +509,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("ciudad_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Descripcion")
                         .HasMaxLength(250)
@@ -482,12 +518,14 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("descripcion");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id")
                         .HasName("pk_direccion");
 
-                    b.HasIndex("CiudadId");
+                    b.HasIndex("CiudadId")
+                        .HasDatabaseName("i_x_direcciones_ciudad_id");
 
                     b.ToTable("addresses", (string)null);
                 });
@@ -502,7 +540,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("NombreEstServ")
                         .HasMaxLength(80)
@@ -510,9 +549,11 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("nombre_est_serv");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("p_k_estados_servicio");
 
                     b.ToTable("services_status", (string)null);
                 });
@@ -527,7 +568,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Descripcion")
                         .HasMaxLength(255)
@@ -537,7 +579,7 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     b.Property<string>("Email")
                         .HasMaxLength(80)
                         .HasColumnType("character varying(80)")
-                        .HasColumnName("Email");
+                        .HasColumnName("email");
 
                     b.Property<string>("NombreFab")
                         .IsRequired()
@@ -551,9 +593,11 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("telefono");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("p_k_fabricantes");
 
                     b.ToTable("manufacturer", (string)null);
                 });
@@ -572,7 +616,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("cliente_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("date")
@@ -580,10 +625,12 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("NumeroFactura")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("numero_factura");
 
                     b.Property<string>("Observaciones")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("observaciones");
 
                     b.Property<int>("OrdenServicioId")
                         .HasColumnType("integer")
@@ -598,15 +645,20 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("total");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("p_k_facturas");
 
-                    b.HasIndex("ClienteId");
+                    b.HasIndex("ClienteId")
+                        .HasDatabaseName("i_x_facturas_cliente_id");
 
-                    b.HasIndex("OrdenServicioId");
+                    b.HasIndex("OrdenServicioId")
+                        .HasDatabaseName("i_x_facturas_orden_servicio_id");
 
-                    b.HasIndex("TipoPagoId");
+                    b.HasIndex("TipoPagoId")
+                        .HasDatabaseName("i_x_facturas_tipo_pago_id");
 
                     b.ToTable("bills", null, t =>
                         {
@@ -624,7 +676,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -633,7 +686,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("nombre");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id")
                         .HasName("pk_marca_vehiculo");
@@ -654,7 +708,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -663,7 +718,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("nombre");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id")
                         .HasName("pk_modelo_vehiculo");
@@ -681,10 +737,12 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("DescripcionTrabajo")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("descripcion_trabajo");
 
                     b.Property<int>("EstadoId")
                         .HasColumnType("integer")
@@ -707,7 +765,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("tipo_serv_id");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.Property<int>("VehiculoId")
                         .HasColumnType("integer")
@@ -722,11 +781,13 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     b.HasIndex("FechaIngreso")
                         .HasDatabaseName("ix_orden_servicio_fecha_ingreso");
 
-                    b.HasIndex("MecanicoId");
+                    b.HasIndex("MecanicoId")
+                        .HasDatabaseName("i_x_ordenes_servicio_mecanico_id");
 
                     b.HasIndex("TipoServId");
 
-                    b.HasIndex("VehiculoId");
+                    b.HasIndex("VehiculoId")
+                        .HasDatabaseName("i_x_ordenes_servicio_vehiculo_id");
 
                     b.ToTable("ordenes_servicio", (string)null);
                 });
@@ -741,7 +802,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -750,7 +812,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("nombre");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id")
                         .HasName("pk_pais");
@@ -771,7 +834,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CategoriaId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("categoria_id");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
@@ -780,7 +844,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("codigo");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Descripcion")
                         .IsRequired()
@@ -789,7 +854,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("descripcion");
 
                     b.Property<int>("FabricanteId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("fabricante_id");
 
                     b.Property<string>("NombreRepu")
                         .IsRequired()
@@ -808,18 +874,24 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("stock");
 
                     b.Property<int>("TipoVehiculoId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("tipo_vehiculo_id");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("p_k_repuestos");
 
-                    b.HasIndex("CategoriaId");
+                    b.HasIndex("CategoriaId")
+                        .HasDatabaseName("i_x_repuestos_categoria_id");
 
-                    b.HasIndex("FabricanteId");
+                    b.HasIndex("FabricanteId")
+                        .HasDatabaseName("i_x_repuestos_fabricante_id");
 
-                    b.HasIndex("TipoVehiculoId");
+                    b.HasIndex("TipoVehiculoId")
+                        .HasDatabaseName("i_x_repuestos_tipo_vehiculo_id");
 
                     b.ToTable("replacement", (string)null);
                 });
@@ -834,7 +906,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("NombreAccion")
                         .IsRequired()
@@ -843,7 +916,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("nombre_accion");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id")
                         .HasName("pk_tipo_accion");
@@ -864,7 +938,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -873,7 +948,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("nombre");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id")
                         .HasName("pk_tipo_cliente");
@@ -894,7 +970,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("NombreTipoPag")
                         .IsRequired()
@@ -903,9 +980,11 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("nombre_tipo_pag");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("p_k_tipos_pago");
 
                     b.ToTable("payment_types", (string)null);
                 });
@@ -920,7 +999,8 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("NombreTipoServ")
                         .IsRequired()
@@ -929,9 +1009,11 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                         .HasColumnName("nombre_tipo_serv");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("p_k_tipos_servicio");
 
                     b.ToTable("service_types", (string)null);
                 });
@@ -946,17 +1028,21 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("NombreTipoVehiculo")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("nombre_tipo_vehiculo");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("p_k_tipos_vehiculo");
 
                     b.ToTable("vehicle_types", (string)null);
                 });
@@ -965,35 +1051,45 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Email")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("email");
 
                     b.Property<int>("EstadoUsuarioId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("estado_usuario_id");
 
                     b.Property<string>("PasswordHash")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("password_hash");
 
                     b.Property<int>("RolId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("rol_id");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("p_k_usuarios");
 
-                    b.HasIndex("EstadoUsuarioId");
+                    b.HasIndex("EstadoUsuarioId")
+                        .HasDatabaseName("i_x_usuarios_estado_usuario_id");
 
-                    b.HasIndex("RolId");
+                    b.HasIndex("RolId")
+                        .HasDatabaseName("i_x_usuarios_rol_id");
 
-                    b.ToTable("Usuarios");
+                    b.ToTable("usuarios");
                 });
 
             modelBuilder.Entity("AutoTallerManager.Domain.Entities.Vehiculo", b =>
@@ -1001,73 +1097,78 @@ namespace AutoTallerManager.Infrastructure.Persistence.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasColumnName("Id");
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Anio")
                         .HasColumnType("integer")
-                        .HasColumnName("Anio");
+                        .HasColumnName("anio");
 
                     b.Property<int>("ClienteId")
                         .HasColumnType("integer")
-                        .HasColumnName("ClienteId");
+                        .HasColumnName("cliente_id");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("CreatedAt");
+                        .HasColumnName("created_at");
 
                     b.Property<int>("Kilometraje")
                         .HasColumnType("integer")
-                        .HasColumnName("Kilometraje");
+                        .HasColumnName("kilometraje");
 
                     b.Property<int>("MarcaVehiculoId")
                         .HasColumnType("integer")
-                        .HasColumnName("MarcaVehiculoId");
+                        .HasColumnName("marca_vehiculo_id");
 
                     b.Property<int>("ModeloVehiculoId")
                         .HasColumnType("integer")
-                        .HasColumnName("ModeloVehiculoId");
+                        .HasColumnName("modelo_vehiculo_id");
 
                     b.Property<string>("Placa")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
-                        .HasColumnName("Placa");
+                        .HasColumnName("placa");
 
                     b.Property<int>("TipoVehiculoId")
                         .HasColumnType("integer")
-                        .HasColumnName("TipoVehiculoId");
+                        .HasColumnName("tipo_vehiculo_id");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("UpdatedAt");
+                        .HasColumnName("updated_at");
 
                     b.Property<string>("VIN")
                         .HasMaxLength(17)
                         .HasColumnType("character varying(17)")
-                        .HasColumnName("VIN");
+                        .HasColumnName("vin");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("p_k_vehiculos");
 
-                    b.HasIndex("ClienteId");
+                    b.HasIndex("ClienteId")
+                        .HasDatabaseName("i_x_vehiculos_cliente_id");
 
-                    b.HasIndex("MarcaVehiculoId");
+                    b.HasIndex("MarcaVehiculoId")
+                        .HasDatabaseName("i_x_vehiculos_marca_vehiculo_id");
 
-                    b.HasIndex("ModeloVehiculoId");
+                    b.HasIndex("ModeloVehiculoId")
+                        .HasDatabaseName("i_x_vehiculos_modelo_vehiculo_id");
 
                     b.HasIndex("Placa")
                         .IsUnique();
 
-                    b.HasIndex("TipoVehiculoId");
+                    b.HasIndex("TipoVehiculoId")
+                        .HasDatabaseName("i_x_vehiculos_tipo_vehiculo_id");
 
                     b.HasIndex("VIN")
                         .IsUnique();
 
-                    b.ToTable("Vehiculos", null, t =>
+                    b.ToTable("vehiculos", null, t =>
                         {
-                            t.HasCheckConstraint("CK_Vehiculo_Anio", "Anio >= 1900 AND Anio <= 2030");
+                            t.HasCheckConstraint("CK_Vehiculo_Anio", "anio >= 1900 AND anio <= 2030");
 
-                            t.HasCheckConstraint("CK_Vehiculo_Kilometraje", "Kilometraje >= 0");
+                            t.HasCheckConstraint("CK_Vehiculo_Kilometraje", "kilometraje >= 0");
                         });
                 });
 

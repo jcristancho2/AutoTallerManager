@@ -17,3 +17,5 @@ public record CerrarOrdenServicioResponse
     public string NumeroFactura { get; init; } = string.Empty;
     public DateTime FechaCierre { get; init; }
 }
+
+

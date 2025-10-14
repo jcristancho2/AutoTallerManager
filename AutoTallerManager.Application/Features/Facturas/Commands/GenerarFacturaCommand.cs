@@ -18,3 +18,5 @@ public record GenerarFacturaResponse
     public DateTime FechaGeneracion { get; init; }
     public string NumeroFactura { get; init; } = string.Empty;
 }
+
+

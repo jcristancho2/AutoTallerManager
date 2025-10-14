@@ -61,3 +61,5 @@ public class ValidadorDisponibilidadVehiculoService : IValidadorDisponibilidadVe
         return inicio1 <= fin2 && fin1 >= inicio2;
     }
 }
+
+

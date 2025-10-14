@@ -20,7 +20,7 @@
 		},
 		
 		// Reenviar puertos para acceso local
-		"forwardPorts": [5433, 8081],
+		"forwardPorts": [5433, 8081, 8080],
 
 	// Configuración de puertos
 	"portsAttributes": {
@@ -30,6 +30,10 @@
 		},
 		"8081": {
 		"label": "API",
+		"onAutoForward": "notify"
+		},
+		"8080": {
+		"label": "pgAdmin",
 		"onAutoForward": "notify"
 		}
 	}

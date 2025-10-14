@@ -17,3 +17,5 @@ public record RepuestoRequeridoDto
     public int RepuestoId { get; init; }
     public int Cantidad { get; init; }
 }
+
+

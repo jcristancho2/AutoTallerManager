@@ -110,3 +110,5 @@ public sealed class GenerarFacturaHandler : IRequestHandler<GenerarFacturaComman
         return $"FAC-{año}-{siguienteNumero:D6}";
     }
 }
+
+

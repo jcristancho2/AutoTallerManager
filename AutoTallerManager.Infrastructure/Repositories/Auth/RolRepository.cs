@@ -47,9 +47,20 @@ public class RolRepository(AppDbContext db) : IRolService
     public Task<Rol?> GetByIdAsync(int id, CancellationToken ct = default)
         => db.Roles.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id, ct);
 
-    public Task<IEnumerable<Rol>> GetPagedAsync(int page, int size, string? q, CancellationToken ct = default)
+    public async Task<IEnumerable<Rol>> GetPagedAsync(int page, int size, string? q, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        var query = db.Roles.AsNoTracking();
+        
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var term = $"%{q.Trim()}%";
+            query = query.Where(p => EF.Functions.Like((p.NombreRol ?? string.Empty).ToUpper(), $"%{term}%"));
+        }
+        
+        return await query
+            .Skip((page - 1) * size)
+            .Take(size)
+            .ToListAsync(ct);
     }
 
     public async Task RemoveAsync(Rol entity, CancellationToken ct = default)
