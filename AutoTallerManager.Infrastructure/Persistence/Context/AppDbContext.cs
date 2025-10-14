@@ -11,15 +11,15 @@ namespace AutoTallerManager.Infrastructure.Persistence.Context;
 public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     // DbSets
-    public DbSet<Cliente> Clientes { get; set; }
-    public DbSet<Usuario> Usuarios { get; set; }  
-    public DbSet<EstadoUsuario> EstadosUsuario { get; set; } 
-    public DbSet<Vehiculo> Vehiculos { get; set; }
-    public DbSet<OrdenServicio> OrdenesServicio { get; set; }
-    public DbSet<DetalleOrden> DetalleOrdenes { get; set; }
-    public DbSet<Factura> Facturas { get; set; }
-    public DbSet<Repuesto> Repuestos { get; set; }
-    public DbSet<Auditoria> Auditorias { get; set; }
+    public DbSet<Customer> Customers { get; set; }
+    public DbSet<User> Users { get; set; }  
+    public DbSet<UserStatus> UserStatuses { get; set; } 
+    public DbSet<Vehicle> Vehicles { get; set; }
+    public DbSet<ServiceOrder> ServiceOrders { get; set; }
+    public DbSet<OrderDetail> OrderDetails { get; set; }
+    public DbSet<Invoice> Invoices { get; set; }
+    public DbSet<SparePart> SpareParts { get; set; }
+    public DbSet<Audit> Audits { get; set; }
 
     // Auth & Identity DbSets - JWT
 
@@ -29,21 +29,21 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<UserMemberRol> UsersMembersRols { get; set; } = null!;
     
     // Catálogos
-    public DbSet<Rol> Roles { get; set; }
-    public DbSet<TipoCliente> TiposCliente { get; set; }
-    public DbSet<TipoVehiculo> TiposVehiculo { get; set; }
-    public DbSet<MarcaVehiculo> MarcasVehiculo { get; set; }
-    public DbSet<ModeloVehiculo> ModelosVehiculo { get; set; }
-    public DbSet<TipoServicio> TiposServicio { get; set; }
-    public DbSet<EstadoServ> EstadosServicio { get; set; }
-    public DbSet<TipoPago> TiposPago { get; set; }
-    public DbSet<TipoAccion> TiposAccion { get; set; }
-    public DbSet<Categoria> Categorias { get; set; }
-    public DbSet<Fabricante> Fabricantes { get; set; }
-    public DbSet<Pais> Paises { get; set; }
-    public DbSet<Departamento> Departamentos { get; set; }
-    public DbSet<Ciudad> Ciudades { get; set; }
-    public DbSet<Direccion> Direcciones { get; set; }
+    public DbSet<Role> Roles { get; set; }
+    public DbSet<CustomerType> CustomerTypes { get; set; }
+    public DbSet<VehicleType> VehicleTypes { get; set; }
+    public DbSet<VehicleBrand> VehicleBrands { get; set; }
+    public DbSet<VehicleModel> VehicleModels { get; set; }
+    public DbSet<ServiceType> ServiceTypes { get; set; }
+    public DbSet<ServiceStatus> ServiceStatuses { get; set; }
+    public DbSet<PaymentType> PaymentTypes { get; set; }
+    public DbSet<ActionType> ActionTypes { get; set; }
+    public DbSet<Category> Categories { get; set; }
+    public DbSet<Manufacturer> Manufacturers { get; set; }
+    public DbSet<Country> Countries { get; set; }
+    public DbSet<State> States { get; set; }
+    public DbSet<City> Cities { get; set; }
+    public DbSet<Address> Addresses { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

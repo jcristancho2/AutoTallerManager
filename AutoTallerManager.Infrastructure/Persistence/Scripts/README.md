@@ -38,25 +38,6 @@ docker exec -i autotaller_db psql -U postgres -d autotallerdb < 01_CreateDatabas
 docker exec -i autotaller_db psql -U postgres -d autotallerdb < 02_SeedData.sql
 ```
 
-### 03_ConvertToSnakeCase.sql
-**Propósito**: Convertir una base de datos existente de PascalCase a snake_case.
-- Renombra tablas y columnas
-- Mantiene los datos existentes
-- Útil para migración de sistemas legacy
-
-**Cuándo usar**:
-- Migrar una base de datos existente
-- Convertir estructura antigua a nueva convención
-- **IMPORTANTE**: Hacer backup antes de ejecutar
-
-**Comando**:
-```bash
-# Hacer backup primero
-docker exec autotaller_db pg_dump -U postgres autotallerdb > backup.sql
-
-# Luego ejecutar conversión
-docker exec -i autotaller_db psql -U postgres -d autotallerdb < 03_ConvertToSnakeCase.sql
-```
 
 ## Orden de Ejecución Recomendado
 
@@ -64,10 +45,6 @@ docker exec -i autotaller_db psql -U postgres -d autotallerdb < 03_ConvertToSnak
 1. `01_CreateDatabase.sql` - Crear estructura
 2. `02_SeedData.sql` - Insertar datos iniciales
 
-### Para migración de sistema existente:
-1. Hacer backup de la base de datos actual
-2. `03_ConvertToSnakeCase.sql` - Convertir estructura
-3. `02_SeedData.sql` - Insertar datos adicionales (opcional)
 
 ## Convenciones de Nomenclatura
 

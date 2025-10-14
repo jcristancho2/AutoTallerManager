@@ -3,8 +3,8 @@
 
 -- Insertar países
 INSERT INTO
-    paises (
-        nombre,
+    countries (
+        name,
         created_at,
         updated_at
     )
@@ -14,9 +14,9 @@ VALUES ('Colombia', NOW(), NOW()),
 
 -- Insertar departamentos/estados
 INSERT INTO
-    departamentos (
-        nombre,
-        pais_id,
+    states (
+        name,
+        country_id,
         created_at,
         updated_at
     )
@@ -48,9 +48,9 @@ VALUES (
 
 -- Insertar ciudades
 INSERT INTO
-    ciudades (
-        nombre,
-        departamento_id,
+    cities (
+        name,
+        state_id,
         created_at,
         updated_at
     )
@@ -72,11 +72,11 @@ VALUES ('Bogotá', 1, NOW(), NOW()),
 
 -- Insertar direcciones
 INSERT INTO
-    direcciones (
-        descripcion,
-        pais_id,
-        departamento_id,
-        ciudad_id,
+    addresses (
+        description,
+        country_id,
+        state_id,
+        city_id,
         created_at,
         updated_at
     )
@@ -108,8 +108,8 @@ VALUES (
 -- Insertar roles del sistema
 INSERT INTO
     roles (
-        nombre_rol,
-        descripcion,
+        role_name,
+        description,
         activo,
         created_at,
         updated_at
@@ -138,9 +138,9 @@ VALUES (
 
 -- Insertar estados de usuario
 INSERT INTO
-    estados_usuario (
-        nombre_estado,
-        descripcion,
+    user_statuses (
+        status_name,
+        description,
         created_at,
         updated_at
     )
@@ -165,8 +165,8 @@ VALUES (
 
 -- Insertar tipos de cliente
 INSERT INTO
-    tipos_cliente (
-        nombre,
+    customer_types (
+        name,
         created_at,
         updated_at
     )
@@ -176,8 +176,8 @@ VALUES ('Particular', NOW(), NOW()),
 
 -- Insertar tipos de vehículo
 INSERT INTO
-    tipos_vehiculo (
-        nombre_tipo_vehiculo,
+    vehicle_types (
+        vehicle_type_name,
         created_at,
         updated_at
     )
@@ -189,7 +189,7 @@ VALUES ('Automóvil', NOW(), NOW()),
 
 -- Insertar marcas de vehículo
 INSERT INTO
-    marcas_vehiculo (
+    vehicle_brands (
         nombre,
         created_at,
         updated_at
@@ -207,9 +207,9 @@ VALUES ('Toyota', NOW(), NOW()),
 
 -- Insertar modelos de vehículo (ejemplos para Toyota)
 INSERT INTO
-    modelos_vehiculo (
-        nombre,
-        marca_id,
+    vehicle_models (
+        name,
+        brand_id,
         created_at,
         updated_at
     )
@@ -222,9 +222,9 @@ VALUES ('Corolla', 1, NOW(), NOW()),
 
 -- Insertar modelos de vehículo (ejemplos para Honda)
 INSERT INTO
-    modelos_vehiculo (
-        nombre,
-        marca_id,
+    vehicle_models (
+        name,
+        brand_id,
         created_at,
         updated_at
     )
@@ -236,8 +236,8 @@ VALUES ('Civic', 2, NOW(), NOW()),
 
 -- Insertar tipos de servicio
 INSERT INTO
-    tipos_servicio (
-        nombre_tipo_serv,
+    service_types (
+        service_type_name,
         created_at,
         updated_at
     )
@@ -262,8 +262,8 @@ VALUES (
 
 -- Insertar estados de servicio
 INSERT INTO
-    estados_servicio (
-        nombre_est_serv,
+    service_statuses (
+        service_status_name,
         created_at,
         updated_at
     )
@@ -284,8 +284,8 @@ VALUES ('Pendiente', NOW(), NOW()),
 
 -- Insertar tipos de pago
 INSERT INTO
-    tipos_pago (
-        nombre,
+    payment_types (
+        name,
         created_at,
         updated_at
     )
@@ -309,8 +309,8 @@ VALUES ('Efectivo', NOW(), NOW()),
 
 -- Insertar categorías de repuestos
 INSERT INTO
-    categorias (
-        nombre,
+    categories (
+        name,
         created_at,
         updated_at
     )
@@ -327,10 +327,10 @@ VALUES ('Motor', NOW(), NOW()),
 
 -- Insertar fabricantes de repuestos
 INSERT INTO
-    fabricantes (
-        nombre,
-        descripcion,
-        telefono,
+    manufacturers (
+        name,
+        description,
+        phone,
         email,
         created_at,
         updated_at
@@ -422,7 +422,7 @@ INSERT INTO
         username,
         email,
         password_hash,
-        estado_id,
+        status_id,
         created_at,
         updated_at
     )
@@ -439,7 +439,7 @@ VALUES (
 INSERT INTO
     user_member_roles (
         user_member_id,
-        rol_id,
+        role_id,
         created_at,
         updated_at
     )
@@ -447,16 +447,16 @@ VALUES (1, 1, NOW(), NOW());
 
 -- Insertar algunos repuestos de ejemplo
 INSERT INTO
-    repuestos (
-        codigo,
-        nombre,
-        descripcion,
+    spare_parts (
+        code,
+        name,
+        description,
         stock,
-        precio_unitario,
-        stock_minimo,
-        categoria_id,
-        tipo_vehiculo_id,
-        fabricante_id,
+        unit_price,
+        stock_min,
+        category_id,
+        vehicle_type_id,
+        manufacturer_id,
         created_at,
         updated_at
     )
@@ -528,12 +528,12 @@ VALUES (
 
 -- Crear algunos clientes de ejemplo
 INSERT INTO
-    clientes (
-        nombre_completo,
-        telefono,
+    customers (
+        full_name,
+        phone,
         email,
-        tipo_cliente_id,
-        direccion_id,
+        customer_type_id,
+        address_id,
         created_at,
         updated_at
     )
@@ -567,15 +567,15 @@ VALUES (
 
 -- Crear algunos vehículos de ejemplo
 INSERT INTO
-    vehiculos (
-        placa,
-        ano,
+    vehicles (
+        plate,
+        year,
         vin,
-        kilometraje,
-        cliente_id,
-        tipo_vehiculo_id,
-        marca_id,
-        modelo_id,
+        mileage,
+        customer_id,
+        vehicle_type_id,
+        brand_id,
+        model_id,
         created_at,
         updated_at
     )
@@ -617,4 +617,4 @@ VALUES (
     );
 
 -- Mensaje de confirmación
-SELECT 'Datos de inicialización completos insertados correctamente' AS mensaje;
+SELECT 'Datos de inicialización completos insertados correctamente' AS message;

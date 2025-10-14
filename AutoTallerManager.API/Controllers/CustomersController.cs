@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using AutoTallerManager.Application.Abstractions;
 using AutoTallerManager.Domain.Entities;
 using MediatR;
-using AutoTallerManager.Application.Features.Clientes.Commands;
+using AutoTallerManager.Application.Features.Customers.Commands;
 using AutoTallerManager.API.DTOs.Request;
 
 namespace AutoTallerManager.API.Controllers;
@@ -11,13 +11,13 @@ namespace AutoTallerManager.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class ClientesController : ControllerBase
+public class CustomersController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<ClientesController> _logger;
+    private readonly ILogger<CustomersController> _logger;
     private readonly IMediator _mediator;
 
-    public ClientesController(IUnitOfWork unitOfWork, ILogger<ClientesController> logger, IMediator mediator)
+    public CustomersController(IUnitOfWork unitOfWork, ILogger<CustomersController> logger, IMediator mediator)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
@@ -25,7 +25,7 @@ public class ClientesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Cliente>>> GetClientes(
+    public async Task<ActionResult<IEnumerable<Customer>>> GetCustomers(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] string? searchTerm = null,
@@ -33,19 +33,19 @@ public class ClientesController : ControllerBase
     {
         try
         {
-            var clientes = await _unitOfWork.Clientes.GetAllAsync(
+            var customers = await _unitOfWork.Customers.GetAllAsync(
                 filter: c => string.IsNullOrEmpty(searchTerm) ||
-                        (!string.IsNullOrEmpty(c.NombreCompleto) && c.NombreCompleto.Contains(searchTerm)) ||
+                        (!string.IsNullOrEmpty(c.FullName) && c.FullName.Contains(searchTerm)) ||
                         (!string.IsNullOrEmpty(c.Email) && c.Email.Contains(searchTerm)),
-                orderBy: q => q.OrderBy(c => c.NombreCompleto),
-                includeProperties: "Vehiculos",
+                orderBy: q => q.OrderBy(c => c.FullName),
+                includeProperties: "Vehicles",
                 skip: (pageNumber - 1) * pageSize,
                 take: pageSize,
                 ct: ct);
 
-            var totalCount = await _unitOfWork.Clientes.CountAsync(
+            var totalCount = await _unitOfWork.Customers.CountAsync(
                 filter: c => string.IsNullOrEmpty(searchTerm) ||
-                        (!string.IsNullOrEmpty(c.NombreCompleto) && c.NombreCompleto.Contains(searchTerm)) ||
+                        (!string.IsNullOrEmpty(c.FullName) && c.FullName.Contains(searchTerm)) ||
                         (!string.IsNullOrEmpty(c.Email) && c.Email.Contains(searchTerm)),
                 ct: ct);
 
@@ -53,7 +53,7 @@ public class ClientesController : ControllerBase
             Response.Headers["X-Page-Number"] = pageNumber.ToString();
             Response.Headers["X-Page-Size"] = pageSize.ToString();
 
-            return Ok(clientes);
+            return Ok(customers);
         }
         catch (Exception ex)
         {
@@ -63,35 +63,35 @@ public class ClientesController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Cliente>> GetCliente(int id, CancellationToken ct = default)
+    public async Task<ActionResult<Customer>> GetCustomer(int id, CancellationToken ct = default)
     {
         try
         {
             // ✅ MANTENIENDO TU ENFOQUE CON IUnitOfWork
-            var cliente = await _unitOfWork.Clientes.GetByIdAsync(id, ct, new[] { "Vehiculos", "Facturas" });
+            var custumer = await _unitOfWork.Customers.GetByIdAsync(id, ct, new[] { "Vehicles", "Invoices" });
             
-            if (cliente == null)
+            if (custumer == null)
                 return NotFound($"Cliente con ID {id} no encontrado");
 
-            return Ok(cliente);
+            return Ok(custumer);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al obtener cliente {ClienteId}", id);
+            _logger.LogError(ex, "Error al obtener cliente {CustomerId}", id);
             return StatusCode(500, "Error interno del servidor");
         }
     }
 
     [HttpPost]
     [Authorize(Roles = "Admin,Recepcionista")]
-    public async Task<ActionResult<Cliente>> CreateCliente([FromBody] CreateClienteCommand command, CancellationToken ct = default)
+    public async Task<ActionResult<Customer>> CreateCustumer([FromBody] CreateCustumerCommand command, CancellationToken ct = default)
     {
         try
         {
-            var clienteId = await _mediator.Send(command, ct);
-            _logger.LogInformation("Cliente creado con ID {ClienteId}", clienteId);
+            var custumerId = await _mediator.Send(command, ct);
+            _logger.LogInformation("Cliente creado con ID {CustumerId}", CustumerId);
 
-            return CreatedAtAction(nameof(GetCliente), new { id = clienteId }, new { Id = clienteId });
+            return CreatedAtAction(nameof(GetCustomer), new { id = CustumerId }, new { Id = CustumerId });
         }
         catch (InvalidOperationException ex)
         {
@@ -110,11 +110,11 @@ public class ClientesController : ControllerBase
     /// </summary>
     /// <param name="request">Datos del cliente con dirección completa</param>
     /// <param name="ct">Token de cancelación</param>
-    /// <returns>Cliente creado con información de ubicación</returns>
+    /// <returns>Customer creado con información de ubicación</returns>
     [HttpPost("completo")]
     [Authorize(Roles = "Admin,Recepcionista")]
-    public async Task<ActionResult<CreateClienteCompletoResponse>> CreateClienteCompleto(
-        [FromBody] CreateClienteCompletoDto request, 
+    public async Task<ActionResult<CreateFullCustomerResponse>> CreateFullCustomer(
+        [FromBody] CreateFullCustomerDto request, 
         CancellationToken ct = default)
     {
         try
@@ -122,21 +122,21 @@ public class ClientesController : ControllerBase
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var command = new CreateClienteCompletoCommand(
-                request.NombreCompleto,
-                request.Telefono,
+            var command = new CreateFullCustomerCommand(
+                request.FullName,
+                request.Phone,
                 request.Email,
-                request.TipoClienteId,
-                request.Direccion.Descripcion,
-                request.Direccion.PaisId,
-                request.Direccion.DepartamentoId,
-                request.Direccion.CiudadId
+                request.CustomerTypeId,
+                request.Address.Description,
+                request.Address.CountryId,
+                request.Address.DepartmentId,
+                request.Address.CityId
             );
 
             var response = await _mediator.Send(command, ct);
-            _logger.LogInformation("Cliente completo creado con ID {ClienteId}", response.ClienteId);
+            _logger.LogInformation("Cliente creado con ID {CustomerId} completo", response.CustomerId);
 
-            return CreatedAtAction(nameof(GetCliente), new { id = response.ClienteId }, response);
+            return CreatedAtAction(nameof(GetCustomer), new { id = response.CustomerId }, response);
         }
         catch (InvalidOperationException ex)
         {
@@ -155,11 +155,11 @@ public class ClientesController : ControllerBase
     /// </summary>
     /// <param name="request">Datos del cliente con vehículos y dirección</param>
     /// <param name="ct">Token de cancelación</param>
-    /// <returns>Cliente y vehículos creados</returns>
+    /// <returns>Customer y vehículos creados</returns>
     [HttpPost("registrar-con-vehiculo-completo")]
     [Authorize(Roles = "Admin,Recepcionista")]
-    public async Task<ActionResult<object>> RegistrarClienteCompletoConVehiculo(
-        [FromBody] RegistrarClienteCompletoConVehiculoDto request, 
+    public async Task<ActionResult<object>> RegisterFullCustomerWithVehicles(
+        [FromBody] RegisterFullCustomerWithVehiclesDto request, 
         CancellationToken ct = default)
     {
         try
@@ -168,41 +168,41 @@ public class ClientesController : ControllerBase
                 return BadRequest(ModelState);
 
             // Primero crear el cliente completo
-            var clienteCommand = new CreateClienteCompletoCommand(
-                request.Cliente.NombreCompleto,
-                request.Cliente.Telefono,
-                request.Cliente.Email,
-                request.Cliente.TipoClienteId,
-                request.Cliente.Direccion.Descripcion,
-                request.Cliente.Direccion.PaisId,
-                request.Cliente.Direccion.DepartamentoId,
-                request.Cliente.Direccion.CiudadId
+            var customerCommand = new CreateFullCustomerCommand(
+                request.Customer.FullName,
+                request.Customer.Phone,
+                request.Customer.Email,
+                request.Customer.CustomerTypeId,
+                request.Customer.Address.Description,
+                request.Customer.Address.CountryId,
+                request.Customer.Address.DepartmentId,
+                request.Customer.Address.CityId
             );
 
-            var clienteResponse = await _mediator.Send(clienteCommand, ct);
+            var customerResponse = await _mediator.Send(customerCommand, ct);
 
             // Luego crear los vehículos si se proporcionaron
-            var vehiculosCreados = new List<object>();
-            if (request.Vehiculos.Any())
+            var VehiclesCreated = new List<object>();
+            if (request.Vehicles.Any())
             {
-                foreach (var vehiculoRequest in request.Vehiculos)
+                foreach (var vehicleRequest in request.Vehicles)
                 {
                     // Aquí podrías implementar la lógica para crear vehículos
                     // Por ahora solo registramos que se recibieron
-                    vehiculosCreados.Add(new { 
-                        vin = vehiculoRequest.Vin,
-                        ano = vehiculoRequest.Ano,
-                        mensaje = "Vehículo pendiente de implementación"
+                    vehiclesCreated.Add(new { 
+                        vin = vehicleRequest.Vin,
+                        year = vehicleRequest.Year,
+                        message = "Vehículo pendiente de implementación"
                     });
                 }
             }
 
-            _logger.LogInformation("Cliente completo con vehículos registrado: {ClienteId}", clienteResponse.ClienteId);
+            _logger.LogInformation("Customer completo con vehículos registrado: {CustomerId}", customerResponse.CustomerId);
 
             return Ok(new
             {
-                cliente = clienteResponse,
-                vehiculos = vehiculosCreados,
+                customer = customerResponse,
+                vehicles = vehiclesCreated,
                 message = "Cliente registrado exitosamente con dirección completa"
             });
         }
@@ -220,73 +220,73 @@ public class ClientesController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,Recepcionista")]
-    public async Task<ActionResult<Cliente>> UpdateCliente(int id, Cliente cliente, CancellationToken ct = default)
+    public async Task<ActionResult<Customer>> UpdateCustomer(int id, Customer customer, CancellationToken ct = default)
     {
         try
         {
-            if (id != cliente.Id)
+            if (id != customer.Id)
                 return BadRequest("El ID del cliente no coincide");
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var existingCliente = await _unitOfWork.Clientes.GetByIdAsync(id, ct);
-            if (existingCliente == null)
+            var existingCustomer = await _unitOfWork.Customers.GetByIdAsync(id, ct);
+            if (existingCustomer == null)
                 return NotFound($"Cliente con ID {id} no encontrado");
 
             // ✅ VALIDACIÓN DE EMAIL ÚNICO (similar al ejemplo)
-            var emailExists = await _unitOfWork.Clientes.ExistsAsync(
-                c => c.Email == cliente.Email && c.Id != id, ct);
+            var emailExists = await _unitOfWork.Customers.ExistsAsync(
+                c => c.Email == customer.Email && c.Id != id, ct);
             if (emailExists)
                 return BadRequest("Ya existe otro cliente con este email");
 
-            existingCliente.NombreCompleto = cliente.NombreCompleto;
-            existingCliente.Email = cliente.Email;
-            existingCliente.Telefono = cliente.Telefono;
+            existingCustomer.FullName = cusexistingCustomer.FullName;
+            existingCustomer.Email = cusexistingCustomer.Email;
+            existingCustomer.Phone = cusexistingCustomer.Phone;
 
-            await _unitOfWork.Clientes.UpdateAsync(existingCliente, ct);
+            await _unitOfWork.Customers.UpdateAsync(existingCustomer, ct);
             await _unitOfWork.SaveChangesAsync(ct);
 
-            _logger.LogInformation("Cliente actualizado: {ClienteId} - {ClienteNombre}", id, cliente.NombreCompleto);
+            _logger.LogInformation("Cliente actualizado: {CustomerId} - {CustomerName}", id, customer.FullName);
 
-            return Ok(existingCliente);
+            return Ok(existingCustomer);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al actualizar cliente {ClienteId}", id);
+            _logger.LogError(ex, "Error al actualizar cliente {CustomerId}", id);
             return StatusCode(500, "Error interno del servidor");
         }
     }
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<ActionResult> DeleteCliente(int id, CancellationToken ct = default)
+    public async Task<ActionResult> DeleteCustomer(int id, CancellationToken ct = default)
     {
         try
         {
-            var cliente = await _unitOfWork.Clientes.GetByIdAsync(id, ct, new[] { "Vehiculos.OrdenesServicio" });
-            if (cliente == null)
+            var customer = await _unitOfWork.Customers.GetByIdAsync(id, ct, new[] { "Vehicles.ServiceOrders" });
+            if (customer == null)
                 return NotFound($"Cliente con ID {id} no encontrado");
 
-            var hasActiveOrders = cliente.Vehiculos?.Any(v => 
-                v.OrdenesServicio?.Any(o => 
-                    (o.Estado?.NombreEstServ != "Completada") && 
-                    (o.Estado?.NombreEstServ != "Cancelada")) ?? false
+            var hasActiveOrders = customer.Vehicles?.Any(v => 
+                v.ServiceOrders?.Any(o => 
+                    (o.Status?.ServiceStatus != "Completada") && 
+                    (o.Status?.ServiceStatus != "Cancelada")) ?? false
                 ) ?? false;
 
             if (hasActiveOrders)
                 return BadRequest("No se puede eliminar el cliente porque tiene órdenes de servicio activas");
 
-            await _unitOfWork.Clientes.DeleteAsync(id, ct);
+            await _unitOfWork.Customers.DeleteAsync(id, ct);
             await _unitOfWork.SaveChangesAsync(ct);
 
-            _logger.LogInformation("Cliente eliminado: {ClienteId} - {ClienteNombre}", id, cliente.NombreCompleto);
+            _logger.LogInformation("Cliente eliminado: {CustomerId} - {CustomerName}", id, customer.FullName);
 
             return NoContent();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al eliminar cliente {ClienteId}", id);
+            _logger.LogError(ex, "Error al eliminar cliente {CustomerId}", id);
             return StatusCode(500, "Error interno del servidor");
         }
     }

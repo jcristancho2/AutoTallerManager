@@ -14,51 +14,51 @@ namespace AutoTallerManager.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class DetalleOrdenController : ControllerBase
+    public class DetailOrderController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<DetalleOrdenController> _logger;
+        private readonly ILogger<DetailOrderController> _logger;
 
-        public DetalleOrdenController(IUnitOfWork unitOfWork, ILogger<DetalleOrdenController> logger)
+        public DetailOrderController(IUnitOfWork unitOfWork, ILogger<DetailOrderController> logger)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<DetalleOrden>>> GetAll(
+        public async Task<ActionResult<IEnumerable<DetailOrder>>> GetAll(
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 20,
-            [FromQuery] int? ordenServicioId = null,
-            [FromQuery] int? repuestoId = null,
+            [FromQuery] int? serviceOrderId = null,
+            [FromQuery] int? partId = null,
             CancellationToken ct = default)
         {
             try
             {
-                var filter = new Func<DetalleOrden, bool>(d =>
-                    (!ordenServicioId.HasValue || d.OrdenServicioId == ordenServicioId) &&
-                    (!repuestoId.HasValue || (d.RepuestoId.HasValue && d.RepuestoId.Value == repuestoId)));
+                var filter = new Func<DetailOrder, bool>(d =>
+                    (!serviceOrderId.HasValue || d.ServiceOrderId == serviceOrderId) &&
+                    (!sparepartId.HasValue || (d.SparePartId.HasValue && d.SparePartId.Value == sparepartId)));
 
                 // Convertir a expresión sencilla usando GetAllAsync con string include
-                var detalles = await _unitOfWork.DetallesOrden.GetAllAsync(
-                    filter: d => (!ordenServicioId.HasValue || d.OrdenServicioId == ordenServicioId) &&
-                                 (!repuestoId.HasValue || (d.RepuestoId.HasValue && d.RepuestoId.Value == repuestoId)),
-                    orderBy: q => q.OrderBy(d => d.DetalleOrdenId),
-                    includeProperties: "Repuesto,OrdenServicio",
+                var details = await _unitOfWork.DetallesOrden.GetAllAsync(
+                    filter: d => (!serviceOrderId.HasValue || d.ServiceOrderId == serviceOrderId) &&
+                                (!sparepartId.HasValue || (d.SparePartId.HasValue && d.SparePartId.Value == sparepartId)),
+                    orderBy: q => q.OrderBy(d => d.DetailOrderId),
+                    includeProperties: "SparePart,ServiceOrder",
                     skip: (pageNumber - 1) * pageSize,
                     take: pageSize,
                     ct: ct);
 
                 var total = await _unitOfWork.DetallesOrden.CountAsync(
-                    d => (!ordenServicioId.HasValue || d.OrdenServicioId == ordenServicioId) &&
-                         (!repuestoId.HasValue || (d.RepuestoId.HasValue && d.RepuestoId.Value == repuestoId)),
+                    d => (!serviceOrderId.HasValue || d.ServiceOrderId == serviceOrderId) &&
+                        (!sparepartId.HasValue || (d.SparePartId.HasValue && d.SparePartId.Value == sparepartId)),
                     ct);
 
                 Response.Headers["X-Total-Count"] = total.ToString();
                 Response.Headers["X-Page-Number"] = pageNumber.ToString();
                 Response.Headers["X-Page-Size"] = pageSize.ToString();
 
-                return Ok(detalles);
+                return Ok(details);
             }
             catch (Exception ex)
             {
@@ -67,18 +67,18 @@ namespace AutoTallerManager.API.Controllers
             }
         }
 
-        [HttpGet("{ordenId}/detalles/{detalleId}")]
-        public async Task<ActionResult<DetalleOrden>> GetById(int ordenId, int detalleId, CancellationToken ct = default)
+        [HttpGet("{orderId}/details/{detailId}")]
+        public async Task<ActionResult<DetailOrder>> GetById(int orderId, int detailId, CancellationToken ct = default)
         {
             try
             {
-                var detalle = await _unitOfWork.DetallesOrden.GetByIdAsync(detalleId, ordenId, ct);
-                if (detalle == null) return NotFound("Detalle no encontrado");
-                return Ok(detalle);
+                var detail = await _unitOfWork.DetailOrder.GetByIdAsync(detailId, orderId, ct);
+                if (detail == null) return NotFound("Detalle no encontrado");
+                return Ok(detail);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener detalle {DetalleId} de orden {OrdenId}", detalleId, ordenId);
+                _logger.LogError(ex, "Error al obtener detalle {DetailId} de orden {OrderId}", detailId, orderId);
                 return StatusCode(500, "Error interno del servidor");
             }
         }

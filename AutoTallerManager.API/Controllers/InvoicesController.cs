@@ -15,50 +15,50 @@ namespace AutoTallerManager.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-[EnableRateLimiting("Facturas")]
-public class FacturasController : ControllerBase
+[EnableRateLimiting("Invoices")]
+public class InvoicesController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<FacturasController> _logger;
+    private readonly ILogger<InvoicesController> _logger;
 
-    public FacturasController(IUnitOfWork unitOfWork, ILogger<FacturasController> logger)
+    public InvoicesController(IUnitOfWork unitOfWork, ILogger<InvoicesController> logger)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Factura>>> GetFacturas(
+    public async Task<ActionResult<IEnumerable<Invoice>>> GetInvoices(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
-        [FromQuery] int? clienteId = null,
-        [FromQuery] int? ordenServicioId = null,
+        [FromQuery] int? CustomerId = null,
+        [FromQuery] int? ServiceOrderId = null,
         [FromQuery] DateTime? fechaDesde = null,
         [FromQuery] DateTime? fechaHasta = null,
         CancellationToken ct = default)
     {
         try
         {
-            Expression<Func<Factura, bool>>? filter = f =>
-                (!clienteId.HasValue || f.ClienteId == clienteId) &&
-                (!ordenServicioId.HasValue || f.OrdenServicioId == ordenServicioId) &&
-                (!fechaDesde.HasValue || f.Fecha >= fechaDesde.Value) &&
-                (!fechaHasta.HasValue || f.Fecha <= fechaHasta.Value);
+            Expression<Func<Invoice, bool>>? filter = f =>
+                (!customerId.HasValue || f.CustomerId == customerId) &&
+                (!serviceOrderId.HasValue || f.ServicesOrderId == serviceOrderId) &&
+                (!fechaHasta.HasValue || f.Date <= fechaHasta.Value);
+                (!fechaDesde.HasValue || f.Date >= fechaDesde.Value) &&
 
-            var facturas = await _unitOfWork.Facturas.GetAllAsync(
+            var invoices = await _unitOfWork.Invoices.GetAllAsync(
                 filter: filter,
-                orderBy: q => q.OrderByDescending(f => f.Fecha),
-                includeProperties: "Cliente,OrdenServicio,TipoPago",
+                orderBy: q => q.OrderByDescending(f => f.Invoices),
+                includeProperties: "Customer,ServiceOrder,PymentType",
                 skip: (pageNumber - 1) * pageSize,
                 take: pageSize,
                 ct: ct);
 
-            var total = await _unitOfWork.Facturas.CountAsync(filter, ct);
+            var total = await _unitOfWork.Invoices.CountAsync(filter, ct);
             Response.Headers["X-Total-Count"] = total.ToString();
             Response.Headers["X-Page-Number"] = pageNumber.ToString();
             Response.Headers["X-Page-Size"] = pageSize.ToString();
 
-            return Ok(facturas);
+            return Ok(invoices);
         }
         catch (Exception ex)
         {
@@ -68,7 +68,7 @@ public class FacturasController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Factura>> GetFactura(int id, CancellationToken ct = default)
+    public async Task<ActionResult<Invoice>> GetInvoices(int id, CancellationToken ct = default)
     {
         try
         {

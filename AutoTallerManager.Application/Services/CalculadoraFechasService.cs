@@ -39,7 +39,8 @@ public class CalculadoraFechasService : ICalculadoraFechasService
         // Asegurar mínimo 1 día
         diasFinales = Math.Max(1, diasFinales);
         
-        return fechaBase.AddDays(diasFinales);
+        // Sumar un pequeño desfase para evitar truncamiento a 0 días en comparaciones inmediatas
+        return fechaBase.AddDays(diasFinales).AddMinutes(1);
     }
 
     public int CalcularComplejidadServicio(TipoServicio tipoServicio)

@@ -1,414 +1,290 @@
--- Script completo para crear la base de datos AutoTallerManager con snake_case
--- Este script crea todas las tablas con nombres en snake_case desde el inicio
-
--- Crear extensiones necesarias
+-- Complete script to create the AutoTallerManager database in English with snake_case
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Tabla: roles
+-- Table: roles
 CREATE TABLE roles (
     id SERIAL PRIMARY KEY,
-    nombre_rol VARCHAR(50) NOT NULL,
-    descripcion VARCHAR(200),
-    activo BOOLEAN NOT NULL DEFAULT true,
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    role_name VARCHAR(50) NOT NULL,
+    description VARCHAR(200),
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Tabla: estados_usuario
-CREATE TABLE estados_usuario (
+-- Table: user_statuses
+CREATE TABLE user_statuses (
     id SERIAL PRIMARY KEY,
-    nombre_estado VARCHAR(50) NOT NULL,
-    descripcion VARCHAR(200),
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    status_name VARCHAR(50) NOT NULL,
+    description VARCHAR(200),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Tabla: users_members
+-- Table: users_members
 CREATE TABLE users_members (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    estado_id INTEGER NOT NULL REFERENCES estados_usuario (id) ON DELETE RESTRICT,
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    status_id INTEGER NOT NULL REFERENCES user_statuses (id) ON DELETE RESTRICT,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Tabla: user_member_roles
+-- Table: user_member_roles
 CREATE TABLE user_member_roles (
     id SERIAL PRIMARY KEY,
     user_member_id INTEGER NOT NULL REFERENCES users_members (id) ON DELETE CASCADE,
-    rol_id INTEGER NOT NULL REFERENCES roles (id) ON DELETE CASCADE,
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        UNIQUE (user_member_id, rol_id)
+    role_id INTEGER NOT NULL REFERENCES roles (id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    UNIQUE (user_member_id, role_id)
 );
 
--- Tabla: refresh_tokens
+-- Table: refresh_tokens
 CREATE TABLE refresh_tokens (
     id SERIAL PRIMARY KEY,
     token VARCHAR(500) NOT NULL UNIQUE,
     user_member_id INTEGER NOT NULL REFERENCES users_members (id) ON DELETE CASCADE,
-    expires_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL,
-        created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Tabla: paises
-CREATE TABLE paises (
+-- Table: countries
+CREATE TABLE countries (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(150) NOT NULL,
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    name VARCHAR(150) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Tabla: departamentos
-CREATE TABLE departamentos (
+-- Table: states
+CREATE TABLE states (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(150),
-    pais_id INTEGER NOT NULL REFERENCES paises (id) ON DELETE RESTRICT,
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    name VARCHAR(150),
+    country_id INTEGER NOT NULL REFERENCES countries (id) ON DELETE RESTRICT,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Tabla: ciudades
-CREATE TABLE ciudades (
+-- Table: cities
+CREATE TABLE cities (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(150) NOT NULL,
-    departamento_id INTEGER NOT NULL REFERENCES departamentos (id) ON DELETE RESTRICT,
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    name VARCHAR(150) NOT NULL,
+    state_id INTEGER NOT NULL REFERENCES states (id) ON DELETE RESTRICT,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Tabla: direcciones
-CREATE TABLE direcciones (
+-- Table: addresses
+CREATE TABLE addresses (
     id SERIAL PRIMARY KEY,
-    descripcion VARCHAR(150) NOT NULL,
-    pais_id INTEGER NOT NULL REFERENCES paises (id) ON DELETE RESTRICT,
-    departamento_id INTEGER NOT NULL REFERENCES departamentos (id) ON DELETE RESTRICT,
-    ciudad_id INTEGER NOT NULL REFERENCES ciudades (id) ON DELETE RESTRICT,
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    description VARCHAR(150) NOT NULL,
+    country_id INTEGER NOT NULL REFERENCES countries (id) ON DELETE RESTRICT,
+    state_id INTEGER NOT NULL REFERENCES states (id) ON DELETE RESTRICT,
+    city_id INTEGER NOT NULL REFERENCES cities (id) ON DELETE RESTRICT,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Tabla: tipos_cliente
-CREATE TABLE tipos_cliente (
+-- Table: customer_types
+CREATE TABLE customer_types (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Tabla: clientes
-CREATE TABLE clientes (
+-- Table: customers
+CREATE TABLE customers (
     id SERIAL PRIMARY KEY,
-    nombre_completo VARCHAR(150) NOT NULL,
-    telefono VARCHAR(20),
+    full_name VARCHAR(150) NOT NULL,
+    phone VARCHAR(20),
     email VARCHAR(100),
-    tipo_cliente_id INTEGER NOT NULL REFERENCES tipos_cliente (id) ON DELETE RESTRICT,
-    direccion_id INTEGER NOT NULL REFERENCES direcciones (id) ON DELETE RESTRICT,
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    customer_type_id INTEGER NOT NULL REFERENCES customer_types (id) ON DELETE RESTRICT,
+    address_id INTEGER NOT NULL REFERENCES addresses (id) ON DELETE RESTRICT,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Tabla: tipos_vehiculo
-CREATE TABLE tipos_vehiculo (
+-- Table: vehicle_types
+CREATE TABLE vehicle_types (
     id SERIAL PRIMARY KEY,
-    nombre_tipo_vehiculo VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    vehicle_type_name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Tabla: marcas_vehiculo
-CREATE TABLE marcas_vehiculo (
+-- Table: vehicle_brands
+CREATE TABLE vehicle_brands (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Tabla: modelos_vehiculo
-CREATE TABLE modelos_vehiculo (
+-- Table: vehicle_models
+CREATE TABLE vehicle_models (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    marca_id INTEGER NOT NULL REFERENCES marcas_vehiculo (id) ON DELETE RESTRICT,
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    name VARCHAR(100) NOT NULL,
+    brand_id INTEGER NOT NULL REFERENCES vehicle_brands (id) ON DELETE RESTRICT,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Tabla: vehiculos
-CREATE TABLE vehiculos (
+-- Table: vehicles
+CREATE TABLE vehicles (
     id SERIAL PRIMARY KEY,
-    placa VARCHAR(20) NOT NULL UNIQUE,
-    ano INTEGER NOT NULL,
+    plate VARCHAR(20) NOT NULL UNIQUE,
+    year INTEGER NOT NULL,
     vin VARCHAR(50) NOT NULL UNIQUE,
-    kilometraje INTEGER NOT NULL DEFAULT 0,
-    cliente_id INTEGER NOT NULL REFERENCES clientes (id) ON DELETE RESTRICT,
-    tipo_vehiculo_id INTEGER NOT NULL REFERENCES tipos_vehiculo (id) ON DELETE RESTRICT,
-    marca_id INTEGER NOT NULL REFERENCES marcas_vehiculo (id) ON DELETE RESTRICT,
-    modelo_id INTEGER NOT NULL REFERENCES modelos_vehiculo (id) ON DELETE RESTRICT,
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        CHECK (kilometraje >= 0)
+    mileage INTEGER NOT NULL DEFAULT 0,
+    customer_id INTEGER NOT NULL REFERENCES customers (id) ON DELETE RESTRICT,
+    vehicle_type_id INTEGER NOT NULL REFERENCES vehicle_types (id) ON DELETE RESTRICT,
+    brand_id INTEGER NOT NULL REFERENCES vehicle_brands (id) ON DELETE RESTRICT,
+    model_id INTEGER NOT NULL REFERENCES vehicle_models (id) ON DELETE RESTRICT,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    CHECK (mileage >= 0)
 );
 
--- Tabla: tipos_servicio
-CREATE TABLE tipos_servicio (
+-- Table: service_types
+CREATE TABLE service_types (
     id SERIAL PRIMARY KEY,
-    nombre_tipo_serv VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    service_type_name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Tabla: estados_servicio
-CREATE TABLE estados_servicio (
+-- Table: service_statuses
+CREATE TABLE service_statuses (
     id SERIAL PRIMARY KEY,
-    nombre_est_serv VARCHAR(80),
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    service_status_name VARCHAR(80),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Tabla: ordenes_servicio
-CREATE TABLE ordenes_servicio (
+-- Table: service_orders
+CREATE TABLE service_orders (
     id SERIAL PRIMARY KEY,
-    fecha_ingreso TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        fecha_estimada_entrega TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL,
-        descripcion_trabajo TEXT,
-        vehiculo_id INTEGER NOT NULL REFERENCES vehiculos (id) ON DELETE RESTRICT,
-        mecanico_id INTEGER NOT NULL REFERENCES users_members (id) ON DELETE RESTRICT,
-        tipo_servicio_id INTEGER NOT NULL REFERENCES tipos_servicio (id) ON DELETE RESTRICT,
-        estado_id INTEGER NOT NULL REFERENCES estados_servicio (id) ON DELETE RESTRICT,
-        created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    entry_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    estimated_delivery_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    work_description TEXT,
+    vehicle_id INTEGER NOT NULL REFERENCES vehicles (id) ON DELETE RESTRICT,
+    mechanic_id INTEGER NOT NULL REFERENCES users_members (id) ON DELETE RESTRICT,
+    service_type_id INTEGER NOT NULL REFERENCES service_types (id) ON DELETE RESTRICT,
+    status_id INTEGER NOT NULL REFERENCES service_statuses (id) ON DELETE RESTRICT,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Tabla: categorias
-CREATE TABLE categorias (
+-- Table: categories
+CREATE TABLE categories (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Tabla: fabricantes
-CREATE TABLE fabricantes (
+-- Table: manufacturers
+CREATE TABLE manufacturers (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL,
-    descripcion VARCHAR(255),
-    telefono VARCHAR(20),
+    name VARCHAR(50) NOT NULL,
+    description VARCHAR(255),
+    phone VARCHAR(20),
     email VARCHAR(80),
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Tabla: repuestos
-CREATE TABLE repuestos (
+-- Table: spare_parts
+CREATE TABLE spare_parts (
     id SERIAL PRIMARY KEY,
-    codigo VARCHAR(50) NOT NULL UNIQUE,
-    nombre VARCHAR(150) NOT NULL,
-    descripcion VARCHAR(255) NOT NULL,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(150) NOT NULL,
+    description VARCHAR(255) NOT NULL,
     stock INTEGER NOT NULL DEFAULT 0,
-    precio_unitario DECIMAL(10, 2) NOT NULL,
-    stock_minimo INTEGER NOT NULL DEFAULT 0,
-    categoria_id INTEGER NOT NULL REFERENCES categorias (id) ON DELETE RESTRICT,
-    tipo_vehiculo_id INTEGER NOT NULL REFERENCES tipos_vehiculo (id) ON DELETE RESTRICT,
-    fabricante_id INTEGER NOT NULL REFERENCES fabricantes (id) ON DELETE RESTRICT,
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        CHECK (stock >= 0),
-        CHECK (precio_unitario >= 0),
-        CHECK (stock_minimo >= 0)
+    unit_price DECIMAL(10, 2) NOT NULL,
+    stock_min INTEGER NOT NULL DEFAULT 0,
+    category_id INTEGER NOT NULL REFERENCES categories (id) ON DELETE RESTRICT,
+    vehicle_type_id INTEGER NOT NULL REFERENCES vehicle_types (id) ON DELETE RESTRICT,
+    manufacturer_id INTEGER NOT NULL REFERENCES manufacturers (id) ON DELETE RESTRICT,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    CHECK (stock >= 0),
+    CHECK (unit_price >= 0),
+    CHECK (stock_min >= 0)
 );
 
--- Tabla: detalle_ordenes
-CREATE TABLE detalle_ordenes (
+-- Table: order_details
+CREATE TABLE order_details (
     id SERIAL PRIMARY KEY,
-    orden_servicio_id INTEGER NOT NULL REFERENCES ordenes_servicio (id) ON DELETE CASCADE,
-    repuesto_id INTEGER NOT NULL REFERENCES repuestos (id) ON DELETE RESTRICT,
-    cantidad INTEGER NOT NULL DEFAULT 1,
-    precio_unitario DECIMAL(10, 2) NOT NULL,
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        CHECK (cantidad > 0),
-        CHECK (precio_unitario >= 0)
+    service_order_id INTEGER NOT NULL REFERENCES service_orders (id) ON DELETE CASCADE,
+    spare_part_id INTEGER NOT NULL REFERENCES spare_parts (id) ON DELETE RESTRICT,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    unit_price DECIMAL(10, 2) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    CHECK (quantity > 0),
+    CHECK (unit_price >= 0)
 );
 
--- Tabla: tipos_pago
-CREATE TABLE tipos_pago (
+-- Table: payment_types
+CREATE TABLE payment_types (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    name VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Tabla: facturas
-CREATE TABLE facturas (
+-- Table: invoices
+CREATE TABLE invoices (
     id SERIAL PRIMARY KEY,
-    numero_factura VARCHAR(50) NOT NULL UNIQUE,
-    fecha_factura TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        subtotal DECIMAL(10, 2) NOT NULL DEFAULT 0,
-        impuestos DECIMAL(10, 2) NOT NULL DEFAULT 0,
-        total DECIMAL(10, 2) NOT NULL DEFAULT 0,
-        cliente_id INTEGER NOT NULL REFERENCES clientes (id) ON DELETE RESTRICT,
-        orden_servicio_id INTEGER NOT NULL REFERENCES ordenes_servicio (id) ON DELETE RESTRICT,
-        tipo_pago_id INTEGER NOT NULL REFERENCES tipos_pago (id) ON DELETE RESTRICT,
-        created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        CHECK (subtotal >= 0),
-        CHECK (impuestos >= 0),
-        CHECK (total >= 0)
+    invoice_number VARCHAR(50) NOT NULL UNIQUE,
+    invoice_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    subtotal DECIMAL(10, 2) NOT NULL DEFAULT 0,
+    taxes DECIMAL(10, 2) NOT NULL DEFAULT 0,
+    total DECIMAL(10, 2) NOT NULL DEFAULT 0,
+    customer_id INTEGER NOT NULL REFERENCES customers (id) ON DELETE RESTRICT,
+    service_order_id INTEGER NOT NULL REFERENCES service_orders (id) ON DELETE RESTRICT,
+    payment_type_id INTEGER NOT NULL REFERENCES payment_types (id) ON DELETE RESTRICT,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    CHECK (subtotal >= 0),
+    CHECK (taxes >= 0),
+    CHECK (total >= 0)
 );
 
--- Tabla: tipos_accion
-CREATE TABLE tipos_accion (
+-- Table: action_types
+CREATE TABLE action_types (
     id SERIAL PRIMARY KEY,
-    nombre_accion VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    action_name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Tabla: auditorias
-CREATE TABLE auditorias (
+-- Table: audits
+CREATE TABLE audits (
     id SERIAL PRIMARY KEY,
-    usuario_id INTEGER NOT NULL REFERENCES users_members (id) ON DELETE RESTRICT,
-    entidad_afectada VARCHAR(50) NOT NULL,
-    accion_id INTEGER NOT NULL REFERENCES tipos_accion (id) ON DELETE RESTRICT,
-    fecha_hora TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        descripcion_accion TEXT,
-        created_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP
-    WITH
-        TIME ZONE NOT NULL DEFAULT NOW()
+    user_id INTEGER NOT NULL REFERENCES users_members (id) ON DELETE RESTRICT,
+    affected_entity VARCHAR(50) NOT NULL,
+    action_id INTEGER NOT NULL REFERENCES action_types (id) ON DELETE RESTRICT,
+    action_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    action_description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Crear índices para mejorar el rendimiento
-CREATE INDEX idx_clientes_email ON clientes (email);
+-- Indexes
+CREATE INDEX idx_customers_email ON customers (email);
+CREATE INDEX idx_customers_phone ON customers (phone);
+CREATE INDEX idx_vehicles_plate ON vehicles (plate);
+CREATE INDEX idx_vehicles_vin ON vehicles (vin);
+CREATE INDEX idx_spare_parts_code ON spare_parts (code);
+CREATE INDEX idx_invoices_number ON invoices (invoice_number);
+CREATE INDEX idx_service_orders_date ON service_orders (entry_date);
+CREATE INDEX idx_audits_date ON audits (action_date);
 
-CREATE INDEX idx_clientes_telefono ON clientes (telefono);
-
-CREATE INDEX idx_vehiculos_placa ON vehiculos (placa);
-
-CREATE INDEX idx_vehiculos_vin ON vehiculos (vin);
-
-CREATE INDEX idx_repuestos_codigo ON repuestos (codigo);
-
-CREATE INDEX idx_facturas_numero ON facturas (numero_factura);
-
-CREATE INDEX idx_ordenes_servicio_fecha ON ordenes_servicio (fecha_ingreso);
-
-CREATE INDEX idx_auditorias_fecha ON auditorias (fecha_hora);
-
--- Mensaje de confirmación
-SELECT 'Base de datos AutoTallerManager creada exitosamente con snake_case' AS mensaje;
+-- Confirmation message
+SELECT 'AutoTallerManager database created successfully with English snake_case' AS message;
