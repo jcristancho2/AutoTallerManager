@@ -99,14 +99,14 @@ namespace AutoTallerManager.Application.DTOs.Common
     /// </summary>
     public class SystemStatsResponse
     {
-        public int TotalClientes { get; set; }
-        public int TotalVehiculos { get; set; }
-        public int TotalOrdenesActivas { get; set; }
-        public int TotalOrdenesCompletadas { get; set; }
-        public int TotalRepuestos { get; set; }
-        public int RepuestosStockBajo { get; set; }
-        public decimal ValorTotalInventario { get; set; }
-        public decimal IngresosMesActual { get; set; }
+        public int TotalCustomers { get; set; }
+        public int TotalVehicles { get; set; }
+        public int TotalActiveOrders { get; set; }
+        public int TotalCompletedOrders { get; set; }
+        public int TotalSpare { get; set; }
+        public int LowStockSpare { get; set; }
+        public decimal TotalInventoryValue { get; set; }
+        public decimal CurrentMonthRevenue { get; set; }
         public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
     }
 }

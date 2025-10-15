@@ -8,11 +8,16 @@ namespace AutoTallerManager.Domain.Entities
 {
     public class ServiceOrder : BaseEntity
     {
+        public int ServiceOrderId { get; set; }
         public DateTime EntryDate { get; set; }
         public DateTime EstimatedDeliveryDate { get; set; }
         public string? WorkDescription { get; set; }
         public int VehicleId { get; set; }
         public Vehicle? Vehicle { get; set; }
+
+        public int CustomerId { get; set; }
+        public Customer? Customer { get; set; }
+
 
         public int MechanicId { get; set; }  // Referencia a Usuario
         public User? Mechanic { get; set; }

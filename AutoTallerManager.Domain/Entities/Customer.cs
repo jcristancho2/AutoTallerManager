@@ -7,11 +7,12 @@ namespace AutoTallerManager.Domain.Entities
 {
     public class Customer : BaseEntity
     {
+        public int CustomerId { get; set; }
         public string? FullName { get; set; }
         public string? Phone { get; set; }
         public string? Email { get; set; }
-        public int Customer_Type_Id { get; set; }
-        public int Address_Id { get; set; }
+        public int CustomerTypeId { get; set; }
+        public int AddressId { get; set; }
 
         public virtual Address Address { get; set; } = null!;
         public virtual CustomerType CustomerType { get; set; } = null!;

@@ -13,18 +13,18 @@ public interface IUnitOfWork
     IUserMemberService UserMembers { get; }
     IUserMemberRolService UserMemberRoles { get; }
     IRolService Roles { get; }
-    IUsuarioService Usuarios { get; }
-    IEstadoUsuarioService EstadosUsuario { get; }
+    IServiceUser User { get; }
+    IUserStatusService UserStatus { get; }
     
     //Repositorios de negocio
-    IClienteService Clientes { get; }
-    IVehiculoService Vehiculos { get; }
-    IOrdenServicioService OrdenesServicio { get; }
-    IRepuestoService Repuestos { get; }
-    IFacturaService Facturas { get; }
-    IAuditoriaService Auditorias { get; }
-    IDetalleOrdenService DetallesOrden { get; }
-    ITipoServicioService TiposServicio { get; }
+    IServiceCustomer Customer { get; }
+    IVehicleService Vehicles { get; }
+    IOrderServiceService ServiceOrders { get; }
+    ISpareService Spares { get; }
+    IInvoiceService Invoices { get; }
+    IAuditService Audits { get; }
+    IDetailOrderService OrderDetails { get; }
+    IServiceTypeService ServiceTypes { get; }
 
     Task<int> SaveChanges(CancellationToken ct = default);
     Task<int> SaveChangesAsync(CancellationToken ct = default);

@@ -7,7 +7,7 @@ namespace AutoTallerManager.Domain.Entities
 {
     public class VehicleType : BaseEntity  
     {
-        public string? Vehicle_Type_Name { get; set; }
+        public string? VehicleTypeName { get; set; }
 
         // Relación 1 - N con Repuesto
         public ICollection<Spare>? Spares { get; set; }

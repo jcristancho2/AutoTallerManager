@@ -5,8 +5,9 @@ namespace AutoTallerManager.Domain.Entities;
 
 public class User : BaseEntity
 {
+    public int UserId { get; set; }
     public string? Email { get; set; }
-    public string? PasswordHash { get; set; }
+    public string? Password { get; set; }
     public int RolId { get; set; }
     public int StatusId { get; set; }
     
@@ -16,5 +17,5 @@ public class User : BaseEntity
 
     // Relaciones inversas
     public virtual ICollection<ServiceOrder> ServiceOrders { get; set; } = new List<ServiceOrder>();
-    public virtual ICollection<Audits> Audits { get; set; } = new List<Audits>();
+    public virtual ICollection<Audit> Audits { get; set; } = new List<Audit>();
 }

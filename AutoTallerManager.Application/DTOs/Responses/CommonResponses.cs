@@ -3,37 +3,35 @@ namespace AutoTallerManager.Application.DTOs.Responses
     /// <summary>
     /// DTO de respuesta para cliente
     /// </summary>
-    public class ClienteResponse
+    public class CustomerResponse
     {
-        public int Id { get; set; }
-        public string Nombre { get; set; } = string.Empty;
-        public string Apellido { get; set; } = string.Empty;
-        public string? Telefono { get; set; }
+        public int CustomerId { get; set; }
+        public string FullName { get; set; } = string.Empty;
+        public string? Phone { get; set; }
         public string? Email { get; set; }
-        public int TipoClienteId { get; set; }
-        public string? TipoClienteNombre { get; set; }
+        public int CustomerTypeId { get; set; }
+        
         public DateTime CreatedAt { get; set; }
+
+
         public DateTime UpdatedAt { get; set; }
-        public List<VehiculoResponse>? Vehiculos { get; set; }
+        public List<VehicleResponse>? Vehicles { get; set; }
     }
 
     /// <summary>
     /// DTO de respuesta para vehículo
     /// </summary>
-    public class VehiculoResponse
+    public class VehicleResponse
     {
-        public int Id { get; set; }
-        public string Vin { get; set; } = string.Empty;
-        public int Ano { get; set; }
-        public int Kilometraje { get; set; }
-        public int ClienteId { get; set; }
-        public string? ClienteNombre { get; set; }
-        public int TipoVehiculoId { get; set; }
-        public string? TipoVehiculoNombre { get; set; }
-        public int MarcaId { get; set; }
-        public string? MarcaNombre { get; set; }
-        public int ModeloId { get; set; }
-        public string? ModeloNombre { get; set; }
+        public int VehicleId { get; set; }
+        public string VIN { get; set; } = string.Empty;
+        public string LicensePlate { get; set; } = string.Empty;
+        public int Year { get; set; }
+        public int Mileage { get; set; }
+        public int CustomerId { get; set; }
+        public int VehicleTypeId { get; set; }
+        public int VehicleBrandId { get; set; }
+        public int VehiculeModelId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
     }
@@ -41,40 +39,35 @@ namespace AutoTallerManager.Application.DTOs.Responses
     /// <summary>
     /// DTO de respuesta para orden de servicio
     /// </summary>
-    public class OrdenServicioResponse
+    public class ServiceOrderResponse
     {
         public int Id { get; set; }
-        public DateTime FechaIngreso { get; set; }
-        public DateTime FechaEstimadaEntrega { get; set; }
-        public string? DescripcionTrabajo { get; set; }
-        public int VehiculoId { get; set; }
-        public string? VehiculoVin { get; set; }
-        public int MecanicoId { get; set; }
-        public string? MecanicoNombre { get; set; }
-        public int TipoServId { get; set; }
-        public string? TipoServicioNombre { get; set; }
-        public int EstadoId { get; set; }
-        public string? EstadoNombre { get; set; }
+        public DateTime EntryDate { get; set; }
+        public DateTime EstimatedDeliveryDate { get; set; }
+        public string? WorkDescription { get; set; }
+        public int VehicleId { get; set; }
+        public int MechanicId { get; set; }
+        public int ServiceTypeId { get; set; }
+        public int EstatusId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-        public List<DetalleOrdenResponse>? DetallesOrden { get; set; }
-        public List<FacturaResponse>? Facturas { get; set; }
+        public List<OrderDetailResponse>? OrderDetails { get; set; }
+        public List<InvoiceResponse>? Invoices { get; set; }
     }
 
     /// <summary>
     /// DTO de respuesta para detalle de orden
     /// </summary>
-    public class DetalleOrdenResponse
+    public class OrderDetailResponse
     {
-        public int Id { get; set; }
-        public int OrdenServicioId { get; set; }
-        public int? RepuestoId { get; set; }
-        public string? RepuestoNombre { get; set; }
-        public string Descripcion { get; set; } = string.Empty;
-        public int Cantidad { get; set; }
-        public decimal PrecioUnitario { get; set; }
-        public decimal PrecioManoDeObra { get; set; }
-        public decimal Subtotal => Cantidad * PrecioUnitario + PrecioManoDeObra;
+        public int DetailOrderId { get; set; }
+        public int ServiceOrderId { get; set; }
+        public int? SpareId { get; set; }
+        public string Description { get; set; } = string.Empty;
+        public int Quantity { get; set; }
+        public decimal UnitPrice { get; set; }
+        public decimal LaborCost { get; set; }
+        public decimal Subtotal => Quantity * UnitPrice + LaborCost;
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
     }
@@ -82,20 +75,18 @@ namespace AutoTallerManager.Application.DTOs.Responses
     /// <summary>
     /// DTO de respuesta para repuesto
     /// </summary>
-    public class RepuestoResponse
+    public class SpareResponse
     {
-        public int Id { get; set; }
-        public string CodigoRepuesto { get; set; } = string.Empty;
-        public string NombreRepu { get; set; } = string.Empty;
-        public string? Descripcion { get; set; }
+        public int SpareId { get; set; }
+        public string Code { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
         public int Stock { get; set; }
-        public decimal PrecioUnitario { get; set; }
-        public int StockMinimo { get; set; }
-        public bool StockBajo => Stock <= StockMinimo;
-        public int CategoriaId { get; set; }
-        public string? CategoriaNombre { get; set; }
-        public int FabricanteId { get; set; }
-        public string? FabricanteNombre { get; set; }
+        public decimal UnitPrice { get; set; }
+        public int StockMin { get; set; }
+        public bool IsLowStock => Stock <= StockMin;
+        public int CategoryId { get; set; }
+        public int ManufacturerId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
     }
@@ -103,34 +94,30 @@ namespace AutoTallerManager.Application.DTOs.Responses
     /// <summary>
     /// DTO de respuesta para factura
     /// </summary>
-    public class FacturaResponse
+    public class InvoiceResponse
     {
-        public int Id { get; set; }
-        public string NumeroFactura { get; set; } = string.Empty;
-        public DateTime Fecha { get; set; }
+        public int InvoiceId { get; set; }
+        public string InvoiceNumber { get; set; } = string.Empty;
+        public DateTime InvoiceDate { get; set; }
         public decimal Total { get; set; }
-        public string? Observaciones { get; set; }
-        public int OrdenServicioId { get; set; }
-        public int ClienteId { get; set; }
-        public string? ClienteNombre { get; set; }
-        public int TipoPagoId { get; set; }
-        public string? TipoPagoNombre { get; set; }
+        public string? Observations { get; set; }
+        public int ServiceOrderId { get; set; }
+        public int CustomerId { get; set; }
+        public int PaymentTypeId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-        public List<DetalleOrdenResponse>? DetallesOrden { get; set; }
+        public List<OrderDetailResponse>? OrderDetails { get; set; }
     }
 
     /// <summary>
     /// DTO de respuesta para usuario
     /// </summary>
-    public class UsuarioResponse
+    public class UserResponse
     {
-        public int Id { get; set; }
-        public string Username { get; set; } = string.Empty;
+        public int UserId { get; set; }
         public string Email { get; set; } = string.Empty;
-        public int EstadoId { get; set; }
-        public string? EstadoNombre { get; set; }
-        public List<RolResponse>? Roles { get; set; }
+        public int EstatusId { get; set; }
+        public List<RolResponse>? Rols { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
     }
@@ -140,9 +127,9 @@ namespace AutoTallerManager.Application.DTOs.Responses
     /// </summary>
     public class RolResponse
     {
-        public int Id { get; set; }
-        public string NombreRol { get; set; } = string.Empty;
-        public string? Descripcion { get; set; }
+        public int RolId { get; set; }
+        public string RoleName { get; set; } = string.Empty;
+        public string? Description { get; set; }
     }
 
     /// <summary>
@@ -153,31 +140,31 @@ namespace AutoTallerManager.Application.DTOs.Responses
         public string Token { get; set; } = string.Empty;
         public string RefreshToken { get; set; } = string.Empty;
         public DateTime Expiration { get; set; }
-        public UsuarioResponse Usuario { get; set; } = new();
+        public UserResponse User { get; set; } = new();
     }
 
     /// <summary>
     /// DTO de respuesta para cerrar orden
     /// </summary>
-    public class CerrarOrdenServicioResponse
+    public class CloseOrderServiceResponse
     {
-        public int OrdenId { get; set; }
-        public int FacturaId { get; set; }
-        public decimal TotalFactura { get; set; }
-        public string NumeroFactura { get; set; } = string.Empty;
-        public DateTime FechaCierre { get; set; }
+        public int OrderId { get; set; }
+        public int InvoiceId { get; set; }
+        public decimal Total { get; set; }
+        public string InvoiceNumber { get; set; } = string.Empty;
+        public DateTime CloseDate { get; set; }
     }
 
     /// <summary>
     /// DTO de respuesta para generar factura
     /// </summary>
-    public class GenerarFacturaResponse
+    public class GenerateInvoiceResponse
     {
-        public int FacturaId { get; set; }
+        public int InvoiceId { get; set; }
         public decimal Total { get; set; }
-        public decimal SubtotalRepuestos { get; set; }
-        public decimal SubtotalManoDeObra { get; set; }
-        public DateTime FechaGeneracion { get; set; }
-        public string NumeroFactura { get; set; } = string.Empty;
+        public decimal Subtotalspare { get; set; }
+        public decimal SubtotalLabor { get; set; }
+        public DateTime DateGeneration { get; set; }
+        public string InvoiceNumber { get; set; } = string.Empty;
     }
 }

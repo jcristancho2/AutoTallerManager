@@ -8,13 +8,13 @@ namespace AutoTallerManager.Application.DTOs.Requests
     public class GenerarFacturaRequest
     {
         [Required(ErrorMessage = "El ID de la orden de servicio es obligatorio")]
-        public int OrdenServicioId { get; set; }
+        public int ServiceOrderId{ get; set; }
 
         [Required(ErrorMessage = "El tipo de pago es obligatorio")]
-        public int TipoPagoId { get; set; }
+        public int PaymentTypeId{ get; set; }
 
         [StringLength(500, ErrorMessage = "Las observaciones no pueden exceder 500 caracteres")]
-        public string? Observaciones { get; set; }
+        public string? Observations { get; set; }
     }
 
     /// <summary>
@@ -36,9 +36,9 @@ namespace AutoTallerManager.Application.DTOs.Requests
     /// </summary>
     public class RegisterRequest
     {
-        [Required(ErrorMessage = "El nombre de usuario es obligatorio")]
-        [StringLength(50, ErrorMessage = "El nombre de usuario no puede exceder 50 caracteres")]
-        public string Username { get; set; } = string.Empty;
+        // [Required(ErrorMessage = "El nombre de usuario es obligatorio")]
+        // [StringLength(50, ErrorMessage = "El nombre de usuario no puede exceder 50 caracteres")]
+        // public string Username { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El email es obligatorio")]
         [EmailAddress(ErrorMessage = "El formato del email no es válido")]
@@ -50,7 +50,7 @@ namespace AutoTallerManager.Application.DTOs.Requests
         public string Password { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El estado del usuario es obligatorio")]
-        public int EstadoId { get; set; }
+        public int EstatusId { get; set; }
 
         [Required(ErrorMessage = "El rol es obligatorio")]
         public int RolId { get; set; }
@@ -59,14 +59,14 @@ namespace AutoTallerManager.Application.DTOs.Requests
     /// <summary>
     /// DTO para actualizar usuario
     /// </summary>
-    public class UpdateUsuarioRequest
+    public class UpdateUserRequest
     {
         [Required(ErrorMessage = "El ID es obligatorio")]
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "El nombre de usuario es obligatorio")]
-        [StringLength(50, ErrorMessage = "El nombre de usuario no puede exceder 50 caracteres")]
-        public string Username { get; set; } = string.Empty;
+        // [Required(ErrorMessage = "El nombre de usuario es obligatorio")]
+        // [StringLength(50, ErrorMessage = "El nombre de usuario no puede exceder 50 caracteres")]
+        // public string Username { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El email es obligatorio")]
         [EmailAddress(ErrorMessage = "El formato del email no es válido")]
@@ -74,7 +74,7 @@ namespace AutoTallerManager.Application.DTOs.Requests
         public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El estado del usuario es obligatorio")]
-        public int EstadoId { get; set; }
+        public int StatusId { get; set; }
 
         [Required(ErrorMessage = "El rol es obligatorio")]
         public int RolId { get; set; }

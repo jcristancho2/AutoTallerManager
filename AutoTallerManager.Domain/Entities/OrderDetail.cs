@@ -9,7 +9,7 @@ namespace AutoTallerManager.Domain.Entities
     {
         public int DetailOrderId { get; set; }
         public int ServiceOrderId { get; set; }
-        public int? SparePartId { get; set; }
+        public int? SpareId { get; set; }
         public string? Description { get; set; }
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }

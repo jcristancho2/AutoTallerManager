@@ -7,6 +7,7 @@ namespace AutoTallerManager.Domain.Entities.Auth;
 
 public class Rol : BaseEntity
 {
+    public int RolId { get; set; }
     public string? RoleName { get; set; }
     public string? Description { get; set; }
     public bool IsActive { get; set; } = true;
