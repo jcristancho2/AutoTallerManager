@@ -6,18 +6,18 @@ using System.Linq.Expressions;
 
 namespace AutoTallerManager.Infrastructure.Repositories;
 
-public class AuditoriaRepository : IAuditoriaService
+public class RepositoryAudit : IAuditService
 {
     private readonly AppDbContext _context;
 
-    public AuditoriaRepository(AppDbContext context)
+    public RepositoryAudit(AppDbContext context)
     {
         _context = context;
     }
 
-    public async Task<Auditoria?> GetByIdAsync(int id, CancellationToken ct = default, params string[] includeProperties)
+    public async Task<Audit?> GetByIdAsync(int id, CancellationToken ct = default, params string[] includeProperties)
     {
-        IQueryable<Auditoria> query = _context.Auditorias;
+        IQueryable<Audit> query = _context.Audits;
 
         foreach (var includeProperty in includeProperties)
         {
@@ -27,15 +27,15 @@ public class AuditoriaRepository : IAuditoriaService
         return await query.FirstOrDefaultAsync(a => a.Id == id, ct);
     }
 
-    public async Task<IEnumerable<Auditoria>> GetAllAsync(
-        Expression<Func<Auditoria, bool>>? filter = null,
-        Func<IQueryable<Auditoria>, IOrderedQueryable<Auditoria>>? orderBy = null,
+    public async Task<IEnumerable<Audit>> GetAllAsync(
+        Expression<Func<Audit, bool>>? filter = null,
+        Func<IQueryable<Audit>, IOrderedQueryable<Audit>>? orderBy = null,
         string includeProperties = "",
         int? skip = null,
         int? take = null,
         CancellationToken ct = default)
     {
-        IQueryable<Auditoria> query = _context.Auditorias;
+        IQueryable<Audit> query = _context.Audits;
 
         if (filter != null)
         {
@@ -65,9 +65,9 @@ public class AuditoriaRepository : IAuditoriaService
         return await query.ToListAsync(ct);
     }
 
-    public async Task<int> CountAsync(Expression<Func<Auditoria, bool>>? filter = null, CancellationToken ct = default)
+    public async Task<int> CountAsync(Expression<Func<Audit, bool>>? filter = null, CancellationToken ct = default)
     {
-        IQueryable<Auditoria> query = _context.Auditorias;
+        IQueryable<Audit> query = _context.Audits;
 
         if (filter != null)
         {
@@ -77,8 +77,8 @@ public class AuditoriaRepository : IAuditoriaService
         return await query.CountAsync(ct);
     }
 
-    public async Task AddAsync(Auditoria auditoria, CancellationToken ct = default)
+    public async Task AddAsync(Audit audit, CancellationToken ct = default)
     {
-        await _context.Auditorias.AddAsync(auditoria, ct);
+        await _context.Audits.AddAsync(audit, ct);
     }
 }

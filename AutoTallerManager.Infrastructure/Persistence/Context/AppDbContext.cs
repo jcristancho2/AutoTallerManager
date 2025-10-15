@@ -18,7 +18,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<ServiceOrder> ServiceOrders { get; set; }
     public DbSet<OrderDetail> OrderDetails { get; set; }
     public DbSet<Invoice> Invoices { get; set; }
-    public DbSet<SparePart> SpareParts { get; set; }
+    public DbSet<Spare> Spares { get; set; }
     public DbSet<Audit> Audits { get; set; }
 
     // Auth & Identity DbSets - JWT
@@ -29,7 +29,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<UserMemberRol> UsersMembersRols { get; set; } = null!;
     
     // Catálogos
-    public DbSet<Role> Roles { get; set; }
+    public DbSet<Rol> Roles { get; set; }
     public DbSet<CustomerType> CustomerTypes { get; set; }
     public DbSet<VehicleType> VehicleTypes { get; set; }
     public DbSet<VehicleBrand> VehicleBrands { get; set; }
@@ -41,7 +41,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<Category> Categories { get; set; }
     public DbSet<Manufacturer> Manufacturers { get; set; }
     public DbSet<Country> Countries { get; set; }
-    public DbSet<State> States { get; set; }
+    public DbSet<Departament> Departaments { get; set; }
     public DbSet<City> Cities { get; set; }
     public DbSet<Address> Addresses { get; set; }
 

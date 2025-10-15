@@ -6,18 +6,18 @@ using System.Linq.Expressions;
 
 namespace AutoTallerManager.Infrastructure.Repositories;
 
-public class OrdenServicioRepository : IOrdenServicioService
+public class RepositoryOrderService : IOrderServiceService
 {
     private readonly AppDbContext _context;
 
-    public OrdenServicioRepository(AppDbContext context)
+    public RepositoryOrderService(AppDbContext context)
     {
         _context = context;
     }
 
-    public async Task<OrdenServicio?> GetByIdAsync(int id, CancellationToken ct = default, params string[] includeProperties)
+    public async Task<ServiceOrder?> GetByIdAsync(int id, CancellationToken ct = default, params string[] includeProperties)
     {
-        IQueryable<OrdenServicio> query = _context.OrdenesServicio;
+        IQueryable<ServiceOrder> query = _context.ServiceOrders;
 
         foreach (var includeProperty in includeProperties)
         {
@@ -27,15 +27,15 @@ public class OrdenServicioRepository : IOrdenServicioService
         return await query.FirstOrDefaultAsync(o => o.Id == id, ct);
     }
 
-    public async Task<IEnumerable<OrdenServicio>> GetAllAsync(
-        Expression<Func<OrdenServicio, bool>>? filter = null,
-        Func<IQueryable<OrdenServicio>, IOrderedQueryable<OrdenServicio>>? orderBy = null,
+    public async Task<IEnumerable<ServiceOrder>> GetAllAsync(
+        Expression<Func<ServiceOrder, bool>>? filter = null,
+        Func<IQueryable<ServiceOrder>, IOrderedQueryable<ServiceOrder>>? orderBy = null,
         string includeProperties = "",
         int? skip = null,
         int? take = null,
         CancellationToken ct = default)
     {
-        IQueryable<OrdenServicio> query = _context.OrdenesServicio;
+        IQueryable<ServiceOrder> query = _context.ServiceOrders;
 
         if (filter != null)
         {
@@ -65,9 +65,9 @@ public class OrdenServicioRepository : IOrdenServicioService
         return await query.ToListAsync(ct);
     }
 
-    public async Task<int> CountAsync(Expression<Func<OrdenServicio, bool>>? filter = null, CancellationToken ct = default)
+    public async Task<int> CountAsync(Expression<Func<ServiceOrder, bool>>? filter = null, CancellationToken ct = default)
     {
-        IQueryable<OrdenServicio> query = _context.OrdenesServicio;
+        IQueryable<ServiceOrder> query = _context.ServiceOrders;
 
         if (filter != null)
         {
@@ -77,29 +77,29 @@ public class OrdenServicioRepository : IOrdenServicioService
         return await query.CountAsync(ct);
     }
 
-    public async Task<bool> ExistsAsync(Expression<Func<OrdenServicio, bool>> filter, CancellationToken ct = default)
+    public async Task<bool> ExistsAsync(Expression<Func<ServiceOrder, bool>> filter, CancellationToken ct = default)
     {
-        return await _context.OrdenesServicio.AnyAsync(filter, ct);
+        return await _context.ServiceOrders.AnyAsync(filter, ct);
     }
 
-    public async Task AddAsync(OrdenServicio ordenServicio, CancellationToken ct = default)
+    public async Task AddAsync(ServiceOrder serviceOrder, CancellationToken ct = default)
     {
-        await _context.OrdenesServicio.AddAsync(ordenServicio, ct);
+        await _context.ServiceOrders.AddAsync(serviceOrder, ct);
     }
 
-    public Task UpdateAsync(OrdenServicio ordenServicio, CancellationToken ct = default)
+    public Task UpdateAsync(ServiceOrder serviceOrder, CancellationToken ct = default)
     {
-        _context.OrdenesServicio.Update(ordenServicio);
+        _context.ServiceOrders.Update(serviceOrder);
         return Task.CompletedTask;
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)
     {
-        var ordenServicio = await _context.OrdenesServicio.FirstOrDefaultAsync(o => o.Id == id, ct);
-        if (ordenServicio == null)
+        var serviceOrder = await _context.ServiceOrders.FirstOrDefaultAsync(o => o.Id == id, ct);
+        if (serviceOrder == null)
             return false;
 
-        _context.OrdenesServicio.Remove(ordenServicio);
+        _context.ServiceOrders.Remove(serviceOrder);
         return true;
     }
 }

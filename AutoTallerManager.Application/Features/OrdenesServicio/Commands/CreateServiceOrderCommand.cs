@@ -9,7 +9,7 @@ public record CreateServiceOrderCommand : IRequest<int>
     public int ServiceTypeId { get; init; }
     public DateTime EntryDate { get; init; }
     public string? WorkDescription { get; init; }
-    public List<SpareRequiredDto>? RequiredSpare { get; init; }
+    public List<SpareRequiredDto>? SpareRequiredDto { get; init; }
 }
 
 public record SpareRequiredDto

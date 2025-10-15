@@ -20,6 +20,6 @@ public interface IInvoiceService
     Task<bool> DeleteAsync(int id, CancellationToken ct = default);
     Task<IEnumerable<Invoice>> GetFacturasByClienteAsync(int customerId, CancellationToken ct = default);
     Task<decimal> GetTotalIngresosAsync(DateTime dateFrom, DateTime dateTo, CancellationToken ct = default);
-    Task<Invoice?> GetByOrderServiceIdAsync(int serviceOrderId, CancellationToken ct = default);
+    Task<Invoice?> GetByServiceOrderIdAsync(int serviceOrderId, CancellationToken ct = default);
     Task<Invoice?> GetLastInvoiceAsync(CancellationToken ct = default);
 }

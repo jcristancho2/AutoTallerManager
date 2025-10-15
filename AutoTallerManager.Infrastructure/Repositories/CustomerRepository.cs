@@ -11,11 +11,11 @@ using System.Threading.Tasks;
 
 namespace AutoTallerManager.Infrastructure.Repositories;
 
-public sealed class ClienteRepository(AppDbContext db) : IClienteService
+public sealed class CustomerRepository(AppDbContext db) : IServiceCustomer
 {
-    public async Task<Cliente?> GetByIdAsync(int id, CancellationToken ct = default, params string[] includeProperties)
+    public async Task<Customer?> GetByIdAsync(int id, CancellationToken ct = default, params string[] includeProperties)
     {
-        IQueryable<Cliente> query = db.Clientes.AsNoTracking();
+        IQueryable<Customer> query = db.Customers.AsNoTracking();
 
         foreach (var includeProperty in includeProperties)
             query = query.Include(includeProperty);
@@ -23,24 +23,24 @@ public sealed class ClienteRepository(AppDbContext db) : IClienteService
         return await query.FirstOrDefaultAsync(c => c.Id == id, ct);
     }
 
-    public async Task<Cliente?> GetByEmailAsync(string email, CancellationToken ct = default)
+    public async Task<Customer?> GetByEmailAsync(string email, CancellationToken ct = default)
     {
-        return await db.Clientes
+        return await db.Customers
             .AsNoTracking()
-            .Include(c => c.Direccion)
-            .Include(c => c.TipoCliente)
+            .Include(c => c.Address)
+            .Include(c => c.CustomerType)
             .FirstOrDefaultAsync(c => c.Email == email, ct);
     }
 
-    public async Task<IReadOnlyList<Cliente>> GetAllAsync(
-        Expression<Func<Cliente, bool>>? filter = null,
-        Func<IQueryable<Cliente>, IOrderedQueryable<Cliente>>? orderBy = null,
+    public async Task<IReadOnlyList<Customer>> GetAllAsync(
+        Expression<Func<Customer, bool>>? filter = null,
+        Func<IQueryable<Customer>, IOrderedQueryable<Customer>>? orderBy = null,
         string includeProperties = "",
         int? skip = null,
         int? take = null,
         CancellationToken ct = default)
     {
-        IQueryable<Cliente> query = db.Clientes.AsNoTracking();
+        IQueryable<Customer> query = db.Customers.AsNoTracking();
 
         if (filter != null)
             query = query.Where(filter);
@@ -60,9 +60,9 @@ public sealed class ClienteRepository(AppDbContext db) : IClienteService
         return await query.ToListAsync(ct);
     }
 
-    public Task<int> CountAsync(Expression<Func<Cliente, bool>>? filter = null, CancellationToken ct = default)
+    public Task<int> CountAsync(Expression<Func<Customer, bool>>? filter = null, CancellationToken ct = default)
     {
-        IQueryable<Cliente> query = db.Clientes.AsNoTracking();
+        IQueryable<Customer> query = db.Customers.AsNoTracking();
 
         if (filter != null)
             query = query.Where(filter);
@@ -70,53 +70,53 @@ public sealed class ClienteRepository(AppDbContext db) : IClienteService
         return query.CountAsync(ct);
     }
 
-    public Task<bool> ExistsAsync(Expression<Func<Cliente, bool>> filter, CancellationToken ct = default)
-        => db.Clientes.AsNoTracking().AnyAsync(filter, ct);
+    public Task<bool> ExistsAsync(Expression<Func<Customer, bool>> filter, CancellationToken ct = default)
+        => db.Customers.AsNoTracking().AnyAsync(filter, ct);
 
     public Task<bool> ExistsByIdAsync(int id, CancellationToken ct = default)
-        => db.Clientes.AsNoTracking().AnyAsync(c => c.Id == id, ct);
+        => db.Customers.AsNoTracking().AnyAsync(c => c.Id == id, ct);
 
     public Task<bool> EmailExistsAsync(string email, CancellationToken ct = default)
-        => db.Clientes.AsNoTracking().AnyAsync(c => c.Email == email, ct);
+        => db.Customers.AsNoTracking().AnyAsync(c => c.Email == email, ct);
 
-    public async Task AddAsync(Cliente cliente, CancellationToken ct = default)
+    public async Task AddAsync(Customer customer, CancellationToken ct = default)
     {
-        await db.Clientes.AddAsync(cliente, ct);
+        await db.Customers.AddAsync(customer, ct);
         await db.SaveChangesAsync(ct);
     }
 
-    public async Task UpdateAsync(Cliente cliente, CancellationToken ct = default)
+    public async Task UpdateAsync(Customer customer, CancellationToken ct = default)
     {
-        db.Clientes.Update(cliente);
+        db.Customers.Update(customer);
         await db.SaveChangesAsync(ct);
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)
     {
-        var cliente = await db.Clientes.FirstOrDefaultAsync(c => c.Id == id, ct);
-        if (cliente == null)
+        var customer = await db.Customers.FirstOrDefaultAsync(c => c.Id == id, ct);
+        if (customer == null)
             return false;
 
-        bool tieneVehiculos = await db.Vehiculos.AnyAsync(v => v.ClienteId == id, ct);
-        if (tieneVehiculos)
-            throw new InvalidOperationException("No se puede eliminar el cliente porque tiene vehículos asociados.");
+        bool hasVehicles = await db.Vehicles.AnyAsync(v => v.CustomerId == id, ct);
+        if (hasVehicles)
+            throw new InvalidOperationException("Cannot delete customer because they have associated vehicles.");
 
-        db.Clientes.Remove(cliente);
+        db.Customers.Remove(customer);
         await db.SaveChangesAsync(ct);
         return true;
     }
 
-    public async Task<IReadOnlyList<Cliente>> GetPagedAsync(
+    public async Task<IReadOnlyList<Customer>> GetPagedAsync(
         int page, int pageSize, string? search = null, CancellationToken ct = default)
     {
-        var query = db.Clientes.AsNoTracking();
+        var query = db.Customers.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(search))
         {
             string term = search.Trim().ToUpper();
             query = query.Where(c =>
-                EF.Functions.Like((c.NombreCompleto ?? string.Empty).ToUpper(), $"%{term}%") ||
-                EF.Functions.Like((c.Telefono ?? string.Empty).ToUpper(), $"%{term}%") ||
+                EF.Functions.Like((c.FullName ?? string.Empty).ToUpper(), $"%{term}%") ||
+                EF.Functions.Like((c.Phone ?? string.Empty).ToUpper(), $"%{term}%") ||
                 EF.Functions.Like((c.Email ?? string.Empty).ToUpper(), $"%{term}%"));
         }
 

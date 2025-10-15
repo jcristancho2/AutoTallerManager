@@ -7,18 +7,18 @@ using System.Linq.Expressions;
 
 namespace AutoTallerManager.Infrastructure.Repositories;
 
-public class VehiculoRepository : IVehiculoService
+public class VehicleRepository : IVehicleService
 {
     private readonly AppDbContext _context;
 
-    public VehiculoRepository(AppDbContext context)
+    public VehicleRepository(AppDbContext context)
     {
         _context = context;
     }
 
-    public async Task<Vehiculo?> GetByIdAsync(int id, CancellationToken ct = default, params string[] includeProperties)
+    public async Task<Vehicle?> GetByIdAsync(int id, CancellationToken ct = default, params string[] includeProperties)
     {
-        IQueryable<Vehiculo> query = _context.Vehiculos;
+        IQueryable<Vehicle> query = _context.Vehicles;
 
         foreach (var includeProperty in includeProperties)
         {
@@ -28,22 +28,22 @@ public class VehiculoRepository : IVehiculoService
         return await query.FirstOrDefaultAsync(v => v.Id == id, ct);
     }
 
-    public async Task<Vehiculo?> GetByVinAsync(string vin, CancellationToken ct = default)
+    public async Task<Vehicle?> GetByVinAsync(string vin, CancellationToken ct = default)
     {
-        return await _context.Vehiculos
-            .Include(v => v.Cliente)
+        return await _context.Vehicles
+            .Include(v => v.Customer)
             .FirstOrDefaultAsync(v => v.VIN == vin, ct);
     }
 
-    public async Task<IEnumerable<Vehiculo>> GetAllAsync(
-        Expression<Func<Vehiculo, bool>>? filter = null,
-        Func<IQueryable<Vehiculo>, IOrderedQueryable<Vehiculo>>? orderBy = null,
+    public async Task<IEnumerable<Vehicle>> GetAllAsync(
+        Expression<Func<Vehicle, bool>>? filter = null,
+        Func<IQueryable<Vehicle>, IOrderedQueryable<Vehicle>>? orderBy = null,
         string includeProperties = "",
         int? skip = null,
         int? take = null,
         CancellationToken ct = default)
     {
-        IQueryable<Vehiculo> query = _context.Vehiculos;
+        IQueryable<Vehicle> query = _context.Vehicles;
 
         if (filter != null)
         {
@@ -73,9 +73,9 @@ public class VehiculoRepository : IVehiculoService
         return await query.ToListAsync(ct);
     }
 
-    public async Task<int> CountAsync(Expression<Func<Vehiculo, bool>>? filter = null, CancellationToken ct = default)
+    public async Task<int> CountAsync(Expression<Func<Vehicle, bool>>? filter = null, CancellationToken ct = default)
     {
-        IQueryable<Vehiculo> query = _context.Vehiculos;
+        IQueryable<Vehicle> query = _context.Vehicles;
 
         if (filter != null)
         {
@@ -85,23 +85,23 @@ public class VehiculoRepository : IVehiculoService
         return await query.CountAsync(ct);
     }
 
-    public async Task<bool> ExistsAsync(Expression<Func<Vehiculo, bool>> filter, CancellationToken ct = default)
+    public async Task<bool> ExistsAsync(Expression<Func<Vehicle, bool>> filter, CancellationToken ct = default)
     {
-        return await _context.Vehiculos.AnyAsync(filter, ct);
+        return await _context.Vehicles.AnyAsync(filter, ct);
     }
 
-    public async Task AddAsync(Vehiculo vehiculo, CancellationToken ct = default)
+    public async Task AddAsync(Vehicle vehicle, CancellationToken ct = default)
     {
-        await _context.Vehiculos.AddAsync(vehiculo, ct);
+        await _context.Vehicles.AddAsync(vehicle, ct);
     }
 
-    public void Update(Vehiculo vehiculo)
+    public void Update(Vehicle vehicle)
     {
-        _context.Vehiculos.Update(vehiculo);
+        _context.Vehicles.Update(vehicle);
     }
 
-    public void Delete(Vehiculo vehiculo)
+    public void Delete(Vehicle vehicle)
     {
-        _context.Vehiculos.Remove(vehiculo);
+        _context.Vehicles.Remove(vehicle);
     }
 }

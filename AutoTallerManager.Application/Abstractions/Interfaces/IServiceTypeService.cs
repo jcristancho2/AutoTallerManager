@@ -6,6 +6,7 @@ public interface IServiceTypeService
 {
     Task<ServiceType?> GetByIdAsync(int id, CancellationToken ct = default);
     Task<IEnumerable<ServiceType>> GetAllAsync(CancellationToken ct = default);
+   
 }
 
 

@@ -17,56 +17,56 @@ namespace AutoTallerManager.Tests.Handlers
     public class CrearOrdenServicioHandlerTests
     {
         private readonly Mock<IUnitOfWork> _mockUnitOfWork;
-        private readonly Mock<IVehiculoService> _mockVehiculoService;
-        private readonly Mock<IUsuarioService> _mockUsuarioService;
-        private readonly Mock<ITipoServicioService> _mockTipoServicioService;
-        private readonly Mock<IOrdenServicioService> _mockOrdenServicioService;
-        private readonly Mock<IRepuestoService> _mockRepuestoService;
-        private readonly Mock<IDetalleOrdenService> _mockDetalleOrdenService;
-        private readonly Mock<IValidadorDisponibilidadVehiculoService> _mockValidadorVehiculo;
-        private readonly Mock<ICalculadoraFechasService> _mockCalculadoraFechas;
-        private readonly CrearOrdenServicioHandler _handler;
+        private readonly Mock<IVehicleService> _mockVehicleService;
+        private readonly Mock<IServiceUser> _mockUserService;
+        private readonly Mock<IServiceTypeService> _mockServiceTypeService;
+        private readonly Mock<IOrderServiceService> _mockOrderServiceService;
+        private readonly Mock<ISpareService> _mockSpareService;
+        private readonly Mock<IDetailOrderService> _mockDetailOrderService;
+        private readonly Mock<IVehicleServiceAvailabilityValidator> _mockValidatorVehicle;
+        private readonly Mock<IDateCalculatorService> _mockDateCalculator;
+        private readonly CreateServiceOrderHandler _handler;
 
         public CrearOrdenServicioHandlerTests()
         {
             _mockUnitOfWork = new Mock<IUnitOfWork>();
-            _mockVehiculoService = new Mock<IVehiculoService>();
-            _mockUsuarioService = new Mock<IUsuarioService>();
-            _mockTipoServicioService = new Mock<ITipoServicioService>();
-            _mockOrdenServicioService = new Mock<IOrdenServicioService>();
-            _mockRepuestoService = new Mock<IRepuestoService>();
-            _mockDetalleOrdenService = new Mock<IDetalleOrdenService>();
-            _mockValidadorVehiculo = new Mock<IValidadorDisponibilidadVehiculoService>();
-            _mockCalculadoraFechas = new Mock<ICalculadoraFechasService>();
+            _mockVehicleService = new Mock<IVehicleService>();
+            _mockUserService = new Mock<IServiceUser>();
+            _mockServiceTypeService = new Mock<IServiceTypeService>();
+            _mockOrderServiceService = new Mock<IOrderServiceService>();
+            _mockSpareService = new Mock<ISpareService>();
+            _mockDetailOrderService = new Mock<IDetailOrderService>();
+            _mockValidatorVehicle = new Mock<IVehicleServiceAvailabilityValidator>();
+            _mockDateCalculator = new Mock<IDateCalculatorService>();
 
-            _mockUnitOfWork.Setup(x => x.Vehiculos).Returns(_mockVehiculoService.Object);
-            _mockUnitOfWork.Setup(x => x.Usuarios).Returns(_mockUsuarioService.Object);
-            _mockUnitOfWork.Setup(x => x.TiposServicio).Returns(_mockTipoServicioService.Object);
-            _mockUnitOfWork.Setup(x => x.OrdenesServicio).Returns(_mockOrdenServicioService.Object);
-            _mockUnitOfWork.Setup(x => x.Repuestos).Returns(_mockRepuestoService.Object);
-            _mockUnitOfWork.Setup(x => x.DetallesOrden).Returns(_mockDetalleOrdenService.Object);
+            _mockUnitOfWork.Setup(x => x.Vehicles).Returns(_mockVehicleService.Object);
+            _mockUnitOfWork.Setup(x => x.User).Returns(_mockUserService.Object);
+            _mockUnitOfWork.Setup(x => x.ServiceTypes).Returns(_mockServiceTypeService.Object);
+            _mockUnitOfWork.Setup(x => x.ServiceOrders).Returns(_mockOrderServiceService.Object);
+            _mockUnitOfWork.Setup(x => x.Spares).Returns(_mockSpareService.Object);
+            _mockUnitOfWork.Setup(x => x.OrderDetails).Returns(_mockDetailOrderService.Object);
 
-            _handler = new CrearOrdenServicioHandler(
+            _handler = new CreateServiceOrderHandler(
                 _mockUnitOfWork.Object,
-                _mockValidadorVehiculo.Object,
-                _mockCalculadoraFechas.Object);
+                _mockValidatorVehicle.Object,
+                _mockDateCalculator.Object);
         }
 
         [Fact]
         public async Task Handle_VehiculoNoExiste_LanzaKeyNotFoundException()
         {
             // Arrange
-            var command = new CrearOrdenServicioCommand
+            var command = new CreateServiceOrderCommand
             {
-                VehiculoId = 1,
-                MecanicoId = 1,
-                TipoServicioId = 1,
-                FechaIngreso = DateTime.UtcNow
+                VehicleId = 1,
+                MechanicId = 1,
+                ServiceTypeId = 1,
+                EntryDate = DateTime.UtcNow
             };
 
-            _mockVehiculoService
-                .Setup(x => x.GetByIdAsync(command.VehiculoId, It.IsAny<CancellationToken>(), It.IsAny<string>()))
-                .ReturnsAsync((Vehiculo?)null);
+            _mockVehicleService
+                .Setup(x => x.GetByIdAsync(command.VehicleId, It.IsAny<CancellationToken>(), It.IsAny<string>()))
+                .ReturnsAsync((Vehicle?)null);
 
             // Act & Assert
             await Assert.ThrowsAsync<KeyNotFoundException>(() => _handler.Handle(command, CancellationToken.None));
@@ -76,24 +76,24 @@ namespace AutoTallerManager.Tests.Handlers
         public async Task Handle_MecanicoNoExiste_LanzaKeyNotFoundException()
         {
             // Arrange
-            var command = new CrearOrdenServicioCommand
+            var command = new CreateServiceOrderCommand
             {
-                VehiculoId = 1,
-                MecanicoId = 1,
-                TipoServicioId = 1,
-                FechaIngreso = DateTime.UtcNow
+                VehicleId = 1,
+                MechanicId = 1,
+                ServiceTypeId = 1,
+                EntryDate = DateTime.UtcNow
             };
 
-            var vehiculo = new Vehiculo { Id = 1, ClienteId = 1 };
-            var mecanico = (Usuario?)null;
+            var vehicle = new Vehicle { Id = 1, CustomerId = 1 };
+            var mechanic = (User?)null;
 
-            _mockVehiculoService
-                .Setup(x => x.GetByIdAsync(command.VehiculoId, It.IsAny<CancellationToken>(), It.IsAny<string>()))
-                .ReturnsAsync(vehiculo);
+            _mockVehicleService
+                .Setup(x => x.GetByIdAsync(command.VehicleId, It.IsAny<CancellationToken>(), It.IsAny<string>()))
+                .ReturnsAsync(vehicle);
 
-            _mockUsuarioService
-                .Setup(x => x.GetByIdAsync(command.MecanicoId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(mecanico);
+            _mockUserService
+                .Setup(x => x.GetByIdAsync(command.MechanicId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mechanic);
 
             // Act & Assert
             await Assert.ThrowsAsync<KeyNotFoundException>(() => _handler.Handle(command, CancellationToken.None));
@@ -103,29 +103,29 @@ namespace AutoTallerManager.Tests.Handlers
         public async Task Handle_TipoServicioNoExiste_LanzaKeyNotFoundException()
         {
             // Arrange
-            var command = new CrearOrdenServicioCommand
+            var command = new CreateServiceOrderCommand
             {
-                VehiculoId = 1,
-                MecanicoId = 1,
-                TipoServicioId = 1,
-                FechaIngreso = DateTime.UtcNow
+                VehicleId = 1,
+                MechanicId = 1,
+                ServiceTypeId = 1,
+                EntryDate = DateTime.UtcNow
             };
 
-            var vehiculo = new Vehiculo { Id = 1, ClienteId = 1 };
-            var mecanico = new Usuario { Id = 1 };
-            var tipoServicio = (TipoServicio?)null;
+            var vehicle = new Vehicle { Id = 1, CustomerId = 1 };
+            var mechanic = new User { Id = 1 };
+            var serviceType = (ServiceType?)null;
 
-            _mockVehiculoService
-                .Setup(x => x.GetByIdAsync(command.VehiculoId, It.IsAny<CancellationToken>(), It.IsAny<string>()))
-                .ReturnsAsync(vehiculo);
+            _mockVehicleService
+                .Setup(x => x.GetByIdAsync(command.VehicleId, It.IsAny<CancellationToken>(), It.IsAny<string>()))
+                .ReturnsAsync(vehicle);
 
-            _mockUsuarioService
-                .Setup(x => x.GetByIdAsync(command.MecanicoId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(mecanico);
+            _mockUserService
+                .Setup(x => x.GetByIdAsync(command.MechanicId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mechanic);
 
-            _mockTipoServicioService
-                .Setup(x => x.GetByIdAsync(command.TipoServicioId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(tipoServicio);
+            _mockServiceTypeService
+                .Setup(x => x.GetByIdAsync(command.ServiceTypeId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(serviceType);
 
             // Act & Assert
             await Assert.ThrowsAsync<KeyNotFoundException>(() => _handler.Handle(command, CancellationToken.None));
@@ -135,32 +135,32 @@ namespace AutoTallerManager.Tests.Handlers
         public async Task Handle_VehiculoNoDisponible_LanzaInvalidOperationException()
         {
             // Arrange
-            var command = new CrearOrdenServicioCommand
+            var command = new CreateServiceOrderCommand
             {
-                VehiculoId = 1,
-                MecanicoId = 1,
-                TipoServicioId = 1,
-                FechaIngreso = DateTime.UtcNow
+                VehicleId = 1,
+                MechanicId = 1,
+                ServiceTypeId = 1,
+                EntryDate = DateTime.UtcNow
             };
 
-            var vehiculo = new Vehiculo { Id = 1, ClienteId = 1 };
-            var mecanico = new Usuario { Id = 1 };
-            var tipoServicio = new TipoServicio { Id = 1, NombreTipoServ = "Reparación" };
+            var vehicle = new Vehicle { Id = 1, CustomerId = 1 };
+            var mechanic = new User { Id = 1 };
+            var serviceType = new ServiceType { Id = 1, ServiceTypeName = "Reparación" };
 
-            _mockVehiculoService
-                .Setup(x => x.GetByIdAsync(command.VehiculoId, It.IsAny<CancellationToken>(), It.IsAny<string>()))
-                .ReturnsAsync(vehiculo);
+            _mockVehicleService
+                .Setup(x => x.GetByIdAsync(command.VehicleId, It.IsAny<CancellationToken>(), It.IsAny<string>()))
+                .ReturnsAsync(vehicle);
 
-            _mockUsuarioService
-                .Setup(x => x.GetByIdAsync(command.MecanicoId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(mecanico);
+            _mockUserService
+                .Setup(x => x.GetByIdAsync(command.MechanicId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mechanic);
 
-            _mockTipoServicioService
-                .Setup(x => x.GetByIdAsync(command.TipoServicioId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(tipoServicio);
+            _mockServiceTypeService
+                .Setup(x => x.GetByIdAsync(command.ServiceTypeId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(serviceType);
 
-            _mockValidadorVehiculo
-                .Setup(x => x.VehiculoDisponibleAsync(command.VehiculoId, command.FechaIngreso, null, null, It.IsAny<CancellationToken>()))
+            _mockValidatorVehicle
+                .Setup(x => x.IsVehicleAvailableAsync(command.VehicleId, command.EntryDate, null, null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             // Act & Assert
@@ -171,42 +171,42 @@ namespace AutoTallerManager.Tests.Handlers
         public async Task Handle_StockInsuficiente_LanzaInvalidOperationException()
         {
             // Arrange
-            var command = new CrearOrdenServicioCommand
+            var command = new CreateServiceOrderCommand
             {
-                VehiculoId = 1,
-                MecanicoId = 1,
-                TipoServicioId = 1,
-                FechaIngreso = DateTime.UtcNow,
-                RepuestosRequeridos = new List<RepuestoRequeridoDto>
+                VehicleId = 1,
+                MechanicId = 1,
+                ServiceTypeId = 1,
+                EntryDate = DateTime.UtcNow,
+                SpareRequiredDto = new List<SpareRequiredDto>
                 {
-                    new RepuestoRequeridoDto { RepuestoId = 1, Cantidad = 10 }
+                    new SpareRequiredDto { SpareId = 1, Quantity = 10 }
                 }
             };
 
-            var vehiculo = new Vehiculo { Id = 1, ClienteId = 1 };
-            var mecanico = new Usuario { Id = 1 };
-            var tipoServicio = new TipoServicio { Id = 1, NombreTipoServ = "Reparación" };
-            var repuesto = new Repuesto { Id = 1, Stock = 5, NombreRepu = "Filtro" };
+            var vehicle = new Vehicle { Id = 1, CustomerId = 1 };
+            var mechanic = new User { Id = 1 };
+            var serviceType = new ServiceType { Id = 1, ServiceTypeName = "Reparación" };
+            var spare = new Spare { Id = 1, Stock = 5, Name = "Filtro" };
 
-            _mockVehiculoService
-                .Setup(x => x.GetByIdAsync(command.VehiculoId, It.IsAny<CancellationToken>(), It.IsAny<string>()))
-                .ReturnsAsync(vehiculo);
+            _mockVehicleService
+                .Setup(x => x.GetByIdAsync(command.VehicleId, It.IsAny<CancellationToken>(), It.IsAny<string>()))
+                .ReturnsAsync(vehicle);
 
-            _mockUsuarioService
-                .Setup(x => x.GetByIdAsync(command.MecanicoId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(mecanico);
+            _mockUserService
+                .Setup(x => x.GetByIdAsync(command.MechanicId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mechanic);
 
-            _mockTipoServicioService
-                .Setup(x => x.GetByIdAsync(command.TipoServicioId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(tipoServicio);
+            _mockServiceTypeService
+                .Setup(x => x.GetByIdAsync(command.ServiceTypeId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(serviceType);
 
-            _mockValidadorVehiculo
-                .Setup(x => x.VehiculoDisponibleAsync(command.VehiculoId, command.FechaIngreso, null, null, It.IsAny<CancellationToken>()))
+            _mockValidatorVehicle
+                .Setup(x => x.IsVehicleAvailableAsync(command.VehicleId, command.EntryDate, null, null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
-            _mockRepuestoService
+            _mockSpareService
                 .Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(repuesto);
+                .ReturnsAsync(spare);
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(() => _handler.Handle(command, CancellationToken.None));
@@ -216,41 +216,41 @@ namespace AutoTallerManager.Tests.Handlers
         public async Task Handle_ComandoValido_CreaOrdenServicio()
         {
             // Arrange
-            var command = new CrearOrdenServicioCommand
+            var command = new CreateServiceOrderCommand
             {
-                VehiculoId = 1,
-                MecanicoId = 1,
-                TipoServicioId = 1,
-                FechaIngreso = DateTime.UtcNow,
-                DescripcionTrabajo = "Reparación de motor"
+                VehicleId = 1,
+                MechanicId = 1,
+                ServiceTypeId = 1,
+                EntryDate = DateTime.UtcNow,
+                WorkDescription = "Reparación de motor"
             };
 
-            var vehiculo = new Vehiculo { Id = 1, ClienteId = 1 };
-            var mecanico = new Usuario { Id = 1 };
-            var tipoServicio = new TipoServicio { Id = 1, NombreTipoServ = "Reparación" };
+            var vehicle = new Vehicle { Id = 1, CustomerId = 1 };
+            var mechanic = new User { Id = 1 };
+            var serviceType = new ServiceType { Id = 1, ServiceTypeName = "Reparación" };
 
-            _mockVehiculoService
-                .Setup(x => x.GetByIdAsync(command.VehiculoId, It.IsAny<CancellationToken>(), It.IsAny<string>()))
-                .ReturnsAsync(vehiculo);
+            _mockVehicleService
+                .Setup(x => x.GetByIdAsync(command.VehicleId, It.IsAny<CancellationToken>(), It.IsAny<string>()))
+                .ReturnsAsync(vehicle);
 
-            _mockUsuarioService
-                .Setup(x => x.GetByIdAsync(command.MecanicoId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(mecanico);
+            _mockUserService
+                .Setup(x => x.GetByIdAsync(command.MechanicId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mechanic);
 
-            _mockTipoServicioService
-                .Setup(x => x.GetByIdAsync(command.TipoServicioId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(tipoServicio);
+            _mockServiceTypeService
+                .Setup(x => x.GetByIdAsync(command.ServiceTypeId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(serviceType);
 
-            _mockValidadorVehiculo
-                .Setup(x => x.VehiculoDisponibleAsync(command.VehiculoId, command.FechaIngreso, null, null, It.IsAny<CancellationToken>()))
+            _mockValidatorVehicle
+                .Setup(x => x.IsVehicleAvailableAsync(command.VehicleId, command.EntryDate, null, null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
-            _mockCalculadoraFechas
-                .Setup(x => x.CalcularComplejidadServicio(tipoServicio))
+            _mockDateCalculator
+                .Setup(x => x.CalculateServiceComplexity(serviceType))
                 .Returns(3);
 
-            _mockCalculadoraFechas
-                .Setup(x => x.CalcularFechaEstimadaEntrega(tipoServicio, 3))
+            _mockDateCalculator
+                .Setup(x => x.CalculateEstimatedDeliveryDate(serviceType, 3))
                 .Returns(DateTime.UtcNow.AddDays(3));
 
             // Act
@@ -258,7 +258,7 @@ namespace AutoTallerManager.Tests.Handlers
 
             // Assert
             Assert.True(resultado > 0);
-            _mockOrdenServicioService.Verify(x => x.AddAsync(It.IsAny<OrdenServicio>(), It.IsAny<CancellationToken>()), Times.Once);
+            _mockOrderServiceService.Verify(x => x.AddAsync(It.IsAny<ServiceOrder>(), It.IsAny<CancellationToken>()), Times.Once);
             _mockUnitOfWork.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
         }
     }
