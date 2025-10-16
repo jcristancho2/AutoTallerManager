@@ -12,7 +12,7 @@ namespace AutoTallerManager.API.Controllers;
 [Route("api/[controller]")]
 [Authorize]
 public class ClientesController : ControllerBase
-{
+{ 
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<ClientesController> _logger;
     private readonly IMediator _mediator;
@@ -36,7 +36,7 @@ public class ClientesController : ControllerBase
             var clientes = await _unitOfWork.Clientes.GetAllAsync(
                 filter: c => string.IsNullOrEmpty(searchTerm) ||
                         (!string.IsNullOrEmpty(c.NombreCompleto) && c.NombreCompleto.Contains(searchTerm)) ||
-                        (!string.IsNullOrEmpty(c.Email) && c.Email.Contains(searchTerm)),
+                        (!string.IsNullOrEmpty(c.Email) && c.Email.Contains(searchTerm) || c.Email == searchTerm),
                 orderBy: q => q.OrderBy(c => c.NombreCompleto),
                 includeProperties: "Vehiculos",
                 skip: (pageNumber - 1) * pageSize,

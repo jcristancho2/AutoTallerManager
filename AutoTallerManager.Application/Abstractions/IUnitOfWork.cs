@@ -26,6 +26,8 @@ public interface IUnitOfWork
     IDetalleOrdenService DetallesOrden { get; }
     ITipoServicioService TiposServicio { get; }
 
+
+
     Task<int> SaveChanges(CancellationToken ct = default);
     Task<int> SaveChangesAsync(CancellationToken ct = default);
     Task ExecuteInTransactionAsync(Func<CancellationToken, Task> operation, CancellationToken ct = default);

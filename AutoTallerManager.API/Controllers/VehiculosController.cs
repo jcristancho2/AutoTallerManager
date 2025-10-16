@@ -30,6 +30,7 @@ public class VehiculosController : ControllerBase
         [FromQuery] int pageSize = 10,
         [FromQuery] string? MarcaVehiculo = null,
         [FromQuery] string? ModeloVehiculo = null,
+        [FromQuery] string? VIN = null,
         [FromQuery] int? clienteId = null,
         CancellationToken ct = default)
     {
@@ -38,10 +39,11 @@ public class VehiculosController : ControllerBase
             var vehiculos = await _unitOfWork.Vehiculos.GetAllAsync(
                 filter: v => (string.IsNullOrEmpty(MarcaVehiculo) || (v.MarcaVehiculo != null && v.MarcaVehiculo.Nombre.Contains(MarcaVehiculo))) &&
                             (string.IsNullOrEmpty(ModeloVehiculo) || (v.ModeloVehiculo != null && v.ModeloVehiculo.Nombre.Contains(ModeloVehiculo))) &&
-                            (!clienteId.HasValue || v.ClienteId == clienteId),
+                            (!clienteId.HasValue || v.ClienteId == clienteId) && (string.IsNullOrEmpty(VIN) || (v.VIN != null && v.VIN == VIN)),
                 orderBy: q => q.OrderBy(v => v.MarcaVehiculo!.Nombre)
-                               .ThenBy(v => v.ModeloVehiculo!.Nombre),
-                includeProperties: "Cliente,MarcaVehiculo,ModeloVehiculo",
+                               .ThenBy(v => v.ModeloVehiculo!.Nombre)
+                               .ThenBy(v=> v.VIN),
+                includeProperties: "Cliente,MarcaVehiculo,ModeloVehiculo, vin",
                 skip: (pageNumber - 1) * pageSize,
                 take: pageSize,
                 ct: ct);
@@ -49,7 +51,7 @@ public class VehiculosController : ControllerBase
             var totalCount = await _unitOfWork.Vehiculos.CountAsync(
                 filter: v => (string.IsNullOrEmpty(MarcaVehiculo) || (v.MarcaVehiculo != null && v.MarcaVehiculo.Nombre.Contains(MarcaVehiculo))) &&
                             (string.IsNullOrEmpty(ModeloVehiculo) || (v.ModeloVehiculo != null && v.ModeloVehiculo.Nombre.Contains(ModeloVehiculo))) &&
-                            (!clienteId.HasValue || v.ClienteId == clienteId),
+                            (!clienteId.HasValue || v.ClienteId == clienteId) && (string.IsNullOrEmpty(VIN) || (v.VIN != null && v.VIN == VIN)),
                 ct: ct);
 
             Response.Headers["X-Total-Count"] = totalCount.ToString();
