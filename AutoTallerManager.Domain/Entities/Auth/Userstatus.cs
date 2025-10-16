@@ -7,7 +7,7 @@ namespace AutoTallerManager.Domain.Entities.Auth
 {
     public class UserStatus : BaseEntity
     {
-
+        public int UserStatusId { get; set; } // Primary Key
         public string StatusName { get; set; } = string.Empty;
 
         public string Description { get; set; } = string.Empty;

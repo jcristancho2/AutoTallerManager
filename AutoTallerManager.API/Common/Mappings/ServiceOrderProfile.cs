@@ -22,9 +22,9 @@ namespace AutoTallerManager.API.Common.Mappings
 
             // DOMAIN -> RESPONSE
             CreateMap<ServiceOrder, ServiceOrderResponse>()
-                .ForMember(d => d.OrdenServicioId, o => o.MapFrom(s => s.Id))
-                .ForMember(d => d., o => o.MapFrom(s => s.))
-                .ForMember(d => d.E, o => o.MapFrom(s => s.E))
+                .ForMember(d => d.ServiceOrderId, o => o.MapFrom(s => s.Id))
+                .ForMember(d => d.EntryDate, o => o.MapFrom(s => s.EntryDate))
+                .ForMember(d => d.EstimatedDeliveryDate, o => o.MapFrom(s => s.EstimatedDeliveryDate))
                 .ForMember(d => d.VehicleId, o => o.MapFrom(s => s.VehicleId))
                 .ForMember(d => d.ServiceTypeId, o => o.MapFrom(s => s.ServiceTypeId))
                 .ForMember(d => d.StatusId, o => o.MapFrom(s => s.StatusId));

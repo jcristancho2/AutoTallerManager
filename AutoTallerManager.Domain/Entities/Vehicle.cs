@@ -8,6 +8,7 @@ namespace AutoTallerManager.Domain.Entities
     public class Vehicle : BaseEntity
     {
         public int VehicleId { get; set; }
+        public string? Plate { get; set; }
         public string? LicensePlate { get; set; }
         public int Year { get; set; }             
         public string? VIN { get; set; } // PILAS A ELIMINAR ESTO, ESTO NO SE VA A USAR

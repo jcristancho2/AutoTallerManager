@@ -25,11 +25,11 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<UserMember> UsersMembers { get; set; } = null!;
     public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
-    public DbSet<UserMemberRol> UserMemberRols { get; set; } = null!;
-    public DbSet<UserMemberRol> UsersMembersRols { get; set; } = null!;
+    public DbSet<UserMemberRole> UserMemberRols { get; set; } = null!;
+    public DbSet<UserMemberRole> UsersMembersRols { get; set; } = null!;
     
     // Catálogos
-    public DbSet<Rol> Roles { get; set; }
+    public DbSet<Role> Roles { get; set; }
     public DbSet<CustomerType> CustomerTypes { get; set; }
     public DbSet<VehicleType> VehicleTypes { get; set; }
     public DbSet<VehicleBrand> VehicleBrands { get; set; }
@@ -41,7 +41,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<Category> Categories { get; set; }
     public DbSet<Manufacturer> Manufacturers { get; set; }
     public DbSet<Country> Countries { get; set; }
-    public DbSet<Departament> Departaments { get; set; }
+    public DbSet<Department> Departments { get; set; }
     public DbSet<City> Cities { get; set; }
     public DbSet<Address> Addresses { get; set; }
 

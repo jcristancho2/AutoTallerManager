@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace AutoTallerManager.Infrastructure.Repositories;
 
-public sealed class CustomerRepository(AppDbContext db) : IServiceCustomer
+public sealed class CustomerRepository(AppDbContext db) : ICustomerService
 {
     public async Task<Customer?> GetByIdAsync(int id, CancellationToken ct = default, params string[] includeProperties)
     {

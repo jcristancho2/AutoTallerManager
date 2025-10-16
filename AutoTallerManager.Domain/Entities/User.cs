@@ -7,12 +7,12 @@ public class User : BaseEntity
 {
     public int UserId { get; set; }
     public string? Email { get; set; }
-    public string? Password { get; set; }
-    public int RolId { get; set; }
+    public string? PasswordHash { get; set; }
+    public int RoleId { get; set; }
     public int StatusId { get; set; }
     
     // Propiedades de navegación
-    public virtual Rol Rol { get; set; } = null!;
+    public virtual Role Role { get; set; } = null!;
     public virtual UserStatus UserStatus { get; set; } = null!;
 
     // Relaciones inversas

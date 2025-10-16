@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using AutoTallerManager.Application.Abstractions;
 using AutoTallerManager.Application.Abstractions.Auth;
 using AutoTallerManager.Application.Abstractions.Interfaces;
+using AutoTallerManager.Domain.Entities;
+using AutoTallerManager.Domain.Entities.Auth;
 using AutoTallerManager.Infrastructure.Persistence.Context;
 using AutoTallerManager.Infrastructure.Repositories;
 using AutoTallerManager.Infrastructure.Repositories.Auth;
@@ -19,37 +21,37 @@ public class UnitOfWork : IUnitOfWork
         // Repositorios de Auth
         UserMembers = new UserMemberRepository(_context);
         UserMemberRoles = new UserMemberRolRepository(_context);
-        Roles = new RolRepository(_context);
+        Roles = new RoleRepository(_context);
         
         // Repositorios de negocio
-        Clientes = new ClienteRepository(_context);
-        Vehiculos = new VehiculoRepository(_context);
-        OrdenesServicio = new OrdenServicioRepository(_context);
-        Repuestos = new RepuestoRepository(_context);
-        Facturas = new FacturaRepository(_context);
-        Auditorias = new AuditoriaRepository(_context);
-        DetallesOrden = new DetalleOrdenRepository(_context);
-        Usuarios = new UsuarioRepository(_context);
-        EstadosUsuario = new EstadoUsuarioRepository(_context);
-        TiposServicio = new TipoServicioRepository(_context);
+        Customers = new CustomerRepository(_context);
+        Vehicles = new VehicleRepository(_context);
+        OrderService = new OrderServiceRepository(_context);
+        Spare = new SpareRepository(_context);
+        Invoice = new InvoiceRepository(_context);
+        Audits = new AuditRepository(_context);
+        DetailOrder = new DetalleOrdenRepository(_context);
+        Users = new UserMemberRepository(_context);
+        UserStatus = new UserStatusRepository(_context);
+        ServiceTypes = new ServiceTypeRepository(_context);
     }
 
     // Repositorios de Auth
     public IUserMemberService UserMembers { get; }
     public IUserMemberRolService UserMemberRoles { get; }
-    public IRolService Roles { get; }
+    public IRoleService Roles { get; }
     
     // Repositorios de negocio
-    public IClienteService Clientes { get; }
-    public IVehiculoService Vehiculos { get; }
-    public IOrdenServicioService OrdenesServicio { get; }
-    public IRepuestoService Repuestos { get; }
-    public IFacturaService Facturas { get; }
-    public IAuditoriaService Auditorias { get; }
-    public IDetalleOrdenService DetallesOrden { get; }
-    public IUsuarioService Usuarios { get; }
-    public IEstadoUsuarioService EstadosUsuario { get; }
-    public ITipoServicioService TiposServicio { get; }
+    public ICustomerService Customers { get; }
+    public IVehicleService Vehicles { get; }
+    public IOrderServiceService OrderService { get; }
+    public ISpareService Spare { get; }
+    public IInvoiceService Invoice { get; }
+    public IAuditService Audits { get; }
+    public IDetailOrderService DetailOrder { get; }
+    public IUserMemberService Users { get; }
+    public IUserStatusService UserStatus { get; }
+    public IUserStatusService StatusService { get; }
 
     public Task<int> SaveChanges(CancellationToken ct = default)
         => _context.SaveChangesAsync(ct);

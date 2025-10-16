@@ -18,6 +18,6 @@ namespace AutoTallerManager.Domain.Entities
             Name = name;
         }
 
-        public ICollection<Departament> Departments { get; set; } = new List<Departament>();
+        public ICollection<Department> Departments { get; set; } = new List<Department>();
     }
 }

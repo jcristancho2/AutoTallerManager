@@ -27,7 +27,7 @@ public class UserMemberConfiguration : IEntityTypeConfiguration<UserMember>
                .HasMaxLength(500);
 
         // Relación N:M con Rol a través de UserMemberRol
-        builder.HasMany(u => u.UserMemberRoles)
+        builder.HasMany(u => u.UserMemberRols)
                .WithOne(umr => umr.UserMember)
                .HasForeignKey(umr => umr.UserMemberId)
                .HasConstraintName("fk_user_member_roles_user_member")

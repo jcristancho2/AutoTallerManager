@@ -12,17 +12,17 @@ namespace AutoTallerManager.API.Common.Mappings
             // REQUEST -> DOMAIN
             CreateMap<CustomerRequest, Customer>()
                 .ForMember(d => d.Id, o => o.Ignore())
-                .ForMember(d => d.fullName, o => o.MapFrom(s => s.fullName))
+                .ForMember(d => d.FullName, o => o.MapFrom(s => s.FullName))
                 .ForMember(d => d.Email, o => o.MapFrom(s => s.Email))
                 .ForMember(d => d.Phone, o => o.MapFrom(s => s.Phone))
                 .ForMember(d => d.CustomerTypeId, o => o.MapFrom(s => s.CustomerTypeId))
-                .ForMember(d => d.Direccion_Id, o => o.MapFrom(s => s.Direccion_Id))
+                .ForMember(d => d.AddressId, o => o.MapFrom(s => s.AddressId))
                 .ForAllMembers(o => o.Condition((src, dest, val) => val != null));
 
             // DOMAIN -> RESPONSE
             CreateMap<Customer, CustomerResponse>()
                 .ForMember(d => d.CustomerTypeId, o => o.MapFrom(s => s.CustomerTypeId))
-                .ForMember(d => d.fullName, o => o.MapFrom(s => s.fullName))
+                .ForMember(d => d.FullName, o => o.MapFrom(s => s.FullName))
                 .ForMember(d => d.Email, o => o.MapFrom(s => s.Email))
                 .ForMember(d => d.Phone, o => o.MapFrom(s => s.Phone))
                 .ForMember(d => d.AddressId, o => o.MapFrom(s => s.AddressId));

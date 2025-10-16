@@ -12,12 +12,12 @@ public interface IUnitOfWork
     // Repositorios de Auth
     IUserMemberService UserMembers { get; }
     IUserMemberRolService UserMemberRoles { get; }
-    IRolService Roles { get; }
-    IServiceUser User { get; }
+    IRoleService Roles { get; }
+    IUserService User { get; }
     IUserStatusService UserStatus { get; }
     
     //Repositorios de negocio
-    IServiceCustomer Customer { get; }
+    ICustomerService Customer { get; }
     IVehicleService Vehicles { get; }
     IOrderServiceService ServiceOrders { get; }
     ISpareService Spares { get; }

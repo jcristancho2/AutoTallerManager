@@ -12,7 +12,5 @@ namespace AutoTallerManager.Domain.Entities
         public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
 
         private VehicleBrand() { }
-
-        
     }
 }

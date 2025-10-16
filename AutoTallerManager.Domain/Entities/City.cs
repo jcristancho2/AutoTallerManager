@@ -10,7 +10,7 @@ namespace AutoTallerManager.Domain.Entities
         public string? Name { get; set; }
 
         public int State_Id { get; set; }
-        public Departament Department { get; set; } = null!;
+        public Department DepartmentId { get; set; } = null!;
 
         private City() { }
 

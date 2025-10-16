@@ -10,7 +10,7 @@ namespace AutoTallerManager.API.Common.Mappings
         public SparePartsProfile()
         {
             // REQUEST -> DOMAIN
-            CreateMap<SparePartsRequest, SpareParts>()
+            CreateMap<SpareRequest, Spare>()
                 .ForMember(d => d.Id, o => o.Ignore())
                 .ForMember(d => d.Code, o => o.MapFrom(s => s.Code))
                 .ForMember(d => d.Name, o => o.MapFrom(s => s.Name))
@@ -19,8 +19,8 @@ namespace AutoTallerManager.API.Common.Mappings
                 .ForAllMembers(o => o.Condition((src, dest, val) => val != null));
 
             // DOMAIN -> RESPONSE
-            CreateMap<Repuesto, RepuestoResponse>()
-                .ForMember(d => d.SparePartsId, o => o.MapFrom(s => s.Id))
+            CreateMap<Spare, SpareResponse>()
+                .ForMember(d => d.Id, o => o.MapFrom(s => s.Id))
                 .ForMember(d => d.Code, o => o.MapFrom(s => s.Code))
                 .ForMember(d => d.Name, o => o.MapFrom(s => s.Name))
                 .ForMember(d => d.UnitPrice, o => o.MapFrom(s => s.UnitPrice))
