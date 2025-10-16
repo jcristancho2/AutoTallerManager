@@ -5,7 +5,7 @@ using AutoTallerManager.Application.Abstractions;
 using AutoTallerManager.Domain.Entities;
 using AutoTallerManager.Domain.Enum;
 using AutoTallerManager.API.DTOs.Request;
-using AutoTallerManager.API.Validators;
+// using AutoTallerManager.API.Validators;
 
 namespace AutoTallerManager.API.Controllers;
 
@@ -28,28 +28,28 @@ public class VehiclesController : ControllerBase
     public async Task<ActionResult<IEnumerable<Vehicle>>> GetVehicles(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
-        [FromQuery] string? VehicleBranch = null,
-        [FromQuery] string? VehicleModel = null,
-        [FromQuery] int? CustomerId = null,
+        [FromQuery] string? vehicleBrand = null,
+        [FromQuery] string? vehicleModel = null,
+        [FromQuery] int? customerId = null,
         CancellationToken ct = default)
     {
         try
         {
             var vehicles = await _unitOfWork.Vehicles.GetAllAsync(
-                filter: v => (string.IsNullOrEmpty(VehicleBranch) || (v.VehicleBranch != null && v.VehicleBranch.Name.Contains(VehicleBranch))) &&
-                            (string.IsNullOrEmpty(VehicleModel) || (v.VehicleModel != null && v.VehicleModel.Name.Contains(VehicleModel))) &&
-                            (!customerId.HasValue || v.CustomerId == customerId),
-                orderBy: q => q.OrderBy(v => v.VehicleBranch!.Name)
+                filter: v => (string.IsNullOrEmpty(vehicleBrand) || (v.VehicleBrand != null && v.VehicleBrand.Name!.Contains(vehicleBrand))) &&
+                            (string.IsNullOrEmpty(vehicleModel) || (v.VehicleModel != null && v.VehicleModel.Name!.Contains(vehicleModel))) &&
+                            (!customerId.HasValue || v.CustomerId == customerId.Value),
+                orderBy: q => q.OrderBy(v => v.VehicleBrand!.Name)
                                .ThenBy(v => v.VehicleModel!.Name),
-                includeProperties: "Cliente,MarcaVehiculo,ModeloVehiculo",
+                includeProperties: "Customer,VehicleBrand,VehicleModel,VehicleType",
                 skip: (pageNumber - 1) * pageSize,
                 take: pageSize,
                 ct: ct);
 
             var totalCount = await _unitOfWork.Vehicles.CountAsync(
-                filter: v => (string.IsNullOrEmpty(VehicleBranch) || (v.VehicleBranch != null && v.VehicleBranch.Name.Contains(VehicleBranch))) &&
-                            (string.IsNullOrEmpty(VehicleModel) || (v.VehicleModel != null && v.VehicleModel.Name.Contains(VehicleModel))) &&
-                            (!customerId.HasValue || v.CustomerId == customerId),
+                filter: v => (string.IsNullOrEmpty(vehicleBrand) || (v.VehicleBrand != null && v.VehicleBrand.Name!.Contains(vehicleBrand))) &&
+                            (string.IsNullOrEmpty(vehicleModel) || (v.VehicleModel != null && v.VehicleModel.Name!.Contains(vehicleModel))) &&
+                            (!customerId.HasValue || v.CustomerId == customerId.Value),
                 ct: ct);
 
             Response.Headers["X-Total-Count"] = totalCount.ToString();
@@ -71,7 +71,7 @@ public class VehiclesController : ControllerBase
         try
         {
             var vehicle = await _unitOfWork.Vehicles.GetByIdAsync(
-                id, ct, "Cliente,OrdenesServicio,MarcaVehiculo,ModeloVehiculo");
+                id, ct, "Customer,ServiceOrders,VehicleBrand,VehicleModel,VehicleType");
 
             if (vehicle == null)
                 return NotFound($"Vehículo con ID {id} no encontrado");
@@ -80,29 +80,29 @@ public class VehiclesController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error al obtener vehículo {VehicleId}", id);
+            _logger.LogError(ex, "Error al obtener vehículo {VehicleId}", id);
             return StatusCode(500, "Error interno del servidor");
         }
     }
 
     [HttpGet("cliente/{CustomerId}")]
     public async Task<ActionResult<IEnumerable<Vehicle>>> GetVehiculosByCliente(
-        int CustomerId, CancellationToken ct = default)
+        int customerId, CancellationToken ct = default)
     {
         try
         {
             var vehicles = await _unitOfWork.Vehicles.GetAllAsync(
                 filter: v => v.CustomerId == customerId,
-                orderBy: q => q.OrderBy(v => v.VehicleBranch!.Name)
-                               .ThenBy(v => v.ModeloVehiculo!.Name),
-                includeProperties: "MarcaVehiculo,ModeloVehiculo",
+                orderBy: q => q.OrderBy(v => v.VehicleBrand!.Name)
+                               .ThenBy(v => v.VehicleModel!.Name),
+                includeProperties: "VehicleBrand,VehicleModel",
                 ct: ct);
 
             return Ok(vehicles);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error al obtener vehículos del cliente {CustomerId}", customerId);
+            _logger.LogError(ex, "Error al obtener vehículos del cliente {CustomerId}", customerId);
             return StatusCode(500, "Error interno del servidor");
         }
     }
@@ -132,17 +132,10 @@ public class VehiclesController : ControllerBase
     {
         try
         {
-            // Validación con FluentValidation
-            var validator = new VehiculoRequestValidator();
-            var validationResult = await validator.ValidateAsync(request, ct);
-
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(validationResult.Errors);
-            }
+            // Validación básica con DataAnnotations ya aplicada en VehicleRequest
 
             // Validaciones de negocio
-            var customerExists = await _unitOfWork.Customers.ExistsAsync(c => c.Id == request.CustomerId, ct);
+            var customerExists = await _unitOfWork.Customer.ExistsAsync(c => c.Id == request.CustomerId, ct);
             if (!customerExists)
                 return BadRequest("El cliente especificado no existe");
 
@@ -159,7 +152,7 @@ public class VehiclesController : ControllerBase
                 Mileage = request.Mileage,
                 CustomerId = request.CustomerId,
                 VehicleTypeId = request.VehicleTypeId,
-                VehicleBranchId = request.VehicleBranchId,
+                VehicleBrandId = request.VehicleBrandId,
                 VehicleModelId = request.VehicleModelId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -168,10 +161,10 @@ public class VehiclesController : ControllerBase
             await _unitOfWork.Vehicles.AddAsync(vehicle, ct);
             await _unitOfWork.SaveChangesAsync(ct);
 
-            _logger.LogInformation($"Vehículo creado: {VehiculoId} - {VIN}", vehiculo.Id, vehiculo.VIN);
+            _logger.LogInformation("Vehículo creado: {VehiculoId} - {VIN}", vehicle.Id, vehicle.VIN);
 
             // Obtener el vehículo creado con relaciones para la respuesta
-            var vehiculoCreado = await _unitOfWork.Vehicles.GetByIdAsync(vehicle.Id, ct, "Cliente,MarcaVehiculo,ModeloVehiculo,TipoVehiculo");
+            var vehiculoCreado = await _unitOfWork.Vehicles.GetByIdAsync(vehicle.Id, ct, "Customer,VehicleBrand,VehicleModel,VehicleType");
 
             return CreatedAtAction(nameof(GetVehicle), new { id = vehicle.Id }, vehiculoCreado);
         }
@@ -199,12 +192,12 @@ public class VehiclesController : ControllerBase
                 return NotFound($"Vehículo con ID {id} no encontrado");
 
             var vinExists = await _unitOfWork.Vehicles.ExistsAsync(
-                v => v.VIN == vehiculo.VIN && v.Id != id, ct);
+                v => v.VIN == vehicle.VIN && v.Id != id, ct);
             if (vinExists)
                 return BadRequest("Ya existe otro vehículo con este VIN");
 
-            existingVehicle.VehicleBranchId = vehicle.VehicleBranchId;
-            existingVehicle.VehicleModelId = vehicle.VehiculModeloId;
+            existingVehicle.VehicleBrandId = vehicle.VehicleBrandId;
+            existingVehicle.VehicleModelId = vehicle.VehicleModelId;
             existingVehicle.Year = vehicle.Year;
             existingVehicle.VIN = vehicle.VIN;
             existingVehicle.Mileage = vehicle.Mileage;
@@ -218,7 +211,7 @@ public class VehiclesController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error al actualizar vehículo {VehiculoId}", id);
+            _logger.LogError(ex, "Error al actualizar vehículo {VehiculoId}", id);
             return StatusCode(500, "Error interno del servidor");
         }
     }
@@ -229,28 +222,28 @@ public class VehiclesController : ControllerBase
     {
         try
         {
+            var vehicle = await _unitOfWork.Vehicles.GetByIdAsync(id, ct, "ServiceOrders.ServiceStatus");
             if (vehicle == null)
-                var vehicle = await _unitOfWork.Vehicles.GetByIdAsync(id, ct, "OrdenesServicio");
                 return NotFound($"Vehículo con ID {id} no encontrado");
 
-            var hasActiveOrders = vehicle.ServicesOrders != null &&
-                vehicle.ServicesOrders.Any(o =>
-                    o.Status != null &&
-                    o.Status.ServiceStatusName != OrderStatus.Completed.ToString() &&
-                    o.Status.ServiceStatusName != OrderStatus.Canceled.ToString());
+            var hasActiveOrders = vehicle.ServiceOrders != null &&
+                vehicle.ServiceOrders.Any(o =>
+                    o.ServiceStatus != null &&
+                    o.ServiceStatus.ServiceStatusName != "Completada" &&
+                    o.ServiceStatus.ServiceStatusName != "Cancelada");
 
             if (hasActiveOrders)
                 return BadRequest("No se puede eliminar el vehículo porque tiene órdenes de servicio activas");
 
-            _unitOfWork.Vehicles.Delete(Vehicle);
+            _unitOfWork.Vehicles.Delete(vehicle);
             await _unitOfWork.SaveChangesAsync(ct);
 
-            _logger.LogInformation($"Vehículo eliminado: {VehiculoId} - {VIN}", id, vehiculo.VIN);
+            _logger.LogInformation("Vehículo eliminado: {VehiculoId} - {VIN}", id, vehicle.VIN);
             return NoContent();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error al eliminar vehículo {VehiculoId}", id);
+            _logger.LogError(ex, "Error al eliminar vehículo {VehiculoId}", id);
             return StatusCode(500, "Error interno del servidor");
         }
     }

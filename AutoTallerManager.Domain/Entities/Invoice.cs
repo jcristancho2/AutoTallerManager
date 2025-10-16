@@ -7,7 +7,6 @@ namespace AutoTallerManager.Domain.Entities;
 
     public class Invoice : BaseEntity
 {
-        public int InvoiceId { get; set; }
         public DateTime InvoiceDate { get; set; }
         public decimal Total { get; set; }
         public string InvoiceNumber { get; set; } = string.Empty;

@@ -12,44 +12,44 @@ namespace AutoTallerManager.Infrastructure.Configuration
        {
               public void Configure(EntityTypeBuilder<OrderDetail> builder)
               {
-                     builder.ToTable("orders_details");
+            builder.ToTable("orders_details");
 
-                     builder.HasKey(d => new { d.DetailOrderId, d.ServiceOrderId })
+            builder.HasKey(d => new { d.DetailOrderId, d.ServiceOrderId })
                             .HasName("pk_order_detail");
 
                      builder.Property(d => d.DetailOrderId)
                             .HasColumnName("detail_order_id")
                             .ValueGeneratedNever();
 
-                     builder.Property(d => d.ServiceOrderId)
-                            .HasColumnName("order_service_id")
+            builder.Property(d => d.ServiceOrderId)
+                   .HasColumnName("service_order_id")
                             .IsRequired();
 
-                     builder.Property(d => d.SpareId)
-                            .HasColumnName("spare_id")
-                            .IsRequired(false);
+            builder.Property(d => d.SpareId)
+                   .HasColumnName("spare_part_id")
+                   .IsRequired(false);
 
-                     builder.Property(d => d.Description)
-                            .HasColumnName("description")
-                            .HasMaxLength(255)
-                            .IsRequired(false);
+            builder.Property(d => d.Description)
+                   .HasColumnName("description")
+                   .HasMaxLength(255)
+                   .IsRequired(false);
 
                      builder.Property(d => d.Quantity)
                             .HasColumnName("quantity")
                             .HasDefaultValue(1)
                             .IsRequired();
 
-                     builder.Property(d => d.UnitPrice)
-                            .HasColumnName("unit_price")
-                            .HasPrecision(10, 2)
-                            .HasDefaultValue(0m)
-                            .IsRequired();
+            builder.Property(d => d.UnitPrice)
+                   .HasColumnName("unit_price")
+                   .HasPrecision(10, 2)
+                   .HasDefaultValue(0m)
+                   .IsRequired();
 
-                     builder.Property(d => d.LaborCost)
-                            .HasColumnName("labor_cost")
-                            .HasPrecision(10, 2)
-                            .HasDefaultValue(0m)
-                            .IsRequired();
+            builder.Property(d => d.LaborCost)
+                   .HasColumnName("labor_cost")
+                   .HasPrecision(10, 2)
+                   .HasDefaultValue(0m)
+                   .IsRequired();
 
                      builder.ToTable(t =>
                      {
@@ -59,19 +59,19 @@ namespace AutoTallerManager.Infrastructure.Configuration
                      });
 
                      // 🔹 Relación con OrdenServicio
-                     builder.HasOne(d => d.ServiceOrder)
+            builder.HasOne(d => d.ServiceOrder)
                             .WithMany(o => o.OrderDetails)
                             .HasForeignKey(d => d.ServiceOrderId)
                             .HasConstraintName("fk_order_detail_order_service")
                             .OnDelete(DeleteBehavior.Cascade);
 
                      // 🔹 Relación con Repuesto (corregida)
-                     builder.HasOne(d => d.Spare)
+            builder.HasOne(d => d.Spare)
                             .WithMany(r => r.OrderDetails)
-                            .HasForeignKey(d => d.SpareId)
-                            .HasPrincipalKey(r => r.Id) // 👈 EF ahora sabe que la PK de Repuesto es Id
-                            .HasConstraintName("fk_order_detail_spare")
-                            .OnDelete(DeleteBehavior.SetNull);
+                   .HasForeignKey(d => d.SpareId)
+                   .HasPrincipalKey(r => r.Id)
+                   .HasConstraintName("fk_order_detail_spare")
+                   .OnDelete(DeleteBehavior.SetNull);
 
                      builder.HasIndex(d => d.ServiceOrderId)
                             .HasDatabaseName("ix_order_detail_order_service_id");

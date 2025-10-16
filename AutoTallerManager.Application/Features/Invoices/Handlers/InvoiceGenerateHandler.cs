@@ -37,7 +37,7 @@ public sealed class InvoiceGenerateHandler : IRequestHandler<InvoiceGenerateComm
         }
 
         // Verificar que no exista ya una factura para esta orden
-        var invoiceExists = await _unitOfWork.Invoices.GetByOrderServiceIdAsync(request.ServiceOrderId, ct);
+        var invoiceExists = await _unitOfWork.Invoices.GetByServiceOrderIdAsync(request.ServiceOrderId, ct);
         if (invoiceExists != null)
         {
             throw new InvalidOperationException("Ya existe una factura para esta orden de servicio.");

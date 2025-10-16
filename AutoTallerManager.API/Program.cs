@@ -64,11 +64,14 @@ builder.Services.AddMediatR(cfg =>
 });
 
 // Configurar DbContext
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.AddDbContextPool<AppDbContext>(options =>
 {
     var isDocker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
     string connectionString = builder.Configuration.GetConnectionString(isDocker ? "PostgresDocker" : "PostgresLocal")!;
-    options.UseNpgsql(connectionString);
+    options.UseNpgsql(connectionString, npgsql =>
+    {
+        npgsql.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(5), errorCodesToAdd: null);
+    });
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 });
 
@@ -91,8 +94,7 @@ if (app.Environment.IsDevelopment())
 // Middleware de excepciones (después de Swagger en desarrollo)
 app.UseMiddleware<ExceptionMiddleware>();
 
-// Middleware de auditoría
-app.UseMiddleware<AuditoriaMiddleware>();
+// Middleware de auditoría deshabilitado temporalmente en modo A
 
 var isDockerRuntime = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 if (!isDockerRuntime)
@@ -103,6 +105,7 @@ if (!isDockerRuntime)
 // Solo una política CORS (elige la que necesites)
 app.UseCors("CorsPolicy"); // O la política que prefieras
 
+// Global rate limiter policy by default
 app.UseRateLimiter();
 
 // ORDEN CORRECTO: Authentication ANTES de Authorization
@@ -110,6 +113,21 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Apply migrations automatically on startup (dev/test)
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Database migration failed: {ex.Message}");
+        // In production you might want to log and rethrow or fail fast
+    }
+}
 
 app.Run();
 

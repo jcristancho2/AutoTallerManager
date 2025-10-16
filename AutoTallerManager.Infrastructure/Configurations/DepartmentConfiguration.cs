@@ -12,7 +12,8 @@ namespace AutoTallerManager.Infrastructure.Configuration
     {
         public void Configure(EntityTypeBuilder<Department> builder)
         {
-            builder.ToTable("departments");
+            // Align with SQL script: states table
+            builder.ToTable("states");
 
              // PK
             builder.HasKey(d => d.Id)
@@ -26,7 +27,7 @@ namespace AutoTallerManager.Infrastructure.Configuration
             builder.Property(d => d.Name)
                    .HasColumnName("name")
                    .HasMaxLength(150)
-                   .IsRequired(false); // permite null
+                   .IsRequired(false);
 
             builder.Property(d => d.CountryId)
                    .HasColumnName("country_id")
@@ -34,15 +35,15 @@ namespace AutoTallerManager.Infrastructure.Configuration
 
             // Relación con Pais (N:1)
             builder.HasOne(d => d.Country)
-                   .WithMany(p => p.Departments) 
+                   .WithMany(p => p.Departments)
                    .HasForeignKey(d => d.CountryId)
                    .HasConstraintName("fk_department_country")
                    .OnDelete(DeleteBehavior.Restrict);
 
             // Relación con Ciudad (1:N)
             builder.HasMany(d => d.Cities)
-                   .WithOne(c => c.DepartmentId)
-                   .HasForeignKey(c => c.DepartmentId) 
+                   .WithOne(c => c.Department)
+                   .HasForeignKey(c => c.DepartmentId)
                    .HasConstraintName("fk_city_department")
                    .OnDelete(DeleteBehavior.Restrict);
 

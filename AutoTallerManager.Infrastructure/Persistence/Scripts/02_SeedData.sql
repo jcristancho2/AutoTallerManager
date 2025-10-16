@@ -110,7 +110,7 @@ INSERT INTO
     roles (
         role_name,
         description,
-        activo,
+        is_active,
         created_at,
         updated_at
     )
@@ -190,7 +190,7 @@ VALUES ('Automóvil', NOW(), NOW()),
 -- Insertar marcas de vehículo
 INSERT INTO
     vehicle_brands (
-        nombre,
+        name,
         created_at,
         updated_at
     )

@@ -19,7 +19,7 @@ namespace AutoTallerManager.Infrastructure.Configuration
                    .HasName("pk_city");
 
             builder.Property(c => c.Id)
-                   .HasColumnName("city_id")
+                   .HasColumnName("id")
                    .ValueGeneratedOnAdd();
 
             // Propiedades
@@ -29,12 +29,12 @@ namespace AutoTallerManager.Infrastructure.Configuration
                    .IsRequired(false); // el modelo permite null
 
             builder.Property(c => c.DepartmentId)
-                   .HasColumnName("departament_id")
+                   .HasColumnName("state_id")
                    .IsRequired();
 
             // Relación con Departamento (N:1)
-            builder.HasOne(c => c.DepartmentId)
-                   .WithMany(d => d.Cities) 
+            builder.HasOne(c => c.Department)
+                   .WithMany(d => d.Cities)
                    .HasForeignKey(c => c.DepartmentId)
                    .HasConstraintName("fk_department_city")
                    .OnDelete(DeleteBehavior.Restrict);
@@ -42,7 +42,7 @@ namespace AutoTallerManager.Infrastructure.Configuration
             // Relación con Direcciones (1:N)
             builder.HasMany(c => c.Addresses)
                    .WithOne(d => d.City)
-                   .HasForeignKey(d => d.Id)
+                   .HasForeignKey(d => d.CityId)
                    .HasConstraintName("fk_address_city")
                    .OnDelete(DeleteBehavior.Restrict);
         }

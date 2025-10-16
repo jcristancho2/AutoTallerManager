@@ -8,11 +8,11 @@ namespace AutoTallerManager.Infrastructure.Configuration
     {
         public void Configure(EntityTypeBuilder<Spare> builder)
         {
-            builder.ToTable("spares");
+            builder.ToTable("spare_parts");
 
             builder.HasKey(r => r.Id);
-                builder.Property(r => r.Id)
-                         .HasColumnName("Spare_id");
+            builder.Property(r => r.Id)
+                   .HasColumnName("id");
 
                      builder.Property(r => r.Code)
                      .HasColumnName("code")
@@ -27,7 +27,7 @@ namespace AutoTallerManager.Infrastructure.Configuration
                      builder.Property(r => r.Description)
                      .HasColumnName("description")
                    .IsRequired()
-                   .HasMaxLength(100);
+                   .HasMaxLength(255);
 
                      builder.Property(r => r.Stock)
                      .HasColumnName("stock")
@@ -36,7 +36,22 @@ namespace AutoTallerManager.Infrastructure.Configuration
 
                      builder.Property(r => r.UnitPrice)
                      .HasColumnName("unit_price")
-                   .HasColumnType("decimal(10,2)")
+                   .HasPrecision(10, 2)
+                   .IsRequired();
+            builder.Property(r => r.StockMin)
+                   .HasColumnName("stock_min")
+                   .IsRequired();
+
+            builder.Property(r => r.CategoryId)
+                   .HasColumnName("category_id")
+                   .IsRequired();
+
+            builder.Property(r => r.VehicleTypeId)
+                   .HasColumnName("vehicle_type_id")
+                   .IsRequired();
+
+            builder.Property(r => r.ManufacturerId)
+                   .HasColumnName("manufacturer_id")
                    .IsRequired();
 
             // Relaciones

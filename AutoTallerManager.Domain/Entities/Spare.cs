@@ -7,7 +7,7 @@ namespace AutoTallerManager.Domain.Entities
 {
     public class Spare : BaseEntity
     {
-        public int SpareId { get; set; }
+        // Id inherited from BaseEntity
         public string? Code { get; set; }
         public string? Name { get; set; }
         public string? Description { get; set; }

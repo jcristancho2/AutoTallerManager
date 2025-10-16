@@ -33,7 +33,7 @@ public class CustomersController : ControllerBase
     {
         try
         {
-            var customers = await _unitOfWork.Customers.GetAllAsync(
+            var customers = await _unitOfWork.Customer.GetAllAsync(
                 filter: c => string.IsNullOrEmpty(searchTerm) ||
                         (!string.IsNullOrEmpty(c.FullName) && c.FullName.Contains(searchTerm)) ||
                         (!string.IsNullOrEmpty(c.Email) && c.Email.Contains(searchTerm)),
@@ -43,7 +43,7 @@ public class CustomersController : ControllerBase
                 take: pageSize,
                 ct: ct);
 
-            var totalCount = await _unitOfWork.Customers.CountAsync(
+            var totalCount = await _unitOfWork.Customer.CountAsync(
                 filter: c => string.IsNullOrEmpty(searchTerm) ||
                         (!string.IsNullOrEmpty(c.FullName) && c.FullName.Contains(searchTerm)) ||
                         (!string.IsNullOrEmpty(c.Email) && c.Email.Contains(searchTerm)),
@@ -67,13 +67,11 @@ public class CustomersController : ControllerBase
     {
         try
         {
-            // ✅ MANTENIENDO TU ENFOQUE CON IUnitOfWork
-            var custumer = await _unitOfWork.Customers.GetByIdAsync(id, ct, new[] { "Vehicles", "Invoices" });
-            
-            if (custumer == null)
+            var customer = await _unitOfWork.Customer.GetByIdAsync(id, ct, new[] { "Vehicles", "Invoices" });
+            if (customer == null)
                 return NotFound($"Cliente con ID {id} no encontrado");
 
-            return Ok(custumer);
+            return Ok(customer);
         }
         catch (Exception ex)
         {
@@ -84,14 +82,14 @@ public class CustomersController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "Admin,Recepcionista")]
-    public async Task<ActionResult<Customer>> CreateCustumer([FromBody] CreateCustumerCommand command, CancellationToken ct = default)
+    public async Task<ActionResult<Customer>> CreateCustumer([FromBody] CreateCustomerCommand command, CancellationToken ct = default)
     {
         try
         {
-            var custumerId = await _mediator.Send(command, ct);
-            _logger.LogInformation("Cliente creado con ID {CustumerId}", CustumerId);
+            var customerId = await _mediator.Send(command, ct);
+            _logger.LogInformation("Cliente creado con ID {CustomerId}", customerId);
 
-            return CreatedAtAction(nameof(GetCustomer), new { id = CustumerId }, new { Id = CustumerId });
+            return CreatedAtAction(nameof(GetCustomer), new { id = customerId }, new { Id = customerId });
         }
         catch (InvalidOperationException ex)
         {
@@ -114,7 +112,7 @@ public class CustomersController : ControllerBase
     [HttpPost("completo")]
     [Authorize(Roles = "Admin,Recepcionista")]
     public async Task<ActionResult<CreateFullCustomerResponse>> CreateFullCustomer(
-        [FromBody] CreateFullCustomerDto request, 
+        [FromBody] CreateFullCustomerDto request,
         CancellationToken ct = default)
     {
         try
@@ -159,7 +157,7 @@ public class CustomersController : ControllerBase
     [HttpPost("registrar-con-vehiculo-completo")]
     [Authorize(Roles = "Admin,Recepcionista")]
     public async Task<ActionResult<object>> RegisterFullCustomerWithVehicles(
-        [FromBody] RegisterFullCustomerWithVehiclesDto request, 
+        [FromBody] RegisterFullCustomerWithVehiclesRequest request,
         CancellationToken ct = default)
     {
         try
@@ -167,7 +165,6 @@ public class CustomersController : ControllerBase
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // Primero crear el cliente completo
             var customerCommand = new CreateFullCustomerCommand(
                 request.Customer.FullName,
                 request.Customer.Phone,
@@ -181,17 +178,14 @@ public class CustomersController : ControllerBase
 
             var customerResponse = await _mediator.Send(customerCommand, ct);
 
-            // Luego crear los vehículos si se proporcionaron
-            var VehiclesCreated = new List<object>();
+            var vehiclesCreated = new List<object>();
             if (request.Vehicles.Any())
             {
                 foreach (var vehicleRequest in request.Vehicles)
                 {
-                    // Aquí podrías implementar la lógica para crear vehículos
-                    // Por ahora solo registramos que se recibieron
-                    vehiclesCreated.Add(new { 
-                        vin = vehicleRequest.Vin,
-                        year = vehicleRequest.Year,
+                    vehiclesCreated.Add(new {
+                        vin = "pending",
+                        year = 0,
                         message = "Vehículo pendiente de implementación"
                     });
                 }
@@ -230,21 +224,21 @@ public class CustomersController : ControllerBase
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var existingCustomer = await _unitOfWork.Customers.GetByIdAsync(id, ct);
+            var existingCustomer = await _unitOfWork.Customer.GetByIdAsync(id, ct);
             if (existingCustomer == null)
                 return NotFound($"Cliente con ID {id} no encontrado");
 
             // ✅ VALIDACIÓN DE EMAIL ÚNICO (similar al ejemplo)
-            var emailExists = await _unitOfWork.Customers.ExistsAsync(
+            var emailExists = await _unitOfWork.Customer.ExistsAsync(
                 c => c.Email == customer.Email && c.Id != id, ct);
             if (emailExists)
                 return BadRequest("Ya existe otro cliente con este email");
 
-            existingCustomer.FullName = cusexistingCustomer.FullName;
-            existingCustomer.Email = cusexistingCustomer.Email;
-            existingCustomer.Phone = cusexistingCustomer.Phone;
+            existingCustomer.FullName = customer.FullName;
+            existingCustomer.Email = customer.Email;
+            existingCustomer.Phone = customer.Phone;
 
-            await _unitOfWork.Customers.UpdateAsync(existingCustomer, ct);
+            await _unitOfWork.Customer.UpdateAsync(existingCustomer, ct);
             await _unitOfWork.SaveChangesAsync(ct);
 
             _logger.LogInformation("Cliente actualizado: {CustomerId} - {CustomerName}", id, customer.FullName);
@@ -264,20 +258,20 @@ public class CustomersController : ControllerBase
     {
         try
         {
-            var customer = await _unitOfWork.Customers.GetByIdAsync(id, ct, new[] { "Vehicles.ServiceOrders" });
+            var customer = await _unitOfWork.Customer.GetByIdAsync(id, ct, new[] { "Vehicles.ServiceOrders" });
             if (customer == null)
                 return NotFound($"Cliente con ID {id} no encontrado");
 
-            var hasActiveOrders = customer.Vehicles?.Any(v => 
-                v.ServiceOrders?.Any(o => 
-                    (o.Status?.ServiceStatus != "Completada") && 
-                    (o.Status?.ServiceStatus != "Cancelada")) ?? false
+            var hasActiveOrders = customer.Vehicles?.Any(v =>
+                v.ServiceOrders?.Any(o =>
+                    (o.ServiceStatus?.ServiceStatusName != "Completada") &&
+                    (o.ServiceStatus?.ServiceStatusName != "Cancelada")) ?? false
                 ) ?? false;
 
             if (hasActiveOrders)
                 return BadRequest("No se puede eliminar el cliente porque tiene órdenes de servicio activas");
 
-            await _unitOfWork.Customers.DeleteAsync(id, ct);
+            await _unitOfWork.Customer.DeleteAsync(id, ct);
             await _unitOfWork.SaveChangesAsync(ct);
 
             _logger.LogInformation("Cliente eliminado: {CustomerId} - {CustomerName}", id, customer.FullName);

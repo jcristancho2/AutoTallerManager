@@ -23,8 +23,8 @@ namespace AutoTallerManager.Infrastructure.Configuration
 
             builder.Property(d => d.Description)
                    .HasColumnName("description")
-                   .HasMaxLength(250) // longitud razonable para direcciones
-                   .IsRequired(false); // permite nulo, ya que es string?
+                   .HasMaxLength(150)
+                   .IsRequired();
 
             builder.Property(d => d.CityId)
                    .HasColumnName("city_id")

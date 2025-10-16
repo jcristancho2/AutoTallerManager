@@ -25,7 +25,7 @@ public class CreateFullCustomerDto
     public int CustomerTypeId { get; set; }
 
     [Required(ErrorMessage = "Los datos de dirección son obligatorios")]
-    public FullAddressDto Direccion { get; set; } = new();
+    public FullAddressDto Address { get; set; } = new();
 }
 
 /// <summary>
@@ -41,7 +41,7 @@ public class FullAddressDto
     public int CountryId { get; set; }
 
     [Required(ErrorMessage = "El departamento es obligatorio")]
-    public int DepartamentId { get; set; }
+    public int DepartmentId { get; set; }
 
     [Required(ErrorMessage = "La ciudad es obligatoria")]
     public int CityId { get; set; }
@@ -50,7 +50,7 @@ public class FullAddressDto
 /// <summary>
 /// DTO para registrar cliente con vehículos y dirección completa
 /// </summary>
-public class RegistrarClienteCompletoConVehiculoDto
+public class RegisterFullCustomerWithVehiclesRequest
 {
     [Required(ErrorMessage = "Los datos del cliente son obligatorios")]
     public CreateFullCustomerDto Customer { get; set; } = new();

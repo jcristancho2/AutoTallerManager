@@ -9,15 +9,15 @@ namespace AutoTallerManager.Domain.Entities
     {
         public string? Name { get; set; }
 
-        public int State_Id { get; set; }
-        public Department DepartmentId { get; set; } = null!;
+        public int DepartmentId { get; set; }
+        public Department Department { get; set; } = null!;
 
         private City() { }
 
-        public City(string name, int state_Id)
+        public City(string name, int departmentId)
         {
             Name = name;
-            State_Id = state_Id;
+            DepartmentId = departmentId;
         }
 
         public ICollection<Address> Addresses { get; set; } = new List<Address>();

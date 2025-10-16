@@ -15,7 +15,7 @@ namespace AutoTallerManager.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-[EnableRateLimiting("Invoices")]
+[EnableRateLimiting("Facturas")]
 public class InvoicesController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
@@ -31,24 +31,24 @@ public class InvoicesController : ControllerBase
     public async Task<ActionResult<IEnumerable<Invoice>>> GetInvoices(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
-        [FromQuery] int? CustomerId = null,
-        [FromQuery] int? ServiceOrderId = null,
-        [FromQuery] DateTime? fechaDesde = null,
-        [FromQuery] DateTime? fechaHasta = null,
+        [FromQuery] int? customerId = null,
+        [FromQuery] int? serviceOrderId = null,
+        [FromQuery] DateTime? dateFrom = null,
+        [FromQuery] DateTime? dateTo = null,
         CancellationToken ct = default)
     {
         try
         {
             Expression<Func<Invoice, bool>>? filter = f =>
-                (!customerId.HasValue || f.CustomerId == customerId) &&
-                (!serviceOrderId.HasValue || f.ServicesOrderId == serviceOrderId) &&
-                (!fechaHasta.HasValue || f.Date <= fechaHasta.Value);
-                (!fechaDesde.HasValue || f.Date >= fechaDesde.Value) &&
+                (!customerId.HasValue || f.CustomerId == customerId.Value) &&
+                (!serviceOrderId.HasValue || f.ServiceOrderId == serviceOrderId.Value) &&
+                (!dateFrom.HasValue || f.InvoiceDate >= dateFrom.Value) &&
+                (!dateTo.HasValue || f.InvoiceDate <= dateTo.Value);
 
             var invoices = await _unitOfWork.Invoices.GetAllAsync(
                 filter: filter,
-                orderBy: q => q.OrderByDescending(f => f.Invoices),
-                includeProperties: "Customer,ServiceOrder,PymentType",
+                orderBy: q => q.OrderByDescending(f => f.InvoiceDate),
+                includeProperties: "Customer,ServiceOrder,PaymentType",
                 skip: (pageNumber - 1) * pageSize,
                 take: pageSize,
                 ct: ct);
@@ -68,119 +68,115 @@ public class InvoicesController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Invoice>> GetInvoices(int id, CancellationToken ct = default)
+    public async Task<ActionResult<Invoice>> GetInvoice(int id, CancellationToken ct = default)
     {
         try
         {
-            // ✅ EQUIVALENTE A: GetByIdAsync(1, "Cliente", "OrdenServicio", "TipoPago")
-            var factura = await _unitOfWork.Facturas.GetByIdAsync(id, ct, "Cliente,OrdenServicio,TipoPago");
-            if (factura == null)
-                return NotFound($"Factura con ID {id} no encontrada");
+            var invoice = await _unitOfWork.Invoices.GetByIdAsync(id, ct, "Customer", "ServiceOrder", "PaymentType");
+            if (invoice == null)
+                return NotFound($"Invoice with ID {id} not found");
 
-            return Ok(factura);
+            return Ok(invoice);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al obtener factura {FacturaId}", id);
-            return StatusCode(500, "Error interno del servidor");
+            _logger.LogError(ex, "Error getting invoice {InvoiceId}", id);
+            return StatusCode(500, "Internal server error");
         }
     }
 
     [HttpGet("cliente/{clienteId}")]
-    public async Task<ActionResult<IEnumerable<Factura>>> GetFacturasByCliente(int clienteId, CancellationToken ct = default)
+    public async Task<ActionResult<IEnumerable<Invoice>>> GetInvoicesByCustomer(int customerId, CancellationToken ct = default)
     {
         try
         {
-            // ✅ EQUIVALENTE A: GetFacturasByClienteAsync(clienteId: 5)
-            var facturas = await _unitOfWork.Facturas.GetFacturasByClienteAsync(clienteId, ct);
-            return Ok(facturas);
+            var invoices = await _unitOfWork.Invoices.GetFacturasByClienteAsync(customerId, ct);
+            return Ok(invoices);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al obtener facturas del cliente {ClienteId}", clienteId);
-            return StatusCode(500, "Error interno del servidor");
+            _logger.LogError(ex, "Error getting invoices for customer {CustomerId}", customerId);
+            return StatusCode(500, "Internal server error");
         }
     }
 
     [HttpGet("ingresos")]
-    public async Task<ActionResult<decimal>> GetIngresos([FromQuery] DateTime fechaDesde, [FromQuery] DateTime fechaHasta, CancellationToken ct = default)
+    public async Task<ActionResult<decimal>> GetRevenue([FromQuery] DateTime dateFrom, [FromQuery] DateTime dateTo, CancellationToken ct = default)
     {
         try
         {
-            // ✅ EQUIVALENTE A: GetTotalIngresosAsync(fechaDesde, fechaHasta)
-            var total = await _unitOfWork.Facturas.GetTotalIngresosAsync(fechaDesde, fechaHasta, ct);
+            var total = await _unitOfWork.Invoices.GetTotalIngresosAsync(dateFrom, dateTo, ct);
             return Ok(total);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al calcular ingresos entre {Desde} y {Hasta}", fechaDesde, fechaHasta);
-            return StatusCode(500, "Error interno del servidor");
+            _logger.LogError(ex, "Error calculating revenue between {From} and {To}", dateFrom, dateTo);
+            return StatusCode(500, "Internal server error");
         }
     }
 
     [HttpPost]
     [Authorize(Roles = "Admin,Recepcionista")]
-    public async Task<ActionResult<Factura>> CreateFactura(Factura factura, CancellationToken ct = default)
+    public async Task<ActionResult<Invoice>> CreateInvoice(Invoice invoice, CancellationToken ct = default)
     {
         try
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // ✅ VALIDACIONES DE NEGOCIO (mejor que IFacturaService)
-            var orden = await _unitOfWork.OrdenesServicio.GetByIdAsync(factura.OrdenServicioId, ct);
-            if (orden == null)
-                return BadRequest("La orden de servicio especificada no existe");
+            var order = await _unitOfWork.ServiceOrders.GetByIdAsync(invoice.ServiceOrderId, ct);
+            if (order == null)
+                return BadRequest("Service order does not exist");
 
-            var cliente = await _unitOfWork.Clientes.GetByIdAsync(factura.ClienteId, ct);
-            if (cliente == null)
-                return BadRequest("El cliente especificado no existe");
+            var customer = await _unitOfWork.Customer.GetByIdAsync(invoice.CustomerId, ct);
+            if (customer == null)
+                return BadRequest("Customer does not exist");
 
-            await _unitOfWork.Facturas.AddAsync(factura, ct);
-            await _unitOfWork.SaveChangesAsync(ct); // ✅ TRANSACCIÓN
+            await _unitOfWork.Invoices.AddAsync(invoice, ct);
+            await _unitOfWork.SaveChangesAsync(ct);
 
-            _logger.LogInformation("Factura creada: {FacturaId}", factura.Id);
-            return CreatedAtAction(nameof(GetFactura), new { id = factura.Id }, factura);
+            _logger.LogInformation("Invoice created: {InvoiceId}", invoice.Id);
+            return CreatedAtAction(nameof(GetInvoice), new { id = invoice.Id }, invoice);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al crear factura");
-            return StatusCode(500, "Error interno del servidor");
+            _logger.LogError(ex, "Error creating invoice");
+            return StatusCode(500, "Internal server error");
         }
     }
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,Recepcionista")]
-    public async Task<ActionResult<Factura>> UpdateFactura(int id, Factura factura, CancellationToken ct = default)
+    public async Task<ActionResult<Invoice>> UpdateInvoice(int id, Invoice invoice, CancellationToken ct = default)
     {
         try
         {
-            if (id != factura.Id)
+            if (id != invoice.Id)
                 return BadRequest("El ID de la factura no coincide");
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var existing = await _unitOfWork.Facturas.GetByIdAsync(id, ct);
+            var existing = await _unitOfWork.Invoices.GetByIdAsync(id, ct);
             if (existing == null)
                 return NotFound($"Factura con ID {id} no encontrada");
 
             // Validar relaciones actualizadas
-            var orden = await _unitOfWork.OrdenesServicio.GetByIdAsync(factura.OrdenServicioId, ct);
+            var orden = await _unitOfWork.ServiceOrders.GetByIdAsync(invoice.ServiceOrderId, ct);
             if (orden == null)
                 return BadRequest("La orden de servicio especificada no existe");
 
-            var cliente = await _unitOfWork.Clientes.GetByIdAsync(factura.ClienteId, ct);
+            var cliente = await _unitOfWork.Customer.GetByIdAsync(invoice.CustomerId, ct);
             if (cliente == null)
                 return BadRequest("El cliente especificado no existe");
 
-            existing.Fecha = factura.Fecha;
-            existing.Total = factura.Total;
-            existing.OrdenServicioId = factura.OrdenServicioId;
-            existing.ClienteId = factura.ClienteId;
-            existing.TipoPagoId = factura.TipoPagoId;
+            existing.InvoiceDate = invoice.InvoiceDate;
+            existing.Total = invoice.Total;
+            existing.ServiceOrderId = invoice.ServiceOrderId;
+            existing.CustomerId = invoice.CustomerId;
+            existing.PaymentTypeId = invoice.PaymentTypeId;
 
-            await _unitOfWork.Facturas.UpdateAsync(existing, ct);
+            await _unitOfWork.Invoices.UpdateAsync(existing, ct);
             await _unitOfWork.SaveChangesAsync(ct);
 
             _logger.LogInformation("Factura actualizada: {FacturaId}", id);
@@ -195,22 +191,22 @@ public class InvoicesController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<ActionResult> DeleteFactura(int id, CancellationToken ct = default)
+    public async Task<ActionResult> DeleteInvoice(int id, CancellationToken ct = default)
     {
         try
         {
-            var deleted = await _unitOfWork.Facturas.DeleteAsync(id, ct);
+            var deleted = await _unitOfWork.Invoices.DeleteAsync(id, ct);
             if (!deleted)
-                return NotFound($"Factura con ID {id} no encontrada");
+                return NotFound($"Invoice with ID {id} not found");
 
             await _unitOfWork.SaveChangesAsync(ct);
-            _logger.LogInformation("Factura eliminada: {FacturaId}", id);
+            _logger.LogInformation("Invoice deleted: {InvoiceId}", id);
             return NoContent();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al eliminar factura {FacturaId}", id);
-            return StatusCode(500, "Error interno del servidor");
+            _logger.LogError(ex, "Error deleting invoice {InvoiceId}", id);
+            return StatusCode(500, "Internal server error");
         }
     }
 }

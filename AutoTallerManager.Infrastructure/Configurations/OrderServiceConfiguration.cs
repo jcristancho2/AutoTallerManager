@@ -42,7 +42,7 @@ public void Configure(EntityTypeBuilder<ServiceOrder> builder)
               .IsRequired();
 
        builder.Property(o => o.ServiceTypeId)
-              .HasColumnName("status_id")
+              .HasColumnName("service_type_id")
               .IsRequired();
 
        // Relaciones

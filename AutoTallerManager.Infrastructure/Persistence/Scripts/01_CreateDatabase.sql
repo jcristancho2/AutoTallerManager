@@ -11,8 +11,7 @@ CREATE TABLE roles (
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Table: user_statuses
-CREATE TABLE user_status (
+CREATE TABLE user_statuses (
     id SERIAL PRIMARY KEY,
     status_name VARCHAR(50) NOT NULL,
     description VARCHAR(200),
@@ -217,18 +216,22 @@ CREATE TABLE spare_parts (
     CHECK (stock_min >= 0)
 );
 
--- Table: order_details
-CREATE TABLE order_details (
-    id SERIAL PRIMARY KEY,
+-- Table: orders_details (aligned with EF composite key and labor cost)
+CREATE TABLE orders_details (
+    detail_order_id INTEGER NOT NULL,
     service_order_id INTEGER NOT NULL REFERENCES service_orders (id) ON DELETE CASCADE,
-    spare_part_id INTEGER NOT NULL REFERENCES spare_parts (id) ON DELETE RESTRICT,
+    spare_part_id INTEGER NULL REFERENCES spare_parts (id) ON DELETE SET NULL,
+    description VARCHAR(255),
     quantity INTEGER NOT NULL DEFAULT 1,
-    description INTEGER,
-    unit_price DECIMAL(10, 2) NOT NULL,
+    unit_price DECIMAL(10, 2) NOT NULL DEFAULT 0,
+    labor_cost DECIMAL(10, 2) NOT NULL DEFAULT 0,
+    id INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    CONSTRAINT pk_order_detail PRIMARY KEY (detail_order_id, service_order_id),
     CHECK (quantity > 0),
-    CHECK (unit_price >= 0)
+    CHECK (unit_price >= 0),
+    CHECK (labor_cost >= 0)
 );
 
 -- Table: payment_types

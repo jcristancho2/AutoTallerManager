@@ -8,7 +8,6 @@ namespace AutoTallerManager.Domain.Entities
 {
     public class ServiceOrder : BaseEntity
     {
-        public int ServiceOrderId { get; set; }
         public DateTime EntryDate { get; set; }
         public DateTime EstimatedDeliveryDate { get; set; }
         public string? WorkDescription { get; set; }

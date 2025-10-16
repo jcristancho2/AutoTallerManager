@@ -27,6 +27,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers/OrdenesServicioController.cs" />
+    <Compile Remove="Controllers/RepuestosController.cs" />
+    <Compile Remove="Controllers/DetailOrderController.cs" />
+    <Compile Remove="Controllers/UbicacionesController.cs" />
+    <Compile Remove="Controllers/Auth/AuthController.cs" />
+    <Compile Remove="Middleware/AuditoriaMiddleware.cs" />
+    <Compile Remove="Validators/VehicleRequestValidator.cs" />
+    <Compile Remove="Common/Mappings/ServiceOrderProfile.cs" />
+    <Compile Remove="Services/**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../AutoTallerManager.Application/AutoTallerManager.Application.csproj" />
     <ProjectReference Include="../AutoTallerManager.Infrastructure/AutoTallerManager.Infrastructure.csproj" />
   </ItemGroup>
