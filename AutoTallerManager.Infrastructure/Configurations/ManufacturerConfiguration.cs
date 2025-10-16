@@ -8,27 +8,27 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AutoTallerManager.Infrastructure.Configuration
 {
-     public class FabricanteConfiguration : IEntityTypeConfiguration<Fabricante>
+     public class ManufacturerConfiguration : IEntityTypeConfiguration<Manufacturer>
     {
-        public void Configure(EntityTypeBuilder<Fabricante> builder)
+        public void Configure(EntityTypeBuilder<Manufacturer> builder)
         {
             builder.ToTable("manufacturer");
 
             builder.HasKey(f => f.Id);
             builder.Property(f => f.Id)
-                   .HasColumnName("fabricanteid");
+                   .HasColumnName("Manufacturerid");
 
-            builder.Property(f => f.NombreFab)
+            builder.Property(f => f.Name)
                      .HasColumnName("nombrefab")
                    .IsRequired()
                    .HasMaxLength(50);
 
-            builder.Property(f => f.Descripcion)
-                     .HasColumnName("descripcion")
+            builder.Property(f => f.Description)
+                     .HasColumnName("description")
                      .HasMaxLength(255);
 
-            builder.Property(f => f.Telefono)
-                     .HasColumnName("telefono")
+            builder.Property(f => f.Phone)
+                     .HasColumnName("phone")
                      .HasMaxLength(20);
                      
             builder.Property(f => f.Email)

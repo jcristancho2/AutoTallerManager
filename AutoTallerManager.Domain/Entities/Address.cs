@@ -8,17 +8,17 @@ namespace AutoTallerManager.Domain.Entities
     public class Address : BaseEntity
     {
         public string? Description { get; set; }
-        public int City_Id { get; set; }
+        public int CityId { get; set; }
         public City City { get; set; } = null!;
 
         private Address() { }
         public Address(
             string description,
-            int city_Id
+            int cityId
         )
         {
             Description = description;
-            City_Id = city_Id;
+            CityId = cityId;
         }
 
         public ICollection<Customer> Customers { get; set; } = new List<Customer>();

@@ -38,8 +38,8 @@ public class UserMemberRepository : IUserMemberService
     public async Task<UserMember?> GetByUserNameAsync(string userName, CancellationToken ct = default)
     {
         return await _db.UsersMembers
-            .Include(u => u.UserMemberRoles)
-                .ThenInclude(umr => umr.Rol)
+            .Include(u => u.UserMemberRols)
+                .ThenInclude(umr => umr.Role)
             .Include(u => u.RefreshTokens)
             .FirstOrDefaultAsync(u => 
                 (u.Username != null && EF.Functions.ILike(u.Username, userName)) ||
@@ -51,8 +51,8 @@ public class UserMemberRepository : IUserMemberService
     {
         return _db.UsersMembers
             .AsNoTracking()
-            .Include(u => u.UserMemberRoles)
-                .ThenInclude(umr => umr.Rol)
+            .Include(u => u.UserMemberRols)
+                .ThenInclude(umr => umr.Role)
             .Include(u => u.RefreshTokens)
             .FirstOrDefaultAsync(u => u.Id == id, ct);
     }
@@ -61,8 +61,8 @@ public class UserMemberRepository : IUserMemberService
     public async Task<UserMember> GetByRefreshTokenAsync(string refreshToken)
     {
         var user = await _db.UsersMembers
-            .Include(u => u.UserMemberRoles)
-                .ThenInclude(umr => umr.Rol)
+            .Include(u => u.UserMemberRols)
+                .ThenInclude(umr => umr.Role)
             .Include(u => u.RefreshTokens)
             .FirstOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == refreshToken));
 
@@ -100,8 +100,8 @@ public class UserMemberRepository : IUserMemberService
     {
         return await _db.UsersMembers
             .AsNoTracking()
-            .Include(u => u.UserMemberRoles)
-                .ThenInclude(umr => umr.Rol)
+            .Include(u => u.UserMemberRols)
+                .ThenInclude(umr => umr.Role)
             .Include(u => u.RefreshTokens)
             .ToListAsync(ct);
     }
@@ -110,8 +110,8 @@ public class UserMemberRepository : IUserMemberService
     public IEnumerable<UserMember> Find(Expression<Func<UserMember, bool>> expression)
     {
         return _db.UsersMembers
-            .Include(u => u.UserMemberRoles)
-                .ThenInclude(umr => umr.Rol)
+            .Include(u => u.UserMemberRols)
+                .ThenInclude(umr => umr.Role)
             .Include(u => u.RefreshTokens)
             .Where(expression);
     }
@@ -120,8 +120,8 @@ public class UserMemberRepository : IUserMemberService
     public async Task<(int totalRegistros, IEnumerable<UserMember> registros)> GetPagedAsync(int pageIndex, int pageSize, string? search = null)
     {
         var query = _db.UsersMembers
-            .Include(u => u.UserMemberRoles)
-                .ThenInclude(umr => umr.Rol)
+            .Include(u => u.UserMemberRols)
+                .ThenInclude(umr => umr.Role)
             .Include(u => u.RefreshTokens)
             .AsQueryable();
 
@@ -131,12 +131,12 @@ public class UserMemberRepository : IUserMemberService
             query = query.Where(u => u.Username != null && EF.Functions.ILike(u.Username, term));
         }
 
-        var totalRegistros = await query.CountAsync();
-        var registros = await query
+        var totalRegisters = await query.CountAsync();
+        var registers = await query
             .Skip((pageIndex - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
-        return (totalRegistros, registros);
+        return (totalRegisters, registers);
     }
 }

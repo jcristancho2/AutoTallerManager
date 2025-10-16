@@ -8,18 +8,18 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AutoTallerManager.Infrastructure.Configuration
 {
-    public class EstadoServConfiguration : IEntityTypeConfiguration<EstadoServ>
+    public class ServiceStatusConfiguration : IEntityTypeConfiguration<ServiceStatus>
     {
-        public void Configure(EntityTypeBuilder<EstadoServ> builder)
+        public void Configure(EntityTypeBuilder<ServiceStatus> builder)
         {
             builder.ToTable("services_status");
 
             builder.HasKey(e => e.Id);
             builder.Property(e => e.Id)
-                .HasColumnName("estado_id");
+                .HasColumnName("status_id");
 
-            builder.Property(e => e.NombreEstServ)
-            .HasColumnName("nombre_est_serv")
+            builder.Property(e => e.ServiceStatusName)
+            .HasColumnName("service_status_name")
                 .HasMaxLength(80); 
         }
     }

@@ -4,17 +4,17 @@ using AutoTallerManager.Domain.Entities;
 
 namespace AutoTallerManager.Infrastructure.Configurations
 {
-    public class TipoVehiculoConfiguration : IEntityTypeConfiguration<TipoVehiculo>
+    public class VehicleTypeConfiguration : IEntityTypeConfiguration<VehicleType>
     {
-        public void Configure(EntityTypeBuilder<TipoVehiculo> builder)
+        public void Configure(EntityTypeBuilder<VehicleType> builder)
         {
             builder.ToTable("vehicle_types");
 
             builder.HasKey(tv => tv.Id);
                 builder.Property(tv => tv.Id)
-                         .HasColumnName("tipo_vehiculo_id");
+                         .HasColumnName("vehicle_type_id");
 
-            builder.Property(tv => tv.NombreTipoVehiculo)
+            builder.Property(tv => tv.VehicleTypeName)
                    .IsRequired()
                    .HasMaxLength(100);
 

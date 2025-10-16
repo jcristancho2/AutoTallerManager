@@ -8,24 +8,24 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AutoTallerManager.Infrastructure.Configuration
 {
-    public class TipoPagoConfiguration : IEntityTypeConfiguration<TipoPago>
+    public class PaymentTypeConfiguration : IEntityTypeConfiguration<PaymentType>
     {
-        public void Configure(EntityTypeBuilder<TipoPago> builder)
+        public void Configure(EntityTypeBuilder<PaymentType> builder)
         {
             builder.ToTable("payment_types");
 
             builder.HasKey(tp => tp.Id);
             builder.Property(tp => tp.Id)
-                   .HasColumnName("tipo_pago_id");
+                   .HasColumnName("payment_type_id");
 
-            builder.Property(tp => tp.NombreTipoPag)
-                   .HasColumnName("nombre_tipo_pag")
+            builder.Property(tp => tp.Name)
+                   .HasColumnName("name_type_pag")
                    .IsRequired()
                    .HasMaxLength(100);
 
-            builder.HasMany(tp => tp.Facturas)
-                   .WithOne(f => f.TipoPago)
-                   .HasForeignKey(f => f.TipoPagoId)
+            builder.HasMany(tp => tp.Invoices)
+                   .WithOne(f => f.PaymentType)
+                   .HasForeignKey(f => f.PaymentTypeId)
                    .OnDelete(DeleteBehavior.Restrict);
         }
     }

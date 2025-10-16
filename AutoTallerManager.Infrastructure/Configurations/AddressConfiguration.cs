@@ -8,32 +8,32 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AutoTallerManager.Infrastructure.Configuration
 {
-    public class DireccionConfiguration : IEntityTypeConfiguration<Direccion>
+    public class AddressConfiguration : IEntityTypeConfiguration<Address>
     {
-        public void Configure(EntityTypeBuilder<Direccion> builder)
+        public void Configure(EntityTypeBuilder<Address> builder)
         {
              builder.ToTable("addresses");
 
             builder.HasKey(d => d.Id)
-                   .HasName("pk_direccion");
+                   .HasName("pk_address");
 
             builder.Property(d => d.Id)
                    .HasColumnName("id")
                    .ValueGeneratedOnAdd();
 
-            builder.Property(d => d.Descripcion)
-                   .HasColumnName("descripcion")
+            builder.Property(d => d.Description)
+                   .HasColumnName("description")
                    .HasMaxLength(250) // longitud razonable para direcciones
                    .IsRequired(false); // permite nulo, ya que es string?
 
-            builder.Property(d => d.CiudadId)
-                   .HasColumnName("ciudad_id")
+            builder.Property(d => d.CityId)
+                   .HasColumnName("city_id")
                    .IsRequired();
 
-            builder.HasOne(d => d.Ciudad)
-                   .WithMany(c => c.Direcciones) // asumiendo que Ciudad tiene ICollection<Direccion>
-                   .HasForeignKey(d => d.CiudadId)
-                   .HasConstraintName("fk_direccion_ciudad")
+            builder.HasOne(d => d.City)
+                   .WithMany(c => c.Addresses) // asumiendo que Ciudad tiene ICollection<Direccion>
+                   .HasForeignKey(d => d.CityId)
+                   .HasConstraintName("fk_address_city")
                    .OnDelete(DeleteBehavior.Restrict);
         }
     }

@@ -8,22 +8,22 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AutoTallerManager.Infrastructure.Configurations
 {
-    public class ModeloVehiculoConfiguration : IEntityTypeConfiguration<ModeloVehiculo>
+    public class VehicleModelConfiguration : IEntityTypeConfiguration<VehicleModel>
     {
-        public void Configure(EntityTypeBuilder<ModeloVehiculo> builder)
+        public void Configure(EntityTypeBuilder<VehicleModel> builder)
         {
             builder.ToTable("vehicle_models");
 
             builder.HasKey(m => m.Id)
-                   .HasName("pk_modelo_vehiculo");
+                   .HasName("pk_vehicle_model");
 
             builder.Property(m => m.Id)
                    .HasColumnName("id")
                    .ValueGeneratedOnAdd();
 
 
-            builder.Property(m => m.Nombre)
-                   .HasColumnName("nombre")
+            builder.Property(m => m.Name)
+                   .HasColumnName("name")
                    .IsRequired()
                    .HasMaxLength(100);
 

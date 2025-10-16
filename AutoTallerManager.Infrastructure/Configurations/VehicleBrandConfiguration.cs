@@ -8,31 +8,31 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AutoTallerManager.Infrastructure.Configurations
 {
-    public class MarcaVehiculoConfiguration : IEntityTypeConfiguration<MarcaVehiculo>
+    public class VehicleBrandConfiguration : IEntityTypeConfiguration<VehicleBrand>
     {
-        public void Configure(EntityTypeBuilder<MarcaVehiculo> builder)
+        public void Configure(EntityTypeBuilder<VehicleBrand> builder)
         {
             builder.ToTable("vehicle_brands");
 
             // Clave primaria
             builder.HasKey(m => m.Id)
-                   .HasName("pk_marca_vehiculo");
+                   .HasName("pk_vehicle_brand");
 
             builder.Property(m => m.Id)
                    .HasColumnName("id")
                    .ValueGeneratedOnAdd();
 
             // Propiedades
-            builder.Property(m => m.Nombre)
-                   .HasColumnName("nombre")
+            builder.Property(m => m.Name)
+                   .HasColumnName("name")
                    .HasMaxLength(100)
                    .IsRequired();
 
             // La relación con Vehiculo se configura en VehiculoConfiguration
 
             // Índice opcional para búsquedas por nombre
-            builder.HasIndex(m => m.Nombre)
-                   .HasDatabaseName("ix_marca_vehiculo_nombre");
+            builder.HasIndex(m => m.Name)
+                   .HasDatabaseName("ix_vehicle_brand_name");
         }
     }
 }

@@ -8,24 +8,24 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AutoTallerManager.Infrastructure.Configuration
 {
-    public class TipoServicioConfiguration : IEntityTypeConfiguration<TipoServicio>
+    public class ServiceTypeConfiguration : IEntityTypeConfiguration<ServiceType>
     {
-        public void Configure(EntityTypeBuilder<TipoServicio> builder)
+        public void Configure(EntityTypeBuilder<ServiceType> builder)
         {
             builder.ToTable("service_types");
 
             builder.HasKey(ts => ts.Id);
             builder.Property(ts => ts.Id)
-                   .HasColumnName("tipo_servid");
+                   .HasColumnName("service_type");
 
-            builder.Property(ts => ts.NombreTipoServ)
-                   .HasColumnName("nombre_tipo_serv")
+            builder.Property(ts => ts.ServiceTypeName)
+                   .HasColumnName("service_type_name")
                    .IsRequired()
                    .HasMaxLength(100);
 
-            builder.HasMany(ts => ts.OrdenesServicio)
-                   .WithOne(os => os.TipoServicio)
-                   .HasForeignKey(os => os.TipoServId)
+            builder.HasMany(ts => ts.ServiceOrders)
+                   .WithOne(os => os.ServiceType)
+                   .HasForeignKey(os => os.ServiceTypeId)
                    .OnDelete(DeleteBehavior.Restrict);
         }
     }
