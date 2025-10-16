@@ -74,7 +74,7 @@ public class InvoicesController : ControllerBase
         {
             var invoice = await _unitOfWork.Invoices.GetByIdAsync(id, ct, "Customer", "ServiceOrder", "PaymentType");
             if (invoice == null)
-                return NotFound($"Invoice with ID {id} not found");
+                return NotFound("Invoice with ID {id} not found");
 
             return Ok(invoice);
         }

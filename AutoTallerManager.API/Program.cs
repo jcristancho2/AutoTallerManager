@@ -114,18 +114,22 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Apply migrations automatically on startup (dev/test)
+// Apply migrations only if they exist; otherwise, skip to respect script-created schema
 using (var scope = app.Services.CreateScope())
 {
     try
     {
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        db.Database.Migrate();
+        var hasMigrations = db.Database.GetMigrations().Any();
+        if (hasMigrations)
+        {
+            db.Database.Migrate();
+        }
+        // If no migrations, we skip to avoid altering a DB created by SQL scripts
     }
     catch (Exception ex)
     {
         Console.WriteLine($"Database migration failed: {ex.Message}");
-        // In production you might want to log and rethrow or fail fast
     }
 }
 
