@@ -3,9 +3,9 @@ using AutoTallerManager.API.DTOs.Request;
 
 namespace AutoTallerManager.API.Validators;
 
-public class VehiculoRequestValidator : AbstractValidator<VehiculoRequest>
+public class VehicleRequestValidator : AbstractValidator<VehiculoRequest>
 {
-    public VehiculoRequestValidator()
+    public VehicleRequestValidator()
     {
         RuleFor(x => x.Placa)
             .NotEmpty().WithMessage("La placa es obligatoria.")
