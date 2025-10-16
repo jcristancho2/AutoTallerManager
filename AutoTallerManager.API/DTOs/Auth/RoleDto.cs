@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 
 namespace AutoTallerManager.API.DTOs.Auth
 {
-    public class RolDto
+    public class RoleDto
     {
         public int Id { get; set; }
-        public string NombreRol { get; set; } = string.Empty;
-        public string? Descripcion { get; set; }
+        public string RoolName { get; set; } = string.Empty;
+        public string? Description { get; set; }
     }
 }

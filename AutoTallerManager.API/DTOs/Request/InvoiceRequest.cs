@@ -3,21 +3,21 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AutoTallerManager.API.DTOs.Request
 {
-    public record FacturaRequest
+    public record InvoiceRequest
     {
         [Required]
-        public DateTime Fecha { get; set; }
+        public DateTime Date { get; set; }
 
         [Range(0, double.MaxValue)]
         public decimal Total { get; set; }
 
         [Required]
-        public int OrdenServicioId { get; set; }
+        public int ServiceOrderId { get; set; }
 
         [Required]
-        public int ClienteId { get; set; }
+        public int CustomerId { get; set; }
 
         [Required]
-        public int TipoPagoId { get; set; }
+        public int PaymentTypeId { get; set; }
     }
 }

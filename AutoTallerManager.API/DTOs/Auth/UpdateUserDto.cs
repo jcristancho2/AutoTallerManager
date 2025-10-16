@@ -6,16 +6,16 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AutoTallerManager.API.DTOs.Auth
 {
-    public class UpdateUsuarioDto
+    public class UpdateUserDto
     {
         [Required]
         [EmailAddress]
         public string Email { get; set; } = string.Empty;
 
         [Required]
-        public int RolId { get; set; }
+        public int RoleId { get; set; }
 
         [Required]
-        public int EstadoUsuarioId { get; set; }
+        public int UserStatusId { get; set; }
     }
 }

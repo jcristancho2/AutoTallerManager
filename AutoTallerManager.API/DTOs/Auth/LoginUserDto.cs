@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AutoTallerManager.API.DTOs.Auth
 {
-    public class LoginUsuarioDto
+    public class LoginUserDto
     {
     [Required]
     [EmailAddress]

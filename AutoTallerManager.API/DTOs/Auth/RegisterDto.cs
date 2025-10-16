@@ -12,9 +12,9 @@ public class RegisterDto
     [Required]
     public string? Password { get; set; }
     [Required]
-    public int RolId { get; set; }
+    public int RoleId { get; set; }
     [Required]
-    public int EstadoId { get; set; }
+    public int StatusId { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
