@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using AutoTallerManager.Application.Features.OrdenesServicio.Commands;
 using AutoTallerManager.Application.Features.Facturas.Commands;
+using AutoTallerManager.Application.Dtos;
+using AutoTallerManager.Infrastructure.Data;
 
 namespace AutoTallerManager.API.Controllers;
 
@@ -20,16 +22,17 @@ namespace AutoTallerManager.API.Controllers;
 [EnableRateLimiting("OrdenesServicio")]
 public class OrdenesServicioController : ControllerBase
 {
-    // Aquí las órdenes de servicio: crear, obtener, actualizar, eliminar
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<OrdenesServicioController> _logger;
     private readonly IMediator _mediator;
+    private readonly AutoTallerDbContext _context;
 
-    public OrdenesServicioController(IUnitOfWork unitOfWork, ILogger<OrdenesServicioController> logger, IMediator mediator)
+    public OrdenesServicioController(IUnitOfWork unitOfWork, ILogger<OrdenesServicioController> logger, IMediator mediator, AutoTallerDbContext context)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
         _mediator = mediator;
+        _context = context;
     }
 
     public class UpdateEstadoOrdenRequest
@@ -42,7 +45,6 @@ public class OrdenesServicioController : ControllerBase
         public int TipoPagoId { get; set; }
     }
 
-    // Response DTO for CerrarOrden
     public record CerrarOrdenResponse(int FacturaId, decimal Total);
 
     [HttpGet]
@@ -82,6 +84,16 @@ public class OrdenesServicioController : ControllerBase
             _logger.LogError(ex, "Error al obtener órdenes de servicio");
             return StatusCode(500, "Error interno del servidor");
         }
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<OrdenServicioResponseDto>> GetOrdenServicio(int id)
+    {
+        var orden = await _context.OrdenesServicio.FindAsync(id);
+        if (orden == null)
+            return NotFound();
+
+        return Ok(MapToDto(orden));
     }
 
     [HttpPost("{id}/detalles")]
@@ -129,7 +141,6 @@ public class OrdenesServicioController : ControllerBase
             var existente = await _unitOfWork.DetallesOrden.GetByIdAsync(detalleId, id, ct);
             if (existente == null) return NotFound("Detalle no encontrado");
 
-            // Ajuste de stock si cambian repuesto/cantidad
             if (existente.RepuestoId != detalle.RepuestoId)
             {
                 if (existente.RepuestoId.HasValue)
@@ -137,7 +148,7 @@ public class OrdenesServicioController : ControllerBase
                     var repuestoAnterior = await _unitOfWork.Repuestos.GetByIdAsync(existente.RepuestoId.Value, ct);
                     if (repuestoAnterior != null)
                     {
-                        repuestoAnterior.Stock += existente.Cantidad; // devolver stock anterior
+                        repuestoAnterior.Stock += existente.Cantidad;
                         await _unitOfWork.Repuestos.UpdateAsync(repuestoAnterior, ct);
                     }
                 }
@@ -156,7 +167,7 @@ public class OrdenesServicioController : ControllerBase
                 var repuesto = await _unitOfWork.Repuestos.GetByIdAsync(detalle.RepuestoId.Value, ct);
                 if (repuesto == null) return BadRequest("Repuesto no existe");
 
-                var diferencia = detalle.Cantidad - existente.Cantidad; // si >0 consume más; si <0 devuelve
+                var diferencia = detalle.Cantidad - existente.Cantidad;
                 if (diferencia > 0 && repuesto.Stock < diferencia) return BadRequest("Stock insuficiente del repuesto");
                 repuesto.Stock -= diferencia;
                 await _unitOfWork.Repuestos.UpdateAsync(repuesto, ct);
@@ -193,7 +204,7 @@ public class OrdenesServicioController : ControllerBase
                 var repuesto = await _unitOfWork.Repuestos.GetByIdAsync(existente.RepuestoId.Value, ct);
                 if (repuesto != null)
                 {
-                    repuesto.Stock += existente.Cantidad; // devolver stock
+                    repuesto.Stock += existente.Cantidad;
                     await _unitOfWork.Repuestos.UpdateAsync(repuesto, ct);
                 }
             }
@@ -262,7 +273,6 @@ public class OrdenesServicioController : ControllerBase
 
             if (clienteId == 0)
             {
-                // Try resolve by matching Cliente data from navigation property (some tests insert Cliente without Id)
                 if (orden.Vehiculo?.Cliente != null)
                 {
                     var cnav = orden.Vehiculo.Cliente;
@@ -281,17 +291,14 @@ public class OrdenesServicioController : ControllerBase
                     }
                 }
 
-                // Fallback: intentar obtener cualquier cliente (útil en tests si las relaciones no están completamente cargadas)
                 if (clienteId == 0)
                 {
                     var clientes = await _unitOfWork.Clientes.GetAllAsync(ct: ct);
-                    // preferir el primer cliente con Id > 0
                     var anyValid = clientes.FirstOrDefault(c => c.Id > 0);
                     if (anyValid != null)
                         clienteId = anyValid.Id;
                     else
                     {
-                        // si no hay ninguno con Id>0, tomar el primero (legacy test scenarios)
                         var anyClient = clientes.FirstOrDefault();
                         clienteId = anyClient?.Id ?? 0;
                     }
@@ -300,16 +307,13 @@ public class OrdenesServicioController : ControllerBase
 
             if (clienteId == 0)
             {
-                // If we couldn't resolve a non-zero clienteId from the order, try any client from the repo
                 var clientes = await _unitOfWork.Clientes.GetAllAsync(ct: ct);
                 if (clientes != null && clientes.Any())
                 {
-                    // use the first available client (even if its Id==0) to allow tests using in-memory fixtures to proceed
                     clienteId = clientes.First().Id;
                 }
                 else
                 {
-                    // No clients at all -> return diagnostic BadRequest
                     var diag = new
                     {
                         Message = "No se puede determinar el cliente de la orden",
@@ -345,23 +349,6 @@ public class OrdenesServicioController : ControllerBase
             return StatusCode(500, "Error interno del servidor");
         }
     }
-    [HttpGet("{id}")]
-    public async Task<ActionResult<OrdenServicio>> GetOrdenServicio(int id, CancellationToken ct = default)
-    {
-        try
-        {
-            var orden = await _unitOfWork.OrdenesServicio.GetByIdAsync(id, ct, "Vehiculo, Mecanico, TipoServicio, Estado, DetallesOrden, Facturas");
-            if (orden == null)
-                return NotFound($"Orden de servicio con ID {id} no encontrada");
-
-            return Ok(orden);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error al obtener orden de servicio {OrdenId}", id);
-            return StatusCode(500, "Error interno del servidor");
-        }
-    }
 
     [HttpPost]
     [Authorize(Roles = "Admin,Recepcionista")]
@@ -372,7 +359,6 @@ public class OrdenesServicioController : ControllerBase
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // Validar relaciones: Vehículo, Mécanico (Usuario), TipoServicio, Estado
             var vehiculoExists = await _unitOfWork.Vehiculos.ExistsAsync(v => v.Id == ordenServicio.VehiculoId, ct);
             if (!vehiculoExists)
                 return BadRequest("El vehículo especificado no existe");
@@ -381,9 +367,6 @@ public class OrdenesServicioController : ControllerBase
             if (mecanicoExists == null)
                 return BadRequest("El mecánico especificado no existe");
 
-            // Nota: buscamos el tipo de servicio en la base usando OrdenesServicio.CountAsync como fallback; 
-            // si la app tiene un servicio específico para tipos, debería usarse.
-            // Si el count es 0 no implica ausencia del tipo; omitimos la validación estricta aquí para evitar consultas extra.
             var tipoExists = await _unitOfWork.OrdenesServicio.CountAsync(o => o.TipoServId == ordenServicio.TipoServId, ct);
 
             await _unitOfWork.OrdenesServicio.AddAsync(ordenServicio, ct);
@@ -400,49 +383,53 @@ public class OrdenesServicioController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "Admin,Mecanico,Recepcionista")]
-    public async Task<ActionResult<OrdenServicio>> UpdateOrdenServicio(int id, OrdenServicio ordenServicio, CancellationToken ct = default)
+    public async Task<ActionResult<OrdenServicioResponseDto>> UpdateOrdenServicio(int id, OrdenServicioUpdateDto updateDto)
     {
+        var orden = await _context.OrdenesServicio.FindAsync(id);
+        if (orden == null)
+            return NotFound();
+
+        var providedVersion = string.IsNullOrEmpty(updateDto.RowVersion) 
+            ? null 
+            : Convert.FromBase64String(updateDto.RowVersion);
+        var expectedVersion = orden.RowVersion;
+
+        if (!ByteArraysEqual(providedVersion, expectedVersion))
+        {
+            var conflictResponse = new
+            {
+                message = "Concurrency conflict",
+                entity = "OrdenServicio",
+                id = id,
+                expectedVersion = Convert.ToBase64String(expectedVersion),
+                providedVersion = updateDto.RowVersion
+            };
+            return Conflict(conflictResponse);
+        }
+
+        orden.NumeroOrden = updateDto.NumeroOrden;
+        orden.Estado = updateDto.Estado;
+        orden.Total = updateDto.Total;
+        orden.FechaModificacion = DateTime.UtcNow;
+
         try
         {
-            if (id != ordenServicio.Id)
-                return BadRequest("El ID de la orden no coincide");
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var existing = await _unitOfWork.OrdenesServicio.GetByIdAsync(id, ct);
-            if (existing == null)
-                return NotFound($"Orden de servicio con ID {id} no encontrada");
-
-            // Validar existencia de vehiculo y mecanico si fueron modificados
-            var vehiculoExists = await _unitOfWork.Vehiculos.ExistsAsync(v => v.Id == ordenServicio.VehiculoId, ct);
-            if (!vehiculoExists)
-                return BadRequest("El vehículo especificado no existe");
-
-            var mecanico = await _unitOfWork.Usuarios.GetByIdAsync(ordenServicio.MecanicoId, ct);
-            if (mecanico == null)
-                return BadRequest("El mecánico especificado no existe");
-
-            // Actualizar campos
-            existing.FechaIngreso = ordenServicio.FechaIngreso;
-            existing.FechaEstimadaEntrega = ordenServicio.FechaEstimadaEntrega;
-            existing.VehiculoId = ordenServicio.VehiculoId;
-            existing.MecanicoId = ordenServicio.MecanicoId;
-            existing.TipoServId = ordenServicio.TipoServId;
-            existing.EstadoId = ordenServicio.EstadoId;
-
-            await _unitOfWork.OrdenesServicio.UpdateAsync(existing, ct);
-            await _unitOfWork.SaveChangesAsync(ct);
-
-            _logger.LogInformation("Orden de servicio actualizada: {OrdenId}", id);
-            return Ok(existing);
+            await _context.SaveChangesAsync();
         }
-        catch (Exception ex)
+        catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException)
         {
-            _logger.LogError(ex, "Error al actualizar orden de servicio {OrdenId}", id);
-            return StatusCode(500, "Error interno del servidor");
+            var conflictResponse = new
+            {
+                message = "Concurrency conflict",
+                entity = "OrdenServicio",
+                id = id,
+                expectedVersion = Convert.ToBase64String(expectedVersion),
+                providedVersion = updateDto.RowVersion
+            };
+            return Conflict(conflictResponse);
         }
+
+        return Ok(MapToDto(orden));
     }
 
     [HttpDelete("{id}")]
@@ -592,5 +579,24 @@ public class OrdenesServicioController : ControllerBase
             _logger.LogError(ex, "Error al generar factura para orden {OrdenId}", command.OrdenServicioId);
             return StatusCode(500, "Error interno del servidor");
         }
+    }
+
+    private OrdenServicioResponseDto MapToDto(OrdenServicio orden)
+    {
+        return new OrdenServicioResponseDto
+        {
+            Id = orden.Id,
+            NumeroOrden = orden.NumeroOrden,
+            Estado = orden.Estado,
+            Total = orden.Total,
+            RowVersion = Convert.ToBase64String(orden.RowVersion)
+        };
+    }
+
+    private bool ByteArraysEqual(byte[] a, byte[] b)
+    {
+        if (a == null && b == null) return true;
+        if (a == null || b == null) return false;
+        return System.Linq.Enumerable.SequenceEqual(a, b);
     }
 }

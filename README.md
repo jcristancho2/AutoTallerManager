@@ -168,7 +168,7 @@ dotnet --version  # Requiere .NET 9.0+
 
 # Verificar Docker (opcional)
 docker --version
-docker-compose --version
+docker compose --version
 ```
 
 ### Instalación
@@ -180,21 +180,31 @@ docker-compose --version
    ```
 
 2. **Configurar la base de datos**
-   ```bash
-   # Editar la cadena de conexión en appsettings.json
-   # ConnectionStrings:DefaultConnection
-   ```
+   - Edita la cadena de conexión en el archivo `appsettings.json` ubicado en el proyecto `AutoTallerManager.API`:
+     ```json
+     "ConnectionStrings": {
+       "DefaultConnection": "Server=localhost;Database=AutoTallerManager;User=root;Password=tu-contraseña;"
+     }
+     ```
 
 3. **Restaurar dependencias**
    ```bash
    dotnet restore
    ```
 
-4. **Aplicar migraciones**
-   ```bash
-   cd AutoTallerManager.API
-   dotnet ef database update
-   ```
+4. **Crear y aplicar migraciones**
+   - Navega al directorio del proyecto API:
+     ```bash
+     cd AutoTallerManager.API
+     ```
+   - Crea las migraciones (si no existen):
+     ```bash
+     dotnet ef migrations add InitialCreate
+     ```
+   - Aplica las migraciones a la base de datos:
+     ```bash
+     dotnet ef database update
+     ```
 
 5. **Ejecutar la aplicación**
    ```bash
@@ -496,6 +506,6 @@ MIT License - Copyright (c) 2025 AutoTallerManager Team
 
 **⭐ Si este proyecto te ayuda, considera darle una estrella ⭐**
 
-Hecho con ❤️ por el equipo AutoTallerManager
+Hecho con ❤️ por el equipo J2
 
 </div>

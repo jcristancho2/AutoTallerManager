@@ -8,6 +8,9 @@ using AutoTallerManager.Application.Abstractions;
 using AutoTallerManager.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using AutoTallerManager.Application.Dtos;
+using AutoTallerManager.Application.Exceptions;
+using AutoTallerManager.Infrastructure.Data;
 
 namespace AutoTallerManager.API.Controllers;
 
@@ -19,11 +22,13 @@ public class RepuestosController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<RepuestosController> _logger;
+    private readonly AutoTallerDbContext _context;
 
-    public RepuestosController(IUnitOfWork unitOfWork, ILogger<RepuestosController> logger)
+    public RepuestosController(IUnitOfWork unitOfWork, ILogger<RepuestosController> logger, AutoTallerDbContext context)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _context = context;
     }
 
     [HttpGet]
@@ -68,21 +73,13 @@ public class RepuestosController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Repuesto>> GetRepuesto(int id, CancellationToken ct = default)
+    public async Task<ActionResult<RepuestoResponseDto>> GetRepuesto(int id)
     {
-        try
-        {
-            var repuesto = await _unitOfWork.Repuestos.GetByIdAsync(id, ct, "Categoria,TipoVehiculo,Fabricante");
-            if (repuesto == null)
-                return NotFound($"Repuesto con ID {id} no encontrado");
+        var repuesto = await _context.Repuestos.FindAsync(id);
+        if (repuesto == null)
+            return NotFound();
 
-            return Ok(repuesto);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error al obtener repuesto {RepuestoId}", id);
-            return StatusCode(500, "Error interno del servidor");
-        }
+        return Ok(MapToDto(repuesto));
     }
 
     [HttpGet("codigo/{codigo}")]
@@ -153,49 +150,56 @@ public class RepuestosController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<Repuesto>> UpdateRepuesto(int id, Repuesto repuesto, CancellationToken ct = default)
+    public async Task<ActionResult<RepuestoResponseDto>> UpdateRepuesto(int id, RepuestoUpdateDto updateDto)
     {
+        var repuesto = await _context.Repuestos.FindAsync(id);
+        if (repuesto == null)
+            return NotFound();
+
+        // Validar RowVersion
+        var providedVersion = string.IsNullOrEmpty(updateDto.RowVersion) 
+            ? null 
+            : Convert.FromBase64String(updateDto.RowVersion);
+        var expectedVersion = repuesto.RowVersion;
+
+        if (!ByteArraysEqual(providedVersion, expectedVersion))
+        {
+            var conflictResponse = new
+            {
+                message = "Concurrency conflict",
+                entity = "Repuesto",
+                id = id,
+                expectedVersion = Convert.ToBase64String(expectedVersion),
+                providedVersion = updateDto.RowVersion
+            };
+            return Conflict(conflictResponse);
+        }
+
+        // Actualizar propiedades
+        repuesto.Nombre = updateDto.Nombre;
+        repuesto.Descripcion = updateDto.Descripcion;
+        repuesto.Precio = updateDto.Precio;
+        repuesto.Stock = updateDto.Stock;
+        repuesto.FechaModificacion = DateTime.UtcNow;
+
         try
         {
-            if (id != repuesto.Id)
-                return BadRequest("El ID del repuesto no coincide");
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var existing = await _unitOfWork.Repuestos.GetByIdAsync(id, ct);
-            if (existing == null)
-                return NotFound($"Repuesto con ID {id} no encontrado");
-
-            // Evitar duplicados por código
-            if (!string.IsNullOrEmpty(repuesto.Codigo))
-            {
-                var codigoExists = await _unitOfWork.Repuestos.ExistsAsync(r => r.Codigo == repuesto.Codigo && r.Id != id, ct);
-                if (codigoExists)
-                    return BadRequest("Ya existe otro repuesto con este código");
-            }
-
-            // Actualizar campos
-            existing.Codigo = repuesto.Codigo;
-            existing.NombreRepu = repuesto.NombreRepu;
-            existing.Descripcion = repuesto.Descripcion;
-            existing.Stock = repuesto.Stock;
-            existing.PrecioUnitario = repuesto.PrecioUnitario;
-            existing.CategoriaId = repuesto.CategoriaId;
-            existing.TipoVehiculoId = repuesto.TipoVehiculoId;
-            existing.FabricanteId = repuesto.FabricanteId;
-
-            await _unitOfWork.Repuestos.UpdateAsync(existing, ct);
-            await _unitOfWork.SaveChangesAsync(ct);
-
-            _logger.LogInformation("Repuesto actualizado: {RepuestoId}", id);
-            return Ok(existing);
+            await _context.SaveChangesAsync();
         }
-        catch (Exception ex)
+        catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException ex)
         {
-            _logger.LogError(ex, "Error al actualizar repuesto {RepuestoId}", id);
-            return StatusCode(500, "Error interno del servidor");
+            var conflictResponse = new
+            {
+                message = "Concurrency conflict",
+                entity = "Repuesto",
+                id = id,
+                expectedVersion = Convert.ToBase64String(expectedVersion),
+                providedVersion = updateDto.RowVersion
+            };
+            return Conflict(conflictResponse);
         }
+
+        return Ok(MapToDto(repuesto));
     }
 
     [HttpDelete("{id}")]
@@ -217,5 +221,25 @@ public class RepuestosController : ControllerBase
             _logger.LogError(ex, "Error al eliminar repuesto {RepuestoId}", id);
             return StatusCode(500, "Error interno del servidor");
         }
+    }
+
+    private RepuestoResponseDto MapToDto(Repuesto repuesto)
+    {
+        return new RepuestoResponseDto
+        {
+            Id = repuesto.Id,
+            Nombre = repuesto.Nombre,
+            Descripcion = repuesto.Descripcion,
+            Precio = repuesto.Precio,
+            Stock = repuesto.Stock,
+            RowVersion = Convert.ToBase64String(repuesto.RowVersion)
+        };
+    }
+
+    private bool ByteArraysEqual(byte[] a, byte[] b)
+    {
+        if (a == null && b == null) return true;
+        if (a == null || b == null) return false;
+        return System.Linq.Enumerable.SequenceEqual(a, b);
     }
 }

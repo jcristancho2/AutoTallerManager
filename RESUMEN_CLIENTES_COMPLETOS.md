@@ -192,3 +192,25 @@ El sistema está **listo para uso en producción** y proporciona una base sólid
 
 **Fecha de implementación**: $(date)  
 **Estado**: ✅ **COMPLETADO Y FUNCIONAL**
+
+
+
+dotnet ef database update \
+  --project ../AutoTallerManager.Infrastructure \
+  --startup-project .
+
+
+  "email": "admin@autotaller.com",
+  "password": "admin123"
+
+
+
+  {
+     "email": "racepcionista1@taller.com",
+     "username": "recepcion",
+     "password": "recepcion123",
+     "rolId": 3,
+     "estadoId": 1,
+     "createdAt": "2025-10-14T02:08:43.372Z",
+     "updatedAt": "2025-10-14T02:08:43.372Z"
+   }
