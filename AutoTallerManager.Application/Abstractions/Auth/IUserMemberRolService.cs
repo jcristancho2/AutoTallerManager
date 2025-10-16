@@ -8,9 +8,9 @@ namespace AutoTallerManager.Application.Abstractions.Auth
 {
     public interface IUserMemberRolService
     {
-        Task<IEnumerable<UserMemberRol>> GetAllAsync();
-        void Remove(UserMemberRol entity);
-        void Update(UserMemberRol entity);
-        Task<UserMemberRol?> GetByIdsAsync(int userMemberId, int roleId);
+        Task<IEnumerable<UserMemberRole>> GetAllAsync();
+        void Remove(UserMemberRole entity);
+        void Update(UserMemberRole entity);
+        Task<UserMemberRole?> GetByIdsAsync(int userMemberId, int roleId);
     }
 }

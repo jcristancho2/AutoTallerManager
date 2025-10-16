@@ -24,15 +24,24 @@ public class UnitOfWork : IUnitOfWork
         Roles = new RoleRepository(_context);
         
         // Repositorios de negocio
-        Customers = new CustomerRepository(_context);
+        // Clientes
+        Customer = new CustomerRepository(_context);
+        // Vehículos
         Vehicles = new VehicleRepository(_context);
-        OrderService = new OrderServiceRepository(_context);
-        Spare = new SpareRepository(_context);
-        Invoice = new InvoiceRepository(_context);
+        // Ordenes de servicio
+        ServiceOrders = new OrderServiceRepository(_context);
+        // Repuestos
+        Spares = new SpareRepository(_context);
+        // Facturas
+        Invoices = new InvoiceRepository(_context);
+        // Auditorías
         Audits = new AuditRepository(_context);
-        DetailOrder = new DetalleOrdenRepository(_context);
-        Users = new UserMemberRepository(_context);
+        // Detalle de orden
+        OrderDetails = new DetalleOrdenRepository(_context);
+        // User auth helpers
+        User = new AutoTallerManager.Infrastructure.Repositories.Auth.UserRepository(_context);
         UserStatus = new UserStatusRepository(_context);
+        // Tipos de servicio
         ServiceTypes = new ServiceTypeRepository(_context);
     }
 
@@ -40,18 +49,18 @@ public class UnitOfWork : IUnitOfWork
     public IUserMemberService UserMembers { get; }
     public IUserMemberRolService UserMemberRoles { get; }
     public IRoleService Roles { get; }
+    public IUserService User { get; }
     
     // Repositorios de negocio
-    public ICustomerService Customers { get; }
+    public ICustomerService Customer { get; }
     public IVehicleService Vehicles { get; }
-    public IOrderServiceService OrderService { get; }
-    public ISpareService Spare { get; }
-    public IInvoiceService Invoice { get; }
+    public IOrderServiceService ServiceOrders { get; }
+    public ISpareService Spares { get; }
+    public IInvoiceService Invoices { get; }
     public IAuditService Audits { get; }
-    public IDetailOrderService DetailOrder { get; }
-    public IUserMemberService Users { get; }
+    public IDetailOrderService OrderDetails { get; }
     public IUserStatusService UserStatus { get; }
-    public IUserStatusService StatusService { get; }
+    public IServiceTypeService ServiceTypes { get; }
 
     public Task<int> SaveChanges(CancellationToken ct = default)
         => _context.SaveChangesAsync(ct);

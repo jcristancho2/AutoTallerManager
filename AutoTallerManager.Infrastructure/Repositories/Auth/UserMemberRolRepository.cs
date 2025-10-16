@@ -11,23 +11,23 @@ namespace AutoTallerManager.Infrastructure.Repositories.Auth;
 
 public class UserMemberRolRepository(AppDbContext db) : IUserMemberRolService
 {
-    public async Task<IEnumerable<UserMemberRol>> GetAllAsync()
+    public async Task<IEnumerable<UserMemberRole>> GetAllAsync()
     {
         return await db.UserMemberRols.AsNoTracking().ToListAsync();
     }
 
-    public async Task<UserMemberRol?> GetByIdsAsync(int userMemberId, int roleId)
+    public async Task<UserMemberRole?> GetByIdsAsync(int userMemberId, int roleId)
     {
         return await db.UserMemberRols
-            .FirstOrDefaultAsync(umr => umr.UserMemberId == userMemberId && umr.RolId == roleId);
+            .FirstOrDefaultAsync(umr => umr.UserMemberId == userMemberId && umr.RoleId == roleId);
     }
 
-    public void Remove(UserMemberRol entity)
+    public void Remove(UserMemberRole entity)
     {
         db.UserMemberRols.Remove(entity);
     }
 
-    public void Update(UserMemberRol entity)
+    public void Update(UserMemberRole entity)
     {
         db.UserMemberRols.Update(entity);
     }

@@ -1,8 +1,8 @@
 using AutoTallerManager.Application.Abstractions;
-using AutoTallerManager.Application.Features.Clientes.Commands;
+using AutoTallerManager.Application.Features.Customers.Commands;
 using MediatR;
 
-namespace AutoTallerManager.Application.Features.Clientes.Handlers;
+namespace AutoTallerManager.Application.Features.Customers.Handlers;
 
 public sealed class DeleteCustomerHandler : IRequestHandler<DeleteCustomerCommand, bool>
 {

@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace AutoTallerManager.Application.Features.Clientes.Commands;
+namespace AutoTallerManager.Application.Features.Customers.Commands;
 
 public record RegisterCustomerWithVehicleCommand : IRequest<int>
 {

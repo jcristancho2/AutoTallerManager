@@ -70,7 +70,7 @@ public class AuthController : ControllerBase
     /// <returns>Confirmación de registro</returns>
     [HttpPost("register")]
     [Authorize(Roles = "Admin")] // Solo administradores pueden registrar usuarios
-    [HttpPost("usuario/register")] // alias en español; protegido, tests esperan 401 sin token
+    [HttpPost("user/register")] // alias en español; protegido, tests esperan 401 sin token
     public async Task<ActionResult<string>> Register([FromBody] RegisterDto request)
     {
         try
@@ -159,21 +159,21 @@ public class AuthController : ControllerBase
     [HttpGet("users")]
     [Authorize(Roles = "Admin")]
     [HttpGet] // soporta GET /api/usuario
-    public async Task<ActionResult<IEnumerable<UsuarioDto>>> GetUsers()
+    public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
     {
         try
         {
             var users = await _db.UsersMembers
-                .Include(u => u.UserMemberRoles)
-                    .ThenInclude(umr => umr.Rol)
+                .Include(u => u.UserMemberRols)
+                    .ThenInclude(umr => umr.Role)
                 .ToListAsync();
 
-            var usersDto = users.Select(u => new UsuarioDto
+            var usersDto = users.Select(u => new UserDto
             {
                 Id = u.Id,
                 Email = u.Email ?? string.Empty,
-                RolNombre = u.UserMemberRoles?.FirstOrDefault()?.Rol?.NombreRol ?? "Sin rol",
-                EstadoNombre = "Activo" // Por defecto, podrías agregar un campo EstadoUsuario si lo necesitas
+                RoleName = u.UserMemberRols?.FirstOrDefault()?.Role?.RoleName ?? "Sin rol",
+                StateName = "Activo" 
             });
 
             return Ok(usersDto);
@@ -192,14 +192,14 @@ public class AuthController : ControllerBase
     /// <returns>Información del usuario</returns>
     [HttpGet("users/{id}")]
     [Authorize(Roles = "Admin")]
-    [HttpGet("usuarios/{id}")] // alias en español; protegido
-    public async Task<ActionResult<UsuarioDto>> GetUser(int id)
+    [HttpGet("user/{id}")] 
+    public async Task<ActionResult<UserDto>> GetUser(int id)
     {
         try
         {
             var user = await _db.UsersMembers
-                .Include(u => u.UserMemberRoles)
-                    .ThenInclude(umr => umr.Rol)
+                .Include(u => u.UserMemberRols)
+                    .ThenInclude(umr => umr.Role)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null)
@@ -207,12 +207,12 @@ public class AuthController : ControllerBase
                 return NotFound("Usuario no encontrado");
             }
 
-            var userDto = new UsuarioDto
+            var userDto = new UserDto
             {
                 Id = user.Id,
                 Email = user.Email ?? string.Empty,
-                RolNombre = user.UserMemberRoles?.FirstOrDefault()?.Rol?.NombreRol ?? "Sin rol",
-                EstadoNombre = "Activo"
+                RoleName = user.UserMemberRols?.FirstOrDefault()?.Role?.RoleName ?? "Sin rol",
+                StateName = "Activo"
             };
 
             return Ok(userDto);
@@ -232,13 +232,13 @@ public class AuthController : ControllerBase
     /// <returns>Confirmación de actualización</returns>
     [HttpPut("users/{id}")]
     [Authorize(Roles = "Admin")]
-    [HttpPut("usuarios/{id}")] // alias en español; protegido
-    public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUsuarioDto request)
+    [HttpPut("user/{id}")] 
+    public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserDto request)
     {
         try
         {
             var user = await _db.UsersMembers
-                .Include(u => u.UserMemberRoles)
+                .Include(u => u.UserMemberRols)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null)
@@ -251,8 +251,8 @@ public class AuthController : ControllerBase
             user.UpdatedAt = DateTime.UtcNow;
 
             // Actualizar rol si es necesario
-            var currentRole = user.UserMemberRoles?.FirstOrDefault();
-            if (currentRole?.RolId != request.RolId)
+            var currentRole = user.UserMemberRols?.FirstOrDefault();
+            if (currentRole?.RoleId != request.RoleId)
             {
                 // Eliminar rol actual
                 if (currentRole != null)
@@ -261,17 +261,17 @@ public class AuthController : ControllerBase
                 }
 
                 // Agregar nuevo rol
-                var newUserRole = new UserMemberRol
+                var newUserRole = new UserMemberRole
                 {
                     UserMemberId = user.Id,
-                    RolId = request.RolId
+                    RoleId = request.RoleId
                 };
                 _db.UserMemberRols.Add(newUserRole);
             }
 
             await _db.SaveChangesAsync();
 
-            _logger.LogInformation("Usuario {UserId} actualizado exitosamente", id);
+            _logger.LogInformation($"Usuario {id} actualizado exitosamente");
             return Ok(new { message = "Usuario actualizado exitosamente" });
         }
         catch (Exception ex)
@@ -289,7 +289,7 @@ public class AuthController : ControllerBase
     /// <returns>Confirmación de cambio</returns>
     [HttpPut("users/{id}/change-password")]
     [Authorize(Roles = "Admin")]
-    [HttpPut("usuarios/{id}/cambiar-password")] // alias en español; protegido
+    [HttpPut("user/{id}/change-password")] 
     public async Task<IActionResult> ChangePassword(int id, [FromBody] ChangePasswordDto request)
     {
         try
@@ -338,7 +338,7 @@ public class AuthController : ControllerBase
         try
         {
             var user = await _db.UsersMembers
-                .Include(u => u.UserMemberRoles)
+                .Include(u => u.UserMemberRols)
                 .FirstOrDefaultAsync(u => u.Id == request.UserId);
 
             if (user == null)
@@ -353,16 +353,16 @@ public class AuthController : ControllerBase
             }
 
             // Eliminar roles existentes
-            if (user.UserMemberRoles != null && user.UserMemberRoles.Any())
+            if (user.UserMemberRols != null && user.UserMemberRols.Any())
             {
-                _db.UserMemberRols.RemoveRange(user.UserMemberRoles);
+                _db.UserMemberRols.RemoveRange(user.UserMemberRols);
             }
 
             // Asignar nuevo rol
-            var userRole = new UserMemberRol
+            var userRole = new UserMemberRole
             {
                 UserMemberId = request.UserId,
-                RolId = request.RoleId
+                RoleId = request.RoleId
             };
 
             _db.UserMemberRols.Add(userRole);
@@ -434,8 +434,8 @@ public class AuthController : ControllerBase
     /// Crear roles básicos del sistema
     /// </summary>
     /// <returns>Confirmación de creación</returns>
-    [HttpPost("setup/roles")]
-    public async Task<IActionResult> CreateBasicRoles()
+    [HttpPost("setup/rols")]
+    public async Task<IActionResult> CreateBasicRols()
     {
         try
         {
@@ -445,9 +445,9 @@ public class AuthController : ControllerBase
             if (!_db.Roles.Any())
             {
                 _db.Roles.AddRange(
-                    new Rol { NombreRol = "Admin", Descripcion = "Administrador del sistema" },
-                    new Rol { NombreRol = "Mecanico", Descripcion = "Mecánico del taller" },
-                    new Rol { NombreRol = "Recepcionista", Descripcion = "Recepcionista del taller" }
+                    new Role { RoleName = "Admin", Description = "Administrador del sistema" },
+                    new Role { RoleName = "Mecanico", Description = "Mecánico del taller" },
+                    new Role { RoleName = "Recepcionista", Description = "Recepcionista del taller" }
                 );
                 results.Add("Roles del sistema creados");
             }
@@ -479,13 +479,13 @@ public class AuthController : ControllerBase
         try
         {
             // Crear rol Admin si no existe
-            var adminRole = await _db.Roles.FirstOrDefaultAsync(r => r.NombreRol == "Admin");
+            var adminRole = await _db.Roles.FirstOrDefaultAsync(r => r.RoleName == "Admin");
             if (adminRole == null)
             {
-                adminRole = new Rol 
+                adminRole = new Role 
                 { 
-                    NombreRol = "Admin", 
-                    Descripcion = "Administrador del sistema" 
+                    RoleName = "Admin", 
+                    Description = "Administrador del sistema" 
                 };
                 _db.Roles.Add(adminRole);
                 await _db.SaveChangesAsync();
@@ -499,21 +499,21 @@ public class AuthController : ControllerBase
             }
 
             // Eliminar roles existentes del usuario
-            var existingRoles = await _db.UserMemberRols
+            var existingRols = await _db.UserMemberRols
                 .Where(umr => umr.UserMemberId == adminUser.Id)
                 .ToListAsync();
             
-            if (existingRoles.Any())
+            if (existingRols.Any())
             {
-                _db.UserMemberRols.RemoveRange(existingRoles);
+                _db.UserMemberRols.RemoveRange(existingRols);
                 await _db.SaveChangesAsync();
             }
 
             // Asignar el rol Admin
-            var userRole = new UserMemberRol
+            var userRole = new UserMemberRole
             {
                 UserMemberId = adminUser.Id,
-                RolId = adminRole.Id
+                RoleId = adminRole.Id
             };
 
             _db.UserMemberRols.Add(userRole);
@@ -545,8 +545,8 @@ public class AuthController : ControllerBase
         try
         {
             var adminUser = await _db.UsersMembers
-                .Include(u => u.UserMemberRoles)
-                    .ThenInclude(umr => umr.Rol)
+                .Include(u => u.UserMemberRols)
+                    .ThenInclude(umr => umr.Role)
                 .FirstOrDefaultAsync(u => u.Email == "admin@autotaller.com");
 
             if (adminUser == null)
@@ -554,9 +554,9 @@ public class AuthController : ControllerBase
                 return NotFound("Usuario administrador no encontrado");
             }
 
-            var roles = await _db.Roles.ToListAsync();
-            var userRoles = await _db.UserMemberRols
-                .Include(umr => umr.Rol)
+            var rols = await _db.Roles.ToListAsync();
+            var userRols = await _db.UserMemberRols
+                .Include(umr => umr.Role)
                 .Where(umr => umr.UserMemberId == adminUser.Id)
                 .ToListAsync();
 
@@ -567,28 +567,28 @@ public class AuthController : ControllerBase
                     id = adminUser.Id,
                     email = adminUser.Email,
                     username = adminUser.Username,
-                    hasUserMemberRoles = adminUser.UserMemberRoles?.Any() ?? false,
-                    userMemberRolesCount = adminUser.UserMemberRoles?.Count ?? 0,
-                    userMemberRoles = adminUser.UserMemberRoles?.Select(umr => new
+                    hasUserMemberRols = adminUser.UserMemberRols?.Any() ?? false,
+                    userMemberRolsCount = adminUser.UserMemberRols?.Count ?? 0,
+                    userMemberRols = adminUser.UserMemberRols?.Select(umr => new
                     {
                         userMemberId = umr.UserMemberId,
-                        roleId = umr.RolId,
-                        roleName = umr.Rol?.NombreRol,
-                        roleDescription = umr.Rol?.Descripcion
+                        roleId = umr.RoleId,
+                        roleName = umr.Role?.RoleName,
+                        roleDescription = umr.Role?.Description
                     }).ToList()
                 },
-                allRoles = roles.Select(r => new
+                allRoles = rols.Select(r => new
                 {
                     id = r.Id,
-                    name = r.NombreRol,
-                    description = r.Descripcion
+                    name = r.RoleName,
+                    description = r.Description
                 }).ToList(),
-                userRolesInDb = userRoles.Select(ur => new
+                userRolsInDb = userRols.Select(ur => new
                 {
                     userMemberId = ur.UserMemberId,
-                    roleId = ur.RolId,
-                    roleName = ur.Rol?.NombreRol,
-                    roleDescription = ur.Rol?.Descripcion
+                    roleId = ur.RoleId,
+                    roleName = ur.Role?.RoleName,
+                    roleDescription = ur.Role?.Description
                 }).ToList(),
                 timestamp = DateTime.UtcNow
             };
@@ -612,27 +612,27 @@ public class AuthController : ControllerBase
         try
         {
             // Verificar si ya existe una dirección
-            var direccionExists = await _db.Direcciones.AnyAsync();
-            if (direccionExists)
+            var addressExists = await _db.Addresses.AnyAsync();
+            if (addressExists)
             {
                 return Ok(new { 
                     message = "Ya existen direcciones en el sistema",
-                    count = await _db.Direcciones.CountAsync()
+                    count = await _db.Addresses.CountAsync()
                 });
             }
 
             // Crear dirección básica
-            var direccion = new Direccion("Calle Principal 123", 1);
+            var address = new Address("Calle Principal 123", 1);
 
-            _db.Direcciones.Add(direccion);
+            _db.Addresses.Add(address);
             await _db.SaveChangesAsync();
 
-            _logger.LogInformation("Dirección creada: {Descripcion}", direccion.Descripcion);
+            _logger.LogInformation("Dirección creada: {Description}", address.Description);
 
             return Ok(new { 
                 message = "Dirección creada exitosamente",
-                direccionId = direccion.Id,
-                descripcion = direccion.Descripcion
+                addressId = address.Id,
+                description = address.Description
             });
         }
         catch (Exception ex)
@@ -677,27 +677,27 @@ public class AuthController : ControllerBase
     /// Obtener roles disponibles del sistema
     /// </summary>
     /// <returns>Lista de roles</returns>
-    [HttpGet("roles")]
-    [HttpGet("usuario/roles")] // alias en español
-    public async Task<ActionResult<IEnumerable<RolDto>>> GetRoles()
+    [HttpGet("rols")]
+    [HttpGet("user/rols")] // alias en español
+    public async Task<ActionResult<IEnumerable<RoleDto>>> GetRols()
     {
         try
         {
-            var roles = await _db.Roles.ToListAsync();
-            var rolesDto = roles.Select(r => new RolDto
+            var rols = await _db.Roles.ToListAsync();
+            var rolsDto = rols.Select(r => new RoleDto
             {
                 Id = r.Id,
-                NombreRol = r.NombreRol ?? string.Empty,
-                Descripcion = r.Descripcion ?? string.Empty
+                RoleName = r.RoleName ?? string.Empty,
+                Description = r.Description ?? string.Empty
             });
 
-            return Ok(rolesDto);
+            return Ok(rolsDto);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error al obtener roles: {Message}", ex.Message);
             // Fallback para entorno de pruebas sin base de datos
-            return Ok(Array.Empty<RolDto>());
+            return Ok(Array.Empty<RoleDto>());
         }
     }
 
@@ -706,15 +706,15 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <param name="request">Datos del nuevo rol</param>
     /// <returns>Confirmación de creación</returns>
-    [HttpPost("roles")]
+    [HttpPost("rols")]
     [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<RolDto>> CreateRole([FromBody] CreateRoleDto request)
+    public async Task<ActionResult<RoleDto>> CreateRole([FromBody] CreateRoleDto request)
     {
         try
         {
             // Verificar si el rol ya existe
             var existingRole = await _db.Roles
-                .FirstOrDefaultAsync(r => r.NombreRol == request.NombreRol);
+                .FirstOrDefaultAsync(r => r.RoleName == request.RoleName);
             
             if (existingRole != null)
             {
@@ -722,25 +722,25 @@ public class AuthController : ControllerBase
             }
 
             // Crear nuevo rol
-            var newRole = new Rol
+            var newRole = new Role
             {
-                NombreRol = request.NombreRol,
-                Descripcion = request.Descripcion
+                RoleName = request.RoleName,
+                Description = request.Description
             };
 
             _db.Roles.Add(newRole);
             await _db.SaveChangesAsync();
 
-            _logger.LogInformation("Rol creado: {NombreRol}", newRole.NombreRol);
+            _logger.LogInformation("Rol creado: {RoleName}", newRole.RoleName);
 
-            var roleDto = new RolDto
+            var roleDto = new RoleDto
             {
                 Id = newRole.Id,
-                NombreRol = newRole.NombreRol ?? string.Empty,
-                Descripcion = newRole.Descripcion ?? string.Empty
+                RoleName = newRole.RoleName ?? string.Empty,
+                Description = newRole.Description ?? string.Empty
             };
 
-            return CreatedAtAction(nameof(GetRoles), new { id = newRole.Id }, roleDto);
+            return CreatedAtAction(nameof(GetRols), new { id = newRole.Id }, roleDto);
         }
         catch (Exception ex)
         {
@@ -755,7 +755,7 @@ public class AuthController : ControllerBase
     /// <param name="id">ID del rol</param>
     /// <param name="request">Datos actualizados del rol</param>
     /// <returns>Confirmación de actualización</returns>
-    [HttpPut("roles/{id}")]
+    [HttpPut("rols/{id}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateRole(int id, [FromBody] UpdateRoleDto request)
     {
@@ -769,7 +769,7 @@ public class AuthController : ControllerBase
 
             // Verificar si el nuevo nombre ya existe en otro rol
             var existingRole = await _db.Roles
-                .FirstOrDefaultAsync(r => r.NombreRol == request.NombreRol && r.Id != id);
+                .FirstOrDefaultAsync(r => r.RoleName == request.RoleName && r.Id != id);
             
             if (existingRole != null)
             {
@@ -777,12 +777,12 @@ public class AuthController : ControllerBase
             }
 
             // Actualizar datos
-            role.NombreRol = request.NombreRol;
-            role.Descripcion = request.Descripcion;
+            role.RoleName = request.RoleName;
+            role.Description = request.Description;
 
             await _db.SaveChangesAsync();
 
-            _logger.LogInformation("Rol {RoleId} actualizado", id);
+            _logger.LogInformation("Rol actualizado {RoleId}", id);
             return Ok(new { message = "Rol actualizado exitosamente" });
         }
         catch (Exception ex)
@@ -804,7 +804,7 @@ public class AuthController : ControllerBase
         try
         {
             var role = await _db.Roles
-                .Include(r => r.UserMemberRoles)
+                .Include(r => r.UserMemberRols)
                 .FirstOrDefaultAsync(r => r.Id == id);
             
             if (role == null)
@@ -813,7 +813,7 @@ public class AuthController : ControllerBase
             }
 
             // Verificar si el rol está siendo usado por usuarios
-            if (role.UserMemberRoles != null && role.UserMemberRoles.Any())
+            if (role.UserMemberRols != null && role.UserMemberRols.Any())
             {
                 return BadRequest(new { error = "No se puede eliminar el rol porque está asignado a usuarios" });
             }
@@ -821,7 +821,7 @@ public class AuthController : ControllerBase
             _db.Roles.Remove(role);
             await _db.SaveChangesAsync();
 
-            _logger.LogInformation("Rol {RoleId} eliminado", id);
+            _logger.LogInformation("Rol eliminado {RoleId}", id);
             return Ok(new { message = "Rol eliminado exitosamente" });
         }
         catch (Exception ex)

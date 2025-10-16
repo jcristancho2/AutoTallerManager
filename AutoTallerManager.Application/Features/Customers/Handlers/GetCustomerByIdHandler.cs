@@ -1,9 +1,9 @@
 using AutoTallerManager.Application.Abstractions;
-using AutoTallerManager.Application.Features.Clientes.Queries;
+using AutoTallerManager.Application.Features.Customers.Queries;
 using AutoTallerManager.Domain.Entities;
 using MediatR;
 
-namespace AutoTallerManager.Application.Features.Clientes.Handlers;
+namespace AutoTallerManager.Application.Features.Customers.Handlers;
 
 public sealed class GetCustomerByIdHandler : IRequestHandler<GetCustomerByIdQuery, Customer?>
 {

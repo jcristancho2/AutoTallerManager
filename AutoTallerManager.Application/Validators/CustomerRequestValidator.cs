@@ -1,4 +1,4 @@
-using AutoTallerManager.Application.Features.Clientes.Commands;
+using AutoTallerManager.Application.Features.Customers.Commands;
 using AutoTallerManager.Domain.Entities;
 using FluentValidation;
 

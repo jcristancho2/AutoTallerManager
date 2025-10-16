@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoTallerManager.Application.Features.Clientes.Commands;
+using AutoTallerManager.Application.Features.Customers.Commands;
 using FluentValidation;
 
 namespace AutoTallerManager.Application.Validators
